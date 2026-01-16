@@ -14,6 +14,7 @@ class KidWithSummary(BaseModel):
     id: int
     name: str
     balance_cents: int
+    allowance_cents: int
     avatar_path: str
     chores_summary: dict
 
@@ -28,7 +29,8 @@ def list_kids(session: Session = Depends(get_session)):
         result.append(KidWithSummary(
             id=k.id, 
             name=k.name, 
-            balance_cents=k.balance_cents, 
+            balance_cents=k.balance_cents,
+            allowance_cents=k.allowance_cents,
             avatar_path=k.avatar_path,
             chores_summary=summary
         ))
@@ -47,6 +49,7 @@ def get_kid(kid_id: int, session: Session = Depends(get_session)):
         id=kid.id,
         name=kid.name,
         balance_cents=kid.balance_cents,
+        allowance_cents=kid.allowance_cents,
         avatar_path=kid.avatar_path,
         chores_summary=summary
     )

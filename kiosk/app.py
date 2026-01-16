@@ -21,7 +21,7 @@ class HeaderWidget(QFrame):
         layout = QHBoxLayout(self)
         layout.setContentsMargins(20, 10, 20, 10)
         
-        self.lbl_title = QLabel("CHORE TRACKER")
+        self.lbl_title = QLabel("QUEST TRACKER")
         self.lbl_title.setObjectName("HoloHeader") # Use new ID
         layout.addWidget(self.lbl_title)
         
