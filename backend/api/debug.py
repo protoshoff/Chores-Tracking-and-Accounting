@@ -25,8 +25,8 @@ def reset_database(session: Session = Depends(get_session)):
     
     # Seed
     with Session(engine) as session:
-        alice = User(name="Alice", balance_cents=1250, allowance_cents=500, avatar_path="/static/avatars/alice.png")
-        bob = User(name="Bob", balance_cents=0, allowance_cents=500, avatar_path="/static/avatars/bob.png")
+        alice = User(name="Grayson", balance_cents=1250, allowance_cents=500, avatar_path="/static/avatars/grayson.png")
+        bob = User(name="Owen", balance_cents=0, allowance_cents=500, avatar_path="/static/avatars/owen.png")
         session.add(alice)
         session.add(bob)
         session.commit()
