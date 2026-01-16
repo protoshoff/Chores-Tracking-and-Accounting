@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chores Admin</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; background: #f0f0f0; }
+        .card { background: white; padding: 20px; border-radius: 8px; margin-top: 20px; }
+        h1 { color: #333; }
+        .success { color: green; }
+        .error { color: red; }
+    </style>
+</head>
+<body>
+    <h1>Chores Admin Panel</h1>
+    
+    <div class="card">
+        <h2>System Status</h2>
+        <div id="status">Checking...</div>
+    </div>
+
+    <div class="card">
+        <h2>Kids</h2>
+        <ul id="kids-list">Loading...</ul>
+    </div>
+
+    <script>
+        const API_BASE = "http://localhost:8000/api";
+
+        async function checkStatus() {
+            try {
+                const res = await fetch(`${API_BASE}/system/status`);
+                const data = await res.json();
+                document.getElementById('status').innerHTML = 
+                    `<span class="success">Online</span> (Version: ${data.version})`;
+            } catch (e) {
+                document.getElementById('status').innerHTML = 
+                    `<span class="error">Offline</span>`;
+            }
+        }
+
+        async function loadKids() {
+            try {
+                const res = await fetch(`${API_BASE}/kids`);
+                const kids = await res.json();
+                const list = document.getElementById('kids-list');
+                list.innerHTML = "";
+                kids.forEach(k => {
+                    const li = document.createElement('li');
+                    li.textContent = `${k.name} - Balance: $${(k.balance_cents/100).toFixed(2)}`;
+                    list.appendChild(li);
+                });
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        checkStatus();
+        loadKids();
+    </script>
+</body>
+</html>

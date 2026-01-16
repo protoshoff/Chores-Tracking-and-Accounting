@@ -1,0 +1,82 @@
+/* Sci-Fi HUD Theme */
+
+/* Color Variables (Approximation for QSS)
+   Cyan Glow: #00E5FF
+   Deep Blue: #007BFF
+   Dark BG:   #0A0A12
+   Text:      #E0F7FA
+   Muted:     #455A64
+*/
+
+QWidget {
+    font-family: 'Orbitron', 'Verdana', sans-serif;
+    font-size: 16px;
+    color: #E0F7FA;
+    background-color: transparent; /* Default transparent for layering */
+}
+
+/* Main Window Background */
+QMainWindow {
+    background-color: #050510; /* Very dark blue/black */
+    background-image: url('kiosk/assets/bg_scifi.png'); /* Placeholder */
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+/* Text Styles */
+QLabel {
+    color: #E0F7FA;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+QLabel#HoloHeader {
+    font-size: 32px;
+    font-weight: bold;
+    color: #00E5FF;
+    /* text-shadow not supported in QSS, use QGraphicsEffect if needed */
+}
+
+QLabel#QuestHeading {
+    font-size: 24px;
+    font-weight: bold;
+    color: #FFFFFF;
+    margin-bottom: 5px;
+}
+
+QLabel#QuestDesc {
+    font-size: 16px;
+    color: #B0BEC5;
+    text-transform: none; /* Normal case for descriptions */
+    letter-spacing: 1px;
+}
+
+/* ScrollBars (Sci-Fi Tech) */
+QScrollBar:vertical {
+    border: 1px solid #007BFF;
+    background: #0A0A12;
+    width: 20px;
+    margin: 4px;
+    border-radius: 4px;
+}
+QScrollBar::handle:vertical {
+    background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #007BFF, stop:1 #00E5FF);
+    min-height: 30px;
+    border-radius: 2px;
+    margin: 2px;
+}
+QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
+    height: 0px;
+    background: none;
+}
+QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
+    background: none;
+}
+
+/* Tooltips */
+QToolTip {
+    border: 1px solid #00E5FF;
+    background-color: rgba(10, 10, 18, 200);
+    color: #00E5FF;
+    font-size: 14px;
+}

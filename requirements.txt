@@ -1,0 +1,11 @@
+fastapi
+uvicorn[standard]
+sqlmodel
+alembic
+pyside6
+requests
+jinja2
+python-multipart
+# Dev dependencies
+pytest
+httpx

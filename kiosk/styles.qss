@@ -1,0 +1,154 @@
+/* Global Defaults */
+QWidget {
+    font-family: Arial, sans-serif;
+    font-size: 18px;
+    background-color: #FAFAFA;
+    color: #333333;
+}
+
+/* Header */
+#Header {
+    background-color: #FFFFFF;
+    border-bottom: 2px solid #E0E0E0;
+    min-height: 60px;
+}
+QLabel#HeaderTitle {
+    font-size: 24px;
+    font-weight: bold;
+    color: #333;
+    margin-left: 20px;
+}
+
+/* Footer / Persistent Row */
+#Footer {
+    background-color: #FFFFFF;
+    border-top: 2px solid #E0E0E0;
+    min-height: 80px;
+}
+
+/* Kid Cards (Home) */
+#KidCard {
+    background-color: #FFFFFF;
+    border-radius: 12px;
+    border: 2px solid #E0E0E0;
+}
+#KidCard:hover {
+    border: 3px solid #4CAF50; /* Green highlight on touch */
+}
+QLabel#CardName {
+    font-size: 24px;
+    font-weight: bold;
+}
+QLabel#CardBalance {
+    font-size: 28px;
+    color: #4CAF50; /* Green = Earned */
+    font-weight: bold;
+}
+
+/* Progress Bars */
+QProgressBar {
+    background-color: #E0E0E0; /* Slightly darker grey for contrast */
+    border: none;
+    border-radius: 12px; /* Rounded pill shape */
+    text-align: center;
+    color: #555;
+    font-weight: bold;
+    height: 24px;
+}
+QProgressBar::chunk {
+    background-color: #66BB6A; /* Softer Green */
+    border-radius: 12px;
+}
+
+/* ScrollBars (Modern Flat Style) */
+QScrollBar:vertical {
+    border: none;
+    background: #F5F5F5;
+    width: 12px;
+    margin: 0px 0px 0px 0px;
+    border-radius: 6px;
+}
+QScrollBar::handle:vertical {
+    background: #BDBDBD;
+    min-height: 20px;
+    border-radius: 6px;
+}
+QScrollBar::handle:vertical:hover {
+    background: #9E9E9E;
+}
+QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
+    height: 0px; /* Hide arrow buttons */
+    background: none;
+}
+QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
+    background: none;
+}
+
+/* Semantic Status Colors */
+.status-approved {
+    color: #388E3C; /* Green */
+    font-weight: bold;
+}
+.status-pending {
+    color: #FBC02D; /* Yellow/Gold */
+    font-weight: bold;
+}
+.status-missed {
+    color: #D32F2F; /* Red */
+    font-weight: bold;
+}
+
+/* Buttons (Refined Touch Targets) */
+QPushButton {
+    background-color: #2196F3; /* Blue Default */
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 18px; /* Slightly smaller text */
+    font-weight: bold;
+    min-height: 30px; /* Reduced to 30px per user request */
+    padding: 10px 20px;
+}
+QPushButton:pressed {
+    background-color: #1976D2;
+}
+QPushButton:hover {
+    background-color: #42A5F5;
+}
+
+/* Specific Buttons */
+QPushButton#BtnApprove {
+    background-color: #4CAF50; /* Green */
+}
+QPushButton#BtnApprove:hover { background-color: #66BB6A; }
+
+QPushButton#BtnReject {
+    background-color: #EF5350; /* Red - slightly softer */
+}
+QPushButton#BtnReject:hover { background-color: #E57373; }
+
+QPushButton#BtnBack {
+    background-color: #78909C; /* Blue Grey */
+    min-width: 80px;
+}
+
+/* Checkboxes */
+QCheckBox {
+    spacing: 15px;
+    font-size: 20px;
+    color: #333;
+}
+QCheckBox::indicator {
+    width: 40px; /* Reduced slightly */
+    height: 40px;
+    border: 2px solid #BDBDBD;
+    border-radius: 6px;
+    background-color: white;
+}
+QCheckBox::indicator:checked {
+    background-color: #66BB6A;
+    border-color: #66BB6A;
+}
+QCheckBox::indicator:unchecked:hover {
+    border-color: #66BB6A;
+}
