@@ -86,6 +86,21 @@ class KidDashboardView(QWidget):
             self.name_lbl.setText(kid['name'])
             self.bal_lbl.setText(f"${kid['balance_cents']/100:.2f}")
             self.lbl_title.setText(f"{kid['name'].upper()} // DASHBOARD")
+            
+            # Progress
+            summary = kid.get("chores_summary", {})
+            total = summary.get("total_weight", 1)
+            if total == 0: total = 1 # Avoid div zero
+            
+            # Official (Approved)
+            off_pct = summary.get("week_pct", 0)
+            self.prog_official.setValue(off_pct)
+            
+            # Kid (Completed + Approved)
+            done_weight = summary.get("completed_weight", 0)
+            kid_pct = int((done_weight / total) * 100)
+            if kid_pct > 100: kid_pct = 100
+            self.prog_kid.setValue(kid_pct)
         
         self.load_chores()
 
@@ -107,12 +122,12 @@ class KidDashboardView(QWidget):
         weeklies = [c for c in chores if c.get("frequency") == "WEEKLY"]
         
         if dailies:
-            self.scroll_layout.addWidget(self._make_section_header("DAILY OBJECTIVES"))
+            self.scroll_layout.addWidget(self._make_section_header("DAILY QUESTS"))
             for c in dailies:
                 self.scroll_layout.addWidget(self._create_quest_row(c))
                 
         if weeklies:
-            self.scroll_layout.addWidget(self._make_section_header("WEEKLY OBJECTIVES"))
+            self.scroll_layout.addWidget(self._make_section_header("WEEKLY QUESTS"))
             for c in weeklies:
                 self.scroll_layout.addWidget(self._create_quest_row(c))
 
@@ -142,22 +157,53 @@ class KidDashboardView(QWidget):
         layout.addStretch()
         
         # Action
-        status = c.get('status', 'PENDING')
-        if status == 'PENDING':
+        status = c.get('status', 'INCOMPLETE')
+        
+        # Logic: 
+        # INCOMPLETE -> Show "COMPLETE" button
+        # PENDING -> Show "PENDING APPROVAL" label (Yellow)
+        # APPROVED -> Show "APPROVED" label (Green)
+        # REJECTED -> Show "REJECTED" label (Red)
+
+        if status == 'INCOMPLETE':
             btn = HoloButton("COMPLETE", is_primary=True)
             btn.setFixedSize(140, 40)
             btn.clicked.connect(lambda _, cid=c['id']: self.mark_done(cid))
             layout.addWidget(btn)
+        elif status == 'REJECTED':
+            # RETRY Flow
+            btn = HoloButton("RETRY", is_primary=False)
+            btn.setStyleSheet("""
+                QPushButton {
+                    background-color: rgba(255, 85, 85, 0.2);
+                    border: 1px solid #FF5555;
+                    color: #FF5555;
+                    font-weight: bold;
+                }
+                QPushButton:hover {
+                    background-color: rgba(255, 85, 85, 0.4);
+                }
+            """)
+            btn.setFixedSize(140, 40)
+            btn.clicked.connect(lambda _, cid=c['id']: self.mark_done(cid)) # Resubmit
+            layout.addWidget(btn)
         else:
-            lbl = QLabel(status)
-            if status == "COMPLETED":
-                lbl.setStyleSheet("color: #00E5FF; font-weight: bold;") 
+            lbl_text = status
+            lbl_style = "font-weight: bold; color: white;"
+            
+            if status == "PENDING":
+                lbl_text = "WAITING APPROVAL"
+                lbl_style = "color: #FFD700; font-weight: bold;" # Gold
             elif status == "APPROVED":
-                lbl.setStyleSheet("color: #00E5FF; font-weight: bold;")
+                lbl_text = "COMPLETED"
+                lbl_style = "color: #00E5FF; font-weight: bold;" # Cyan
+
+            lbl = QLabel(lbl_text)
+            lbl.setStyleSheet(lbl_style)
             layout.addWidget(lbl)
             
         return frame
 
     def mark_done(self, chore_id):
-        ApiService.complete_chore(self.kid_id, chore_id)
+        ApiService.complete_chore(chore_id, self.kid_id)
         self.load_chores() # Refresh

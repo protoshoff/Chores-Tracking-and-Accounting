@@ -4,7 +4,7 @@ from fastapi.staticfiles import StaticFiles
 import os
 from contextlib import asynccontextmanager
 from .db import create_db_and_tables
-from .api import debug, kids, chores, approvals, ledger, finances, system
+from .api import debug, kids, chores, approvals, ledger, finances, system, management
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -41,7 +41,9 @@ app.include_router(chores.router)
 app.include_router(approvals.router)
 app.include_router(ledger.router)
 app.include_router(finances.router)
+app.include_router(finances.router)
 app.include_router(system.router)
+app.include_router(management.router)
 
 # Old health check moved to system.router /api/system/status
 

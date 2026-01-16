@@ -8,17 +8,48 @@ from ..services.chores import ChoreService
 
 router = APIRouter(prefix="/api/kids", tags=["Kids"])
 
-@router.get("/", response_model=List[User])
+from pydantic import BaseModel
+
+class KidWithSummary(BaseModel):
+    id: int
+    name: str
+    balance_cents: int
+    avatar_path: str
+    chores_summary: dict
+
+@router.get("/", response_model=List[KidWithSummary])
 def list_kids(session: Session = Depends(get_session)):
     kids = session.exec(select(User).where(User.is_active == True)).all()
-    return kids
+    service = ChoreService(session)
+    
+    result = []
+    for k in kids:
+        summary = service.calculate_weekly_progress(k.id)
+        result.append(KidWithSummary(
+            id=k.id, 
+            name=k.name, 
+            balance_cents=k.balance_cents, 
+            avatar_path=k.avatar_path,
+            chores_summary=summary
+        ))
+        
+    return result
 
-@router.get("/{kid_id}", response_model=User)
+@router.get("/{kid_id}", response_model=KidWithSummary)
 def get_kid(kid_id: int, session: Session = Depends(get_session)):
     kid = session.get(User, kid_id)
     if not kid:
         raise HTTPException(status_code=404, detail="Kid not found")
-    return kid
+        
+    service = ChoreService(session)
+    summary = service.calculate_weekly_progress(kid.id)
+    return KidWithSummary(
+        id=kid.id,
+        name=kid.name,
+        balance_cents=kid.balance_cents,
+        avatar_path=kid.avatar_path,
+        chores_summary=summary
+    )
 
 @router.get("/{kid_id}/chores")
 def get_kid_chores(

@@ -8,6 +8,10 @@ from .views.dashboard import KidDashboardView
 from .views.approval_queue import ApprovalQueueView
 from .views.admin_wifi import AdminWifiView
 from .views.quest_log import QuestLogView # Keeping for ref/future
+from .views.pin_pad import PinPad
+from .views.admin_dashboard import AdminDashboardView
+from .views.manage_users import ManageUsersView
+from .views.manage_chores import ManageChoresView
 
 class HeaderWidget(QFrame): 
     # Re-introducing Header but styling it transparently later if needed
@@ -69,24 +73,40 @@ class KioskApp(QMainWindow):
         self.view_home = HomeView()
         self.view_dash = KidDashboardView()
         self.view_approvals = ApprovalQueueView()
+        self.view_admin = AdminDashboardView()
         self.view_wifi = AdminWifiView()
+        self.view_users = ManageUsersView()
+        self.view_chores = ManageChoresView()
         self.view_quest = QuestLogView()
         
         self.stack.addWidget(self.view_home)      # 0
         self.stack.addWidget(self.view_dash)      # 1
         self.stack.addWidget(self.view_approvals) # 2
-        self.stack.addWidget(self.view_wifi)      # 3
-        self.stack.addWidget(self.view_quest)     # 4
+        self.stack.addWidget(self.view_admin)     # 3 (Admin Landing)
+        self.stack.addWidget(self.view_wifi)      # 4
+        self.stack.addWidget(self.view_users)     # 5
+        self.stack.addWidget(self.view_chores)    # 6
+        self.stack.addWidget(self.view_quest)     # 7
         
         # Signals
         self.view_home.kid_selected.connect(self.go_to_dashboard)
         self.view_home.parent_zone_clicked.connect(self.go_to_approvals)
-        self.view_home.admin_clicked.connect(self.go_to_wifi)
+        self.view_home.admin_clicked.connect(self.go_to_admin_auth)
         
         self.view_dash.back_clicked.connect(self.go_to_home)
         self.view_approvals.back_clicked.connect(self.go_to_home)
-        self.view_wifi.back_clicked.connect(self.go_to_home)
-        self.view_quest.close_clicked.connect(self.go_to_home) # Just in case we link it later
+        
+        # Admin Nav
+        self.view_admin.back_clicked.connect(self.go_to_home)
+        self.view_admin.wifi_clicked.connect(lambda: self.stack.setCurrentIndex(4))
+        self.view_admin.users_clicked.connect(lambda: self.stack.setCurrentIndex(5))
+        self.view_admin.chores_clicked.connect(lambda: self.stack.setCurrentIndex(6))
+        
+        self.view_wifi.back_clicked.connect(self.go_to_admin_menu)
+        self.view_users.back_clicked.connect(self.go_to_admin_menu)
+        self.view_chores.back_clicked.connect(self.go_to_admin_menu)
+        
+        self.view_quest.close_clicked.connect(self.go_to_home)
         
         self.show()
 
@@ -95,10 +115,19 @@ class KioskApp(QMainWindow):
         self.stack.setCurrentIndex(1)
         
     def go_to_approvals(self):
-        self.view_approvals.refresh()
-        self.stack.setCurrentIndex(2) 
-
-    def go_to_wifi(self):
+        # Security Check
+        dlg = PinPad(self)
+        if dlg.exec():
+            self.view_approvals.refresh()
+            self.stack.setCurrentIndex(2) 
+            
+    def go_to_admin_auth(self):
+        # Security Check
+        dlg = PinPad(self)
+        if dlg.exec():
+             self.stack.setCurrentIndex(3)
+             
+    def go_to_admin_menu(self):
         self.stack.setCurrentIndex(3)
         
     def go_to_home(self):

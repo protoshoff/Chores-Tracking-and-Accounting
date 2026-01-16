@@ -1,5 +1,7 @@
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QFrame, QScrollArea, QMessageBox
 from PySide6.QtCore import Signal, Qt
+import requests
+from ..components.holo_widgets import HoloButton, HoloFrame
 
 class ApprovalQueueView(QWidget):
     back_clicked = Signal()
@@ -11,12 +13,13 @@ class ApprovalQueueView(QWidget):
         
         # Header
         top = QHBoxLayout()
-        btn_back = QPushButton("← Back")
+        btn_back = HoloButton("← BACK", is_primary=False)
+        btn_back.setFixedSize(120, 50)
         btn_back.clicked.connect(self.back_clicked.emit)
         top.addWidget(btn_back)
         
-        lbl_title = QLabel("Pending Approvals")
-        lbl_title.setStyleSheet("font-size: 28px; font-weight: bold;")
+        lbl_title = QLabel("MISSION CONTROL") # Renamed from "Pending Approvals" to fit theme
+        lbl_title.setObjectName("HoloHeader") 
         top.addWidget(lbl_title)
         top.addStretch()
         main.addLayout(top)
@@ -24,7 +27,11 @@ class ApprovalQueueView(QWidget):
         # List Container
         scroll = QScrollArea()
         scroll.setWidgetResizable(True)
+        scroll.setStyleSheet("background: transparent; border: none;")
+        
         self.container_widget = QWidget()
+        self.container_widget.setStyleSheet("background: transparent;")
+        
         self.list_layout = QVBoxLayout(self.container_widget)
         self.list_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
         scroll.setWidget(self.container_widget)
@@ -37,13 +44,6 @@ class ApprovalQueueView(QWidget):
             widget = item.widget()
             if widget: widget.setParent(None)
             
-        from ..services.api import ApiService
-        # ApiService needs 'get_pending_approvals' method, adding stub here if missing or assuming addition
-        # Let's add the code to fetch manually here until ApiService is updated, or update ApiService next.
-        # Ideally, we update ApiService. Implementation Plan implied M13 included View logic.
-        # We'll use requests directly or add helper method. Let's assume helper exists or we add it.
-        # For now, quick patch:
-        import requests
         try:
             resp = requests.get("http://localhost:8000/api/approvals/pending")
             if resp.status_code == 200:
@@ -54,7 +54,9 @@ class ApprovalQueueView(QWidget):
              pending = []
              
         if not pending:
-            self.list_layout.addWidget(QLabel("No pending approvals!"))
+            lbl = QLabel("NO PENDING AUTHORIZATIONS DETECTED.")
+            lbl.setStyleSheet("color: #AAA; font-size: 18px;")
+            self.list_layout.addWidget(lbl)
             return
 
         for p in pending:
@@ -62,44 +64,72 @@ class ApprovalQueueView(QWidget):
             self.list_layout.addWidget(row)
             
     def _create_row(self, item):
-        # item: {id, kid_id, chore_id, date, status...}
-        # We need Kid Name and Chore Name. The API returns IDs.
-        # Ideally API returns expanded data.
-        # M4 APIs returned raw logs? Let's check M4 output from curls.
-        # Output: [{"id":1,"week_id":"...","chore_id":1...}]
-        # It misses names! We need to fetch names or update API.
-        # For M13 UI, showing "Kid 1 - Chore 1" is okay-ish but "Alice - Walk Dog" is required.
-        # Let's assume we show IDs for now to verify flow, and flag API update needed.
-        
+        # Sci-Fi Row using HoloFrame-like style or QFrame with border
         frame = QFrame()
-        frame.setStyleSheet("background-color: white; border: 1px solid #DDD; border-radius: 8px; margin-bottom: 5px;")
-        layout = QHBoxLayout(frame)
+        frame.setStyleSheet("""
+            QFrame {
+                background-color: rgba(0, 123, 255, 0.1); 
+                border: 1px solid #00E5FF; 
+                border-radius: 4px; 
+                margin-bottom: 10px;
+            }
+        """)
         
-        # Info
-        info = QLabel(f"Kid #{item['kid_id']} • Chore #{item['chore_id']} • {item['date']}")
-        info.setStyleSheet("font-size: 20px;")
-        layout.addWidget(info)
+        # Main Layout: Horizontal
+        layout = QHBoxLayout(frame)
+        layout.setContentsMargins(20, 10, 20, 10)
+        
+        # -- Info Block (Vertical) --
+        info_layout = QVBoxLayout()
+        info_layout.setSpacing(5)
+        
+        # Kid Name - Chore Name
+        # "GRAYSON: WALK DOG"
+        title_txt = f"{item.get('kid_name', 'UNKNOWN').upper()}: {item.get('chore_name', 'UNKNOWN').upper()}"
+        lbl_title = QLabel(title_txt)
+        lbl_title.setStyleSheet("font-size: 22px; font-weight: bold; color: white; border: none; background: transparent;")
+        info_layout.addWidget(lbl_title)
+        
+        # Date / Subtext
+        sub_txt = f"Submitted: {item.get('date')} • Waiting Auth"
+        lbl_sub = QLabel(sub_txt)
+        lbl_sub.setStyleSheet("font-size: 14px; color: #00E5FF; border: none; background: transparent;")
+        info_layout.addWidget(lbl_sub)
+        
+        layout.addLayout(info_layout)
         
         layout.addStretch()
         
-        # Approve
-        btn_approve = QPushButton("Approve ✔")
-        btn_approve.setObjectName("BtnApprove")
-        btn_approve.setFixedSize(140, 60)
+        # -- Actions --
+        
+        # Approve (Cyan/Green)
+        btn_approve = HoloButton("APPROVE")
+        btn_approve.setFixedSize(140, 50)
+        # Custom style tweak for green tint if desired, but default cyan is fine
         btn_approve.clicked.connect(lambda: self.review_action(item['id'], "APPROVE"))
         layout.addWidget(btn_approve)
         
-        # Reject
-        btn_reject = QPushButton("Reject ✖")
-        btn_reject.setObjectName("BtnReject")
-        btn_reject.setFixedSize(140, 60)
+        layout.addSpacing(10)
+        
+        # Reject (Red-ish)
+        btn_reject = HoloButton("REJECT", is_primary=False) # Grey/Glass
+        # We can force a red border style on this instance if we want, or keep it subtle
+        btn_reject.setStyleSheet("""
+            QPushButton {
+                border: 1px solid #FF5555;
+                color: #FF5555;
+            }
+            QPushButton:hover {
+                background-color: rgba(255, 85, 85, 0.2);
+            }
+        """)
+        btn_reject.setFixedSize(140, 50)
         btn_reject.clicked.connect(lambda: self.review_action(item['id'], "REJECT"))
         layout.addWidget(btn_reject)
         
         return frame
 
     def review_action(self, log_id, action):
-        import requests
         try:
              url = f"http://localhost:8000/api/approvals/{log_id}/review"
              requests.post(url, json={"action": action})

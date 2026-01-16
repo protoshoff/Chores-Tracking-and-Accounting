@@ -7,7 +7,7 @@ class ApiService:
     @staticmethod
     def get_kids():
         try:
-            resp = requests.get(f"{BASE_URL}/kids")
+            resp = requests.get(f"{BASE_URL}/kids", timeout=2)
             if resp.status_code == 200:
                 return resp.json()
         except Exception as e:
@@ -16,10 +16,7 @@ class ApiService:
     @staticmethod
     def get_kid(kid_id):
         try:
-            # Reusing get_kids for simplicity if single endpoint doesn't exist yet, 
-            # OR assuming backend has /kids/{id}. 
-            # Let's try /kids/{id} first, if fails we filter get_kids.
-            resp = requests.get(f"{BASE_URL}/kids/{kid_id}")
+            resp = requests.get(f"{BASE_URL}/kids/{kid_id}", timeout=2)
             if resp.status_code == 200:
                 return resp.json()
         except Exception as e:
@@ -28,7 +25,7 @@ class ApiService:
     @staticmethod
     def get_kid_chores(kid_id):
         try:
-            resp = requests.get(f"{BASE_URL}/kids/{kid_id}/chores")
+            resp = requests.get(f"{BASE_URL}/kids/{kid_id}/chores", timeout=2)
             if resp.status_code == 200:
                 print(f"API Success chores: {resp.json()}") # Debug
                 return resp.json()

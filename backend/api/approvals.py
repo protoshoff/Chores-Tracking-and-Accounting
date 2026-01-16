@@ -7,10 +7,45 @@ from ..models import ChoreLog, ChoreStatus
 
 router = APIRouter(prefix="/api/approvals", tags=["Approvals"])
 
-@router.get("/pending", response_model=List[ChoreLog])
+from pydantic import BaseModel
+
+class PendingChore(BaseModel):
+    id: int
+    kid_id: int
+    kid_name: str
+    chore_id: int
+    chore_name: str
+    date: str
+    status: str
+    completed_at: datetime | None
+
+@router.get("/pending", response_model=List[PendingChore])
 def get_pending_approvals(session: Session = Depends(get_session)):
     stmt = select(ChoreLog).where(ChoreLog.status == ChoreStatus.PENDING)
-    return session.exec(stmt).all()
+    logs = session.exec(stmt).all()
+    
+    # Enrich with names (using eager loading via relationship access or manual join)
+    # Since specific join syntax is tricky in simple sqlmodel, we'll access relationship props 
+    # which triggers lazy load (fine for low volume)
+    
+    result = []
+    for log in logs:
+        # Ensure relationships are loaded
+        # In SQLModel async they need explicit join, but sync (default) does lazy load if session open
+        
+        # Note: If relationship is not loaded, we might need: session.refresh(log, ["kid", "chore"])
+        
+        result.append(PendingChore(
+            id=log.id,
+            kid_id=log.kid_id,
+            kid_name=log.kid.name if log.kid else "Unknown",
+            chore_id=log.chore_id,
+            chore_name=log.chore.name if log.chore else "Unknown",
+            date=log.date.isoformat(),
+            status=log.status,
+            completed_at=log.completed_at
+        ))
+    return result
 
 class ReviewAction(str):
     APPROVE = "APPROVE"
