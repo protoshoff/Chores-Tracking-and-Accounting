@@ -2,6 +2,7 @@ from PySide6.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout, QLineEdit, QPus
 from PySide6.QtCore import Qt, Signal
 from ..components.holo_widgets import HoloButton
 from ..services.sound import SoundService
+from ..services.api import ApiService
 
 class PinPad(QDialog):
     def __init__(self, parent=None):
@@ -117,8 +118,6 @@ class PinPad(QDialog):
     def clear_pin(self):
         SoundService.play_click()
         self.display.clear()
-
-from ..services.api import ApiService
 
     def verify_pin(self):
         SoundService.play_click()
