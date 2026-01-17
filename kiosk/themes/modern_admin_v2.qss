@@ -99,8 +99,10 @@ QFrame#HoloBox, QFrame#KidCard {
 }
 
 /* Specific hover effect for Kid Cards to make them interactive */
+/* Specific hover effect for Kid Cards */
 QFrame#KidCard:hover {
-    background-color: rgba(0, 229, 255, 0.15);
+    /* Keep opacity high (0.95) but shift color slightly Cyan */
+    background-color: rgba(15, 50, 70, 0.95);
     border: 1px solid #00E5FF;
 }
 
