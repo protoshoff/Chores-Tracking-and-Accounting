@@ -62,6 +62,10 @@ echo "Updating Systemd Services..."
 sudo cp "$NEW_release_DIR/ops/chores-kiosk.service" /etc/systemd/system/
 sudo cp "$NEW_release_DIR/ops/chores-backend.service" /etc/systemd/system/
 
+echo "Installing PolicyKit Rules (Fix 'Not Authorized' Error)..."
+sudo cp "$NEW_release_DIR/ops/50-chores-wifi.rules" /etc/polkit-1/rules.d/
+
+
 echo "Patching Service Files with correct User/Path..."
 # 8a. Permissions: Ensure user can manage WiFi (netdev) and USB (plugdev)
 echo "Ensuring user permission groups..."
