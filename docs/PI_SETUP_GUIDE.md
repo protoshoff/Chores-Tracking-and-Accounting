@@ -108,7 +108,15 @@ The Kiosk should now start automatically on TV/Screen.
     - Backend: `journalctl -u chores-backend -f`
     - Kiosk: `cat /tmp/kiosk.log` (stdout/stderr is redirected here for robustness)
 
-## 7. Troubleshooting
+### 7. WiFi Management
+The Kiosk includes a built-in WiFi configurator (System -> WiFi).
+- **Persistence:** Connections created via the Kiosk use `nmcli`, which automatically saves a persistent profile with `autoconnect=yes`. The Pi will reconnect automatically after a reboot.
+- **Troubleshooting:**
+    - If the "Scan" button shows no networks, ensure the radio is not soft-blocked: `sudo nmcli radio wifi on`.
+    - If "Hardware Missing" error occurs, ensure you are not using a Pi Zero without WiFi.
+    - Check the backend logs for scan errors: `sudo journalctl -u chores-backend`.
+
+### 8. Troubleshooting & Maintenance
 - **Black Screen**:
   - Usually means Python crashed before showing a window.
   - Check `/tmp/kiosk.log`.
