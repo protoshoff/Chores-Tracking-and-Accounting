@@ -76,7 +76,7 @@ mkdir -p ~/chores_app/releases
     sudo sed -i "s|/home/pi|/home/$USER|g" /etc/systemd/system/chores-backend.service
 
     # 3. Create .xinitrc for Kiosk Mode
-    echo "#!/bin/bash" > ~/.xinitrc
+    echo '#!/bin/bash' > ~/.xinitrc
     echo "xset s off" >> ~/.xinitrc
     echo "xset -dpms" >> ~/.xinitrc
     echo "xset s noblank" >> ~/.xinitrc
