@@ -129,6 +129,8 @@ RestartSec=5
 WantedBy=multi-user.target
 ```
 
+**Note:** Save these files to `docs/ops/chores-backend.service` and `docs/ops/chores-kiosk.service` in the repo so they can be copied during setup.
+
 ## 5. Deployment & Update Mechanism
 
 ### 5.1. Update Strategy

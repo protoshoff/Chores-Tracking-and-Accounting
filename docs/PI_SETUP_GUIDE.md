@@ -46,19 +46,34 @@ sudo chown pi:pi /var/lib/chores_app
 mkdir -p ~/chores_app/releases
 ```
 
-## 5. First Deployment
-1.  **Clone Repo** (or copy from dev machine):
+## 5. First Deployment (Local Transfer)
+Since you are deploying from your development machine:
+
+1.  **Transfer Code**:
+    Run this from your **Mac** (in the project root):
     ```bash
-    git clone https://github.com/your-repo/chores-kiosk.git ~/chores_repo
+    # Exclude venv, .git, and __pycache__ to be safe
+    rsync -avz --exclude 'venv' --exclude '.git' --exclude '__pycache__' ./ pi@chores-kiosk.local:~/chores_repo/
     ```
-2.  **Run Deployment Script**:
+    *(Note: If `rsync` isn't available, use `scp -r . pi@chores-kiosk.local:~/chores_repo/` but clean up venv first)*
+
+2.  **Run Deployment Script (On Pi)**:
+    SSH into the Pi: `ssh pi@chores-kiosk.local`
     ```bash
-    bash ~/chores_repo/scripts/deploy_release.sh
+    chmod +x ~/chores_repo/scripts/*.sh
+    ~/chores_repo/scripts/deploy_release.sh main
     ```
-3.  **Install Services**:
+
+3.  **Install Services (On Pi)**:
+    The deployment script creates `/opt/chores_app/current`. Now links services.
     ```bash
-    cd ~/chores_app/current
-    sudo bash ops/setup_services.sh
+    sudo cp /opt/chores_app/current/docs/ops/chores-backend.service /etc/systemd/system/
+    sudo cp /opt/chores_app/current/docs/ops/chores-kiosk.service /etc/systemd/system/
+    
+    # Reload & Enable
+    sudo systemctl daemon-reload
+    sudo systemctl enable chores-backend
+    sudo systemctl enable chores-kiosk
     ```
 4.  **Reboot**:
     ```bash
