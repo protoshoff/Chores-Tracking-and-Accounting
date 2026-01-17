@@ -11,6 +11,9 @@ Environment="DISPLAY=:0"
 # Run the Kiosk module. 
 # --fullscreen is handled by the app args if passed, M3 main.py check uses sys.argv
 ExecStart=/home/pi/chores_app/current/venv/bin/python -m kiosk.main --fullscreen
+StandardOutput=journal+console
+StandardError=journal+console
+Environment=PYTHONUNBUFFERED=1
 Restart=always
 RestartSec=3
 
