@@ -2,6 +2,7 @@ from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel,
                                QListWidget, QListWidgetItem, QLineEdit, QFormLayout)
 from PySide6.QtCore import Signal, Qt
 from ..components.holo_widgets import HoloButton, HoloFrame
+from ..components.holo_keyboard import HoloLineEdit
 from ..services.api import ApiService
 
 class ManageUsersView(QWidget):
@@ -81,14 +82,14 @@ class ManageUsersView(QWidget):
         self.form_layout.setSpacing(25)
         self.form_layout.setLabelAlignment(Qt.AlignmentFlag.AlignRight)
         
-        self.inp_name = QLineEdit()
+        self.inp_name = HoloLineEdit()
         self.inp_name.setPlaceholderText("Enter Name")
-        self.style_input(self.inp_name)
+        # self.style_input(self.inp_name) # Internal style used
         self.form_layout.addRow(self.make_label("NAME:"), self.inp_name)
         
-        self.inp_allowance = QLineEdit()
+        self.inp_allowance = HoloLineEdit()
         self.inp_allowance.setPlaceholderText("0")
-        self.style_input(self.inp_allowance)
+        # self.style_input(self.inp_allowance)
         self.form_layout.addRow(self.make_label("ALLOWANCE (¢):"), self.inp_allowance)
         
         rl.addLayout(self.form_layout)

@@ -3,6 +3,7 @@ from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel,
                                QComboBox, QSpinBox)
 from PySide6.QtCore import Signal, Qt
 from ..components.holo_widgets import HoloButton, HoloFrame
+from ..components.holo_keyboard import HoloLineEdit
 from ..services.api import ApiService
 
 class ManageChoresView(QWidget):
@@ -79,15 +80,15 @@ class ManageChoresView(QWidget):
         self.form_layout.setLabelAlignment(Qt.AlignmentFlag.AlignRight)
         
         # Name
-        self.inp_name = QLineEdit()
+        self.inp_name = HoloLineEdit()
         self.inp_name.setPlaceholderText("Quest Name")
-        self.style_input(self.inp_name)
+        # self.style_input(self.inp_name)
         self.form_layout.addRow(self.make_label("NAME:"), self.inp_name)
         
         # Description
-        self.inp_desc = QLineEdit()
+        self.inp_desc = HoloLineEdit()
         self.inp_desc.setPlaceholderText("Brief description")
-        self.style_input(self.inp_desc)
+        # self.style_input(self.inp_desc)
         self.form_layout.addRow(self.make_label("BRIEFING:"), self.inp_desc)
         
         # Assignee

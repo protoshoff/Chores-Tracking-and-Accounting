@@ -51,6 +51,8 @@ class ReviewAction(str):
     APPROVE = "APPROVE"
     REJECT = "REJECT"
 
+from ..services.stats import StreakService
+
 @router.post("/{log_id}/review")
 def review_chore(
     log_id: int, 
@@ -73,4 +75,9 @@ def review_chore(
     session.add(log)
     session.commit()
     session.refresh(log)
+    
+    # Update Streak if approved
+    if log.status == ChoreStatus.APPROVED:
+        StreakService(session).update_streak(log.kid_id)
+        
     return log

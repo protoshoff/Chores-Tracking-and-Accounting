@@ -7,6 +7,7 @@ class AdminDashboardView(QWidget):
     users_clicked = Signal()
     chores_clicked = Signal()
     wifi_clicked = Signal()
+    reports_clicked = Signal()
     
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -51,8 +52,8 @@ class AdminDashboardView(QWidget):
         btn_wifi.clicked.connect(self.wifi_clicked.emit)
         grid.addWidget(btn_wifi, 1, 0)
         
-        # 4. Settings (Placeholder or System Info)
-        btn_sys = HoloButton("SYSTEM INFO", is_primary=False)
-        btn_sys.setFixedSize(300, 150)
-        # btn_sys.clicked.connect(...)
-        grid.addWidget(btn_sys, 1, 1)
+        # 4. Reports
+        btn_rep = HoloButton("REPORTS")
+        btn_rep.setFixedSize(300, 150)
+        btn_rep.clicked.connect(self.reports_clicked.emit)
+        grid.addWidget(btn_rep, 1, 1)

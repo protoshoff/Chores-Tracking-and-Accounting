@@ -64,11 +64,22 @@ Add `consoleblank=0` to the end of the line.
 Create `~/.xinitrc`:
 ```bash
 #!/bin/bash
-xset s off      # Don't activate screensaver
+xset s off      # Don't activate system screensaver (We handle it in-app globally)
 xset -dpms      # Disable DPMS (Energy Star) features
 xset s noblank  # Don't blank the video device
 exec python3 /opt/chores_app/current/kiosk/main.py
 ```
+
+### 3.3. Input Methods
+We use a custom **HoloKeyboard** component built into the Kiosk app.
+- No external virtual keyboard package (like `matchbox-keyboard`) is required.
+- Text fields in "Manage Crew" and "Manage Quests" automatically trigger the on-screen keyboard.
+
+### 3.4. Screen Protection
+The application has a built-in screensaver to prevent burn-in.
+- **Timeout**: 2 minutes of idle time.
+- **Behavior**: Drifting "SYSTEM STANDBY" text on black background.
+- **Wake**: Tap anywhere to wake. Security feature: Waking **always** returns to the Home Screen to prevent unauthorized access if the Admin panel was left open.
 
 ## 4. Systemd Services
 

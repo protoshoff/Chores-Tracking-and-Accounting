@@ -6,6 +6,7 @@ pyside6
 requests
 jinja2
 python-multipart
+APScheduler
 # Dev dependencies
 pytest
 httpx

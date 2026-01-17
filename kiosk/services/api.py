@@ -72,6 +72,16 @@ class ApiService:
         return None
 
     @staticmethod
+    def get_rollups():
+        try:
+            resp = requests.get(f"{BASE_URL}/finances/rollups", timeout=2)
+            if resp.status_code == 200:
+                return resp.json()
+        except:
+            return []
+        return []
+        
+    @staticmethod
     def delete_kid(kid_id):
         # Soft delete via update
         return ApiService.update_kid(kid_id, is_active=False)

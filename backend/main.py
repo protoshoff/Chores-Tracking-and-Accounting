@@ -5,11 +5,17 @@ import os
 from contextlib import asynccontextmanager
 from .db import create_db_and_tables
 from .api import debug, kids, chores, approvals, ledger, finances, system, management
+from .services.automation import AutomationService
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup: Ensure DB exists
     create_db_and_tables()
+    
+    # Start Automation
+    automation = AutomationService()
+    automation.start()
+    
     yield
     # Shutdown: Clean up if needed
 
@@ -31,8 +37,13 @@ app.add_middleware(
 )
 
 # Mount Static Files
+# Mount Static Files
 os.makedirs("static", exist_ok=True)
 app.mount("/static", StaticFiles(directory="static"), name="static")
+
+# Mount Admin Web
+os.makedirs("backend/admin", exist_ok=True) # Ensure it exists
+app.mount("/admin", StaticFiles(directory="backend/admin", html=True), name="admin")
 
 # Include Routers
 app.include_router(debug.router)
