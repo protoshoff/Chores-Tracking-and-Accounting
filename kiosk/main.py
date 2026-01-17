@@ -1,6 +1,7 @@
 import sys
 print("DEBUG: Python Script Starting...")
 from PySide6.QtWidgets import QApplication
+from PySide6.QtCore import Qt
 from .app import KioskApp
 
 def main():
