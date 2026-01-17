@@ -89,6 +89,10 @@ class KioskApp(QMainWindow):
         self.view_chores = ManageChoresView()
         print("DEBUG: Init QuestLogView...")
         self.view_quest = QuestLogView()
+        
+        print("DEBUG: Init ReportsView...")
+        self.view_reports = ReportsView()
+        
         print("DEBUG: Init LedgerView...")
         try:
             from .views.ledger import LedgerView
