@@ -129,7 +129,8 @@ class HoloFrame(QFrame):
         path.closeSubpath()
         
         # Fill
-        painter.setBrush(QBrush(QColor(10, 10, 18, 220))) # Dark Blue, high opacity
+        painter.setBrush(QBrush(QColor(0, 20, 40, 200))) # Dark Blue, matches Web Admin
+
         painter.setPen(Qt.PenStyle.NoPen)
         painter.drawPath(path)
         

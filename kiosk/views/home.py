@@ -26,7 +26,7 @@ class HoloKidCard(HoloFrame):
         # Balance
         bal_cents = data.get("balance_cents", 0)
         self.bal_lbl = QLabel(f"${bal_cents/100:.2f}")
-        self.bal_lbl.setStyleSheet("font-size: 36px; color: #00E5FF; font-weight: bold;") 
+        self.bal_lbl.setObjectName("HoloHeader") # Use cyan header style
         self.bal_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(self.bal_lbl)
         
@@ -37,7 +37,7 @@ class HoloKidCard(HoloFrame):
         
         # Today
         lbl_today_title = QLabel("TODAY:")
-        lbl_today_title.setObjectName("QuestDesc") # Muted style
+        lbl_today_title.setObjectName("QuestDesc") 
         stats_layout.addWidget(lbl_today_title, 0, 0)
         
         summary = data.get("chores_summary", {}) 
@@ -45,7 +45,8 @@ class HoloKidCard(HoloFrame):
         total = summary.get("today_total", 0)
         
         lbl_today = QLabel(f"{done} / {total}")
-        lbl_today.setStyleSheet("font-size: 20px; font-weight: bold; color: white;")
+        # Inherits generic QWidget white text
+        lbl_today.setStyleSheet("font-size: 20px; font-weight: bold;")
         stats_layout.addWidget(lbl_today, 0, 1)
         
         # Week Progress
@@ -73,7 +74,7 @@ class HoloKidCard(HoloFrame):
         pending = summary.get("pending_count", 0)
         if pending > 0:
             lbl_pend = QLabel(f"⚠ {pending} PENDING")
-            lbl_pend.setStyleSheet("color: #FFD700; font-weight: bold;")
+            lbl_pend.setStyleSheet("color: #FFD700; font-weight: bold;") # Keep Gold for warnings
             lbl_pend.setAlignment(Qt.AlignmentFlag.AlignCenter)
             layout.addWidget(lbl_pend)
 
