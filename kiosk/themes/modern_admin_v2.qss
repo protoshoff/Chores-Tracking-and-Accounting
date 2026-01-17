@@ -69,6 +69,12 @@ QLabel#CardTitle {
     color: #FFFFFF;
 }
 
+/* Specific Override: Kid Names on Home Screen */
+QFrame#KidCard QLabel#CardTitle {
+    font-size: 36px;
+    margin-bottom: 5px;
+}
+
 /* Quest Description / Section labels */
 QLabel#QuestDesc {
     font-family: 'Roboto', sans-serif;
