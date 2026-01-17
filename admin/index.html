@@ -8,6 +8,7 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto:wght@300;400;700&display=swap"
         rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
             --bg-color: #050510;
@@ -225,20 +226,43 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0, 0, 0, 0.8);
+            background: rgba(0, 0, 0, 0.85);
+            /* Darker backdrop */
+            backdrop-filter: blur(4px);
             display: flex;
             justify-content: center;
             align-items: center;
             z-index: 1000;
+            animation: fadeIn 0.2s;
         }
 
         .modal {
-            background: #0a1020;
-            border: 2px solid var(--primary);
+            background: rgba(10, 16, 32, 0.95);
+            border: 1px solid var(--primary);
+            box-shadow: 0 0 40px rgba(0, 229, 255, 0.2), inset 0 0 20px rgba(0, 229, 255, 0.05);
             padding: 2rem;
             width: 90%;
             max-width: 500px;
-            box-shadow: 0 0 30px rgba(0, 229, 255, 0.2);
+            border-radius: 4px;
+            /* Angled tech look */
+            position: relative;
+        }
+
+        .modal h3 {
+            color: var(--primary);
+            border-bottom: 1px solid rgba(0, 229, 255, 0.3);
+            padding-bottom: 10px;
+            margin-top: 0;
+        }
+
+        /* Icon Helper */
+        .btn-icon {
+            margin-right: 8px;
+        }
+
+        button.action-btn i {
+            pointer-events: none;
+            /* Let clicks pass through icon */
         }
     </style>
 </head>
