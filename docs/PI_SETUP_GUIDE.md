@@ -26,7 +26,7 @@ sudo apt install -y xserver-xorg x11-xserver-utils xinit openbox
 sudo apt install -y libgl1 libegl1 libpulse0 libasound2 \
     libxcb-cursor0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 \
     libxcb-randr0 libxcb-render-util0 libxcb-xinerama0 \
-    libxcb-xfixes0 libxkbcommon-x11-0 libfontconfig1
+    libxcb-xfixes0 libxcb-shape0 libxkbcommon-x11-0 libfontconfig1
 
 # Allow non-console user to start X (Required for systemd service)
 sudo sed -i 's/allowed_users=console/allowed_users=anybody/g' /etc/X11/Xwrapper.config || echo "allowed_users=anybody" | sudo tee /etc/X11/Xwrapper.config
