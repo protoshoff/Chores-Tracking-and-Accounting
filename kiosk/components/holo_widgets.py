@@ -135,7 +135,7 @@ class HoloFrame(QFrame):
         painter.drawPath(path)
         
         # Border
-        pen = QPen(QColor("#00E5FF"))
+        pen = QPen(QColor(0, 229, 255, 80)) # Cyan, 30% opacity to match Web Admin
         pen.setWidth(2)
         painter.setPen(pen)
         painter.setBrush(Qt.BrushStyle.NoBrush)

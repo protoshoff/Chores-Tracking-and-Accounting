@@ -19,7 +19,7 @@ class HoloKidCard(HoloFrame):
         
         # Name
         self.name_lbl = QLabel(data["name"])
-        self.name_lbl.setObjectName("HoloHeader") # Big Cyan Text
+        self.name_lbl.setObjectName("CardTitle") # White text to match Web Admin
         self.name_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(self.name_lbl)
         
