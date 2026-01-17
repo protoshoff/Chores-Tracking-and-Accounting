@@ -63,13 +63,25 @@ mkdir -p ~/chores_app/releases
 
 3.  **Install Services**:
     ```bash
-    sudo cp /opt/chores_app/current/docs/ops/chores-backend.service /etc/systemd/system/
-    sudo cp /opt/chores_app/current/docs/ops/chores-kiosk.service /etc/systemd/system/
+    sudo cp ~/chores_app/current/docs/ops/chores-backend.service /etc/systemd/system/
+    sudo cp ~/chores_app/current/docs/ops/chores-kiosk.service /etc/systemd/system/
     
-    # Update service user if not 'pi'
+    # Update service user and paths
+    # 1. Update User/Group
     sudo sed -i "s/User=pi/User=$USER/g" /etc/systemd/system/chores-backend.service
     sudo sed -i "s/User=pi/User=$USER/g" /etc/systemd/system/chores-kiosk.service
     sudo sed -i "s/Group=pi/Group=$USER/g" /etc/systemd/system/chores-kiosk.service
+    
+    # 2. Update Paths (replace /home/pi with /home/$USER)
+    sudo sed -i "s|/home/pi|/home/$USER|g" /etc/systemd/system/chores-backend.service
+
+    # 3. Create .xinitrc for Kiosk Mode
+    echo "#!/bin/bash" > ~/.xinitrc
+    echo "xset s off" >> ~/.xinitrc
+    echo "xset -dpms" >> ~/.xinitrc
+    echo "xset s noblank" >> ~/.xinitrc
+    echo "exec python3 /home/$USER/chores_app/current/kiosk/main.py" >> ~/.xinitrc
+    chmod +x ~/.xinitrc
     
     # Reload & Enable
     sudo systemctl daemon-reload
