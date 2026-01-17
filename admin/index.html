@@ -518,6 +518,25 @@
             if (res) { closeModal(); loadKids(); }
         }
 
+        function editKid(id, currentName) {
+            showModal(`
+            <h3>Edit Crew Member</h3>
+            <input id="edit-kid-name" value="${currentName}" placeholder="Name" />
+            <div class="flex-between">
+                <button class="action-btn danger" onclick="closeModal()">CANCEL</button>
+                <button class="action-btn" onclick="submitEditKid(${id})">UPDATE</button>
+            </div>
+            `);
+        }
+
+        async function submitEditKid(id) {
+            const name = $('#edit-kid-name').value;
+            if (!name) return;
+            // Calls PUT /management/kids/{id}
+            const res = await api(`/management/kids/${id}`, 'PUT', { name: name });
+            if (res) { closeModal(); loadKids(); }
+        }
+
         // CHORES
         async function loadChores() {
             const chores = await api('/management/chores');

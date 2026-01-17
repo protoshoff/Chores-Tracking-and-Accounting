@@ -12,20 +12,13 @@ class ScreensaverView(QWidget):
         self.setStyleSheet("background-color: black;")
         
         # Floating Label
+        # Use HTML for multi-size text
         self.lbl = QLabel("SYSTEM STANDBY\n<span style='font-size: 30px;'>TOUCH TO RESUME</span>", self)
         self.lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        # Use simple CSS for everything to avoid QFont/QSS conflicts
-        self.lbl.setStyleSheet("""
-            color: #00E5FF; 
-            font-family: 'Orbitron'; 
-            font-weight: bold; 
-            font-size: 60px;
-            border: 2px solid #00E5FF;
-            padding: 40px;
-            background-color: rgba(0, 20, 40, 220);
-            border-radius: 15px;
-        """)
-        self.lbl.adjustSize()
+        self.lbl.setFixedSize(600, 250) # Fixed size to prevent jitter
+        
+        # Initial Style
+        self.update_style("#00E5FF")
         
         # Animation Timer
         self.timer = QTimer(self)
@@ -36,7 +29,7 @@ class ScreensaverView(QWidget):
         self.vy = 2
 
     def showEvent(self, event):
-        self.timer.start(50) # 20 FPS
+        self.timer.start(20) # 50 FPS for smoothness
         self.center_text()
         super().showEvent(event)
         
@@ -63,55 +56,54 @@ class ScreensaverView(QWidget):
         next_x = x + self.vx
         next_y = y + self.vy
         
+        collision = False
+        
         # Check X collisions
         if next_x <= 0:
-            self.vx = abs(self.vx) # Force positive
+            self.vx = abs(self.vx)
             next_x = 0
-            self.style_color()
+            collision = True
         elif next_x + lw >= w:
-            self.vx = -abs(self.vx) # Force negative
+            self.vx = -abs(self.vx)
             next_x = w - lw
-            self.style_color()
+            collision = True
             
         # Check Y collisions
         if next_y <= 0:
-            self.vy = abs(self.vy) # Force positive
+            self.vy = abs(self.vy)
             next_y = 0
-            self.style_color()
+            collision = True
         elif next_y + lh >= h:
-            self.vy = -abs(self.vy) # Force negative
+            self.vy = -abs(self.vy)
             next_y = h - lh
-            self.style_color()
+            collision = True
             
         self.lbl.move(next_x, next_y)
+        
+        if collision:
+            self.randomize_color()
 
-    def style_color(self):
-        # Change color on bounce for fun
+    def randomize_color(self):
         colors = ["#00E5FF", "#FFD700", "#FF0055", "#00FF00"]
         c = random.choice(colors)
+        self.update_style(c)
         
-        # Only update colors, don't resize or change text content dynamically
-        # changing text content causes resize which causes bugs
-        
-        # Update stylesheet but keep font sizes fixed as defined in init/style
+    def update_style(self, color):
+        # Only update CSS, do NOT touch text content
         self.lbl.setStyleSheet(f"""
-            color: {c}; 
+            color: {color}; 
             font-family: 'Orbitron'; 
             font-weight: bold; 
             font-size: 60px;
-            border: 2px solid {c};
+            border: 2px solid {color};
             padding: 40px;
             background-color: rgba(0, 20, 40, 220);
             border-radius: 15px;
         """)
-        
-        # Re-set text to ensure the span color matches if we want, or just let CSS handle main color.
-        # The span color override in previous code might be fighting.
-        # Let's simplify: Inherit color for the span unless we explicitly want it different.
-        # Actually, simpler: Just set the main widget color. The span will inherit if we remove 'color:{c}' from span style.
-        
-        self.lbl.setText(f"SYSTEM STANDBY\n<span style='font-size: 30px;'>TOUCH TO RESUME</span>")
-        # self.lbl.adjustSize() <-- REMOVED to prevent jitter
+        # We rely on the initial setText being sufficient. 
+        # The color of the <span> in HTML won't update automatically via CSS 'color' unless it inherits?
+        # Actually standard HTML spans inherit color if not specified.
+        # In my initial setText I removed the color spec from span, so it should inherit correctly from the parent stylesheet.
 
     def mousePressEvent(self, event):
         self.wake_up.emit()
