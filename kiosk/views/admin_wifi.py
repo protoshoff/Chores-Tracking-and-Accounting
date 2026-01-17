@@ -161,6 +161,9 @@ class AdminWifiView(QWidget):
             
             if resp.status_code == 200:
                 networks = resp.json()
+                if not networks:
+                     self.list_layout.addWidget(QLabel("NO NETWORKS FOUND"))
+                
                 for net in networks:
                     row = self._create_row(net)
                     self.list_layout.addWidget(row)

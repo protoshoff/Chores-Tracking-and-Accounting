@@ -25,7 +25,9 @@ class WifiService:
             # 1. Ensure WiFi is on (Software unblock)
             # Check status first to avoid redundant calls? Or just force on. 
             # Force on is safer and fast.
+            import time
             subprocess.run([self.nmcli_path, "radio", "wifi", "on"], check=False)
+            time.sleep(4) # Allow 4 seconds for radio to wake up
             
             # 2. Run nmcli: list available wifi
             # -t = terse (colon separated), -f = fields
