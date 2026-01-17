@@ -25,22 +25,27 @@ class HoloKeyboard(QDialog):
         grid.setSpacing(5)
         
         keys = [
+            ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0'],
             ['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P'],
             ['A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L'],
             ['Z', 'X', 'C', 'V', 'B', 'N', 'M']
         ]
         
-        # Row 1
+        # Row 0 (Numbers)
         for c, key in enumerate(keys[0]):
             self.add_key(grid, key, 0, c)
-            
-        # Row 2 (Spacer for offset look)
+
+        # Row 1 (QWERTY)
         for c, key in enumerate(keys[1]):
             self.add_key(grid, key, 1, c)
             
-        # Row 3
+        # Row 2 (ASDF)
         for c, key in enumerate(keys[2]):
             self.add_key(grid, key, 2, c)
+            
+        # Row 3 (ZXCV)
+        for c, key in enumerate(keys[3]):
+            self.add_key(grid, key, 3, c)
             
         layout.addLayout(grid)
         
