@@ -22,8 +22,11 @@ sudo apt update && sudo apt upgrade -y
 sudo apt install -y git python3-venv python3-pip libpq-dev
 # X11 & Window Manager (Minimal)
 sudo apt install -y xserver-xorg x11-xserver-utils xinit openbox
-# Qt dependencies (libxcb-cursor0 is CRITICAL for Qt 6.5+)
-sudo apt install -y libgl1 libegl1 libpulse0 libasound2 libxcb-cursor0 libxkbcommon-x11-0
+# Qt dependencies (Complete set for Qt 6.5+)
+sudo apt install -y libgl1 libegl1 libpulse0 libasound2 \
+    libxcb-cursor0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 \
+    libxcb-randr0 libxcb-render-util0 libxcb-xinerama0 \
+    libxcb-xfixes0 libxkbcommon-x11-0 libfontconfig1
 
 # Allow non-console user to start X (Required for systemd service)
 sudo sed -i 's/allowed_users=console/allowed_users=anybody/g' /etc/X11/Xwrapper.config || echo "allowed_users=anybody" | sudo tee /etc/X11/Xwrapper.config
