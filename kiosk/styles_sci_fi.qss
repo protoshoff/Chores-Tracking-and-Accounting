@@ -10,8 +10,8 @@ QWidget {
 
 /* Main Window Background */
 QMainWindow {
-    background-color: #050510;
-    border-image: url('kiosk/assets/bg_scifi.png') 0 0 0 0 stretch stretch;
+    background-color: #050510; /* Flat Dark Blue/Black to match Web Admin */
+    /* border-image removed */
 }
 
 /* --- Headers (Keep Orbitron for that Sci-Fi feel) --- */
