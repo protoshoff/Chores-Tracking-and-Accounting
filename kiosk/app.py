@@ -72,17 +72,29 @@ class KioskApp(QMainWindow):
         main_layout.addWidget(self.stack)
         
         # Init Views
+        print("DEBUG: Init HomeView...")
         self.view_home = HomeView()
+        print("DEBUG: Init KidDashboardView...")
         self.view_dash = KidDashboardView()
+        print("DEBUG: Init ApprovalQueueView...")
         self.view_approvals = ApprovalQueueView()
+        print("DEBUG: Init AdminDashboardView...")
         self.view_admin = AdminDashboardView()
+        
+        print("DEBUG: Init AdminWifiView...")
         self.view_wifi = AdminWifiView()
+        print("DEBUG: Init ManageUsersView...")
         self.view_users = ManageUsersView()
+        print("DEBUG: Init ManageChoresView...")
         self.view_chores = ManageChoresView()
+        print("DEBUG: Init QuestLogView...")
         self.view_quest = QuestLogView()
+        print("DEBUG: Init ReportsView...")
         self.view_reports = ReportsView()
+        print("DEBUG: Init ScreensaverView...")
         self.view_saver = ScreensaverView()
         
+        print("DEBUG: Adding widgets to stack...")
         self.stack.addWidget(self.view_home)      # 0
         self.stack.addWidget(self.view_dash)      # 1
         self.stack.addWidget(self.view_approvals) # 2
