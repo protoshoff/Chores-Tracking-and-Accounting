@@ -32,7 +32,11 @@ class WifiService:
             # 1. Ensure WiFi is on
             import time
             subprocess.run([self.nmcli_path, "radio", "wifi", "on"], check=False)
-            time.sleep(4)
+            time.sleep(5)
+            
+            # DEBUG: Check if it actually turned on
+            status_res = subprocess.run([self.nmcli_path, "general", "status"], capture_output=True, text=True)
+            self._log_debug(f"Radio Status Check:\n{status_res.stdout}")
             
             # 2. Run nmcli
             cmd = [self.nmcli_path, "-t", "-f", "SSID,SIGNAL,SECURITY", "dev", "wifi", "list", "--rescan", "yes"]
