@@ -14,6 +14,9 @@ def main():
     print("DEBUG: Init QApplication...")
     qt_app = QApplication(args)
     
+    # Hide Cursor for Touchscreen Kiosk
+    qt_app.setOverrideCursor(Qt.CursorShape.BlankCursor)
+    
     print("DEBUG: Init KioskApp (Loading Views)...")
     try:
         window = KioskApp()
