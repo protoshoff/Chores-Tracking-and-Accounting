@@ -8,6 +8,7 @@ class AdminDashboardView(QWidget):
     chores_clicked = Signal()
     wifi_clicked = Signal()
     reports_clicked = Signal()
+    ledger_clicked = Signal()
     
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -57,12 +58,18 @@ class AdminDashboardView(QWidget):
         btn_rep.setFixedSize(300, 150)
         btn_rep.clicked.connect(self.reports_clicked.emit)
         grid.addWidget(btn_rep, 1, 1)
+
+        # 5. Ledger
+        btn_ledger = HoloButton("LEDGER / PAYOUT")
+        btn_ledger.setFixedSize(300, 150)
+        btn_ledger.clicked.connect(self.ledger_clicked.emit)
+        grid.addWidget(btn_ledger, 2, 0)
         
-        # 5. Change PIN
+        # 6. Change PIN
         btn_pin = HoloButton("CHANGE PIN", is_primary=False)
-        btn_pin.setFixedSize(300, 100) # Smaller
+        btn_pin.setFixedSize(300, 150)
         btn_pin.clicked.connect(self.change_pin_flow)
-        grid.addWidget(btn_pin, 2, 0, 1, 2) # Span 2 columns
+        grid.addWidget(btn_pin, 2, 1)
 
     def change_pin_flow(self):
         from ..components.holo_keyboard import HoloKeyboard

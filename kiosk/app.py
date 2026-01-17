@@ -13,7 +13,9 @@ from .views.quest_log import QuestLogView # Keeping for ref/future
 from .views.pin_pad import PinPad
 from .views.admin_dashboard import AdminDashboardView
 from .views.manage_users import ManageUsersView
+from .views.manage_users import ManageUsersView
 from .views.manage_chores import ManageChoresView
+from .views.ledger import LedgerView
 
 class HeaderWidget(QFrame): 
     # Re-introducing Header but styling it transparently later if needed
@@ -89,8 +91,8 @@ class KioskApp(QMainWindow):
         self.view_chores = ManageChoresView()
         print("DEBUG: Init QuestLogView...")
         self.view_quest = QuestLogView()
-        print("DEBUG: Init ReportsView...")
-        self.view_reports = ReportsView()
+        print("DEBUG: Init LedgerView...")
+        self.view_ledger = LedgerView()
         print("DEBUG: Init ScreensaverView...")
         self.view_saver = ScreensaverView()
         
@@ -105,6 +107,7 @@ class KioskApp(QMainWindow):
         self.stack.addWidget(self.view_quest)     # 7
         self.stack.addWidget(self.view_reports)   # 8 
         self.stack.addWidget(self.view_saver)     # 9
+        self.stack.addWidget(self.view_ledger)    # 10
         
         # Signals
         print("DEBUG: Widgets added.")
@@ -124,11 +127,13 @@ class KioskApp(QMainWindow):
         self.view_admin.users_clicked.connect(lambda: self.stack.setCurrentIndex(5))
         self.view_admin.chores_clicked.connect(lambda: self.stack.setCurrentIndex(6))
         self.view_admin.reports_clicked.connect(lambda: self.stack.setCurrentIndex(8)) 
+        self.view_admin.ledger_clicked.connect(self.prompt_ledger_kid)
         
         self.view_wifi.back_clicked.connect(self.go_to_admin_menu)
         self.view_users.back_clicked.connect(self.go_to_admin_menu)
         self.view_chores.back_clicked.connect(self.go_to_admin_menu)
         self.view_reports.back_clicked.connect(self.go_to_admin_menu)
+        self.view_ledger.back_clicked.connect(self.go_to_admin_menu)
         
         self.view_quest.close_clicked.connect(self.go_to_home)
         self.view_saver.wake_up.connect(self.wake_up)
@@ -182,3 +187,41 @@ class KioskApp(QMainWindow):
     def go_to_home(self):
         self.view_home.refresh_data() 
         self.stack.setCurrentIndex(0)
+
+    def prompt_ledger_kid(self):
+        # Quick Dialog to pick kid
+        # We need imports here to avoid circular at top if any, but local import is safer
+        from PySide6.QtWidgets import QDialog, QVBoxLayout
+        from .components.holo_widgets import HoloButton
+        from .services.api import ApiService
+        
+        kids = ApiService.get_kids()
+        if not kids: return
+        
+        dlg = QDialog(self)
+        dlg.setWindowTitle("SELECT CREW MEMBER")
+        dlg.setFixedSize(400, 100 + (len(kids)*70))
+        dlg.setWindowFlags(Qt.WindowType.FramelessWindowHint | Qt.WindowType.Dialog)
+        dlg.setStyleSheet("background-color: #050510; border: 2px solid #00F0FF;")
+        
+        layout = QVBoxLayout(dlg)
+        
+        selected_id = None
+        
+        def pick(kid_id):
+            nonlocal selected_id
+            selected_id = kid_id
+            dlg.accept()
+            
+        for k in kids:
+            btn = HoloButton(k["name"])
+            btn.clicked.connect(lambda checked=False, kid=k: pick(kid["id"]))
+            layout.addWidget(btn)
+            
+        btn_cancel = HoloButton("CANCEL", is_primary=False)
+        btn_cancel.clicked.connect(dlg.reject)
+        layout.addWidget(btn_cancel)
+        
+        if dlg.exec() and selected_id is not None:
+             self.view_ledger.load_kid(selected_id)
+             self.stack.setCurrentIndex(10)

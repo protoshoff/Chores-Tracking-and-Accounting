@@ -144,3 +144,47 @@ class ApiService:
         except Exception as e:
             print(f"API Error update_pin: {e}")
         return False
+
+    # --- Ledger ---
+    @staticmethod
+    def get_ledger_history(kid_id):
+        try:
+            resp = requests.get(f"{BASE_URL}/ledger/{kid_id}/history", timeout=2)
+            if resp.status_code == 200:
+                return resp.json()
+        except Exception as e:
+            print(f"API Error get_ledger_history: {e}")
+        return []
+
+    @staticmethod
+    def add_transaction(kid_id, amount_cents, type_str, desc):
+        payload = {
+            "kid_id": kid_id,
+            "amount_cents": amount_cents,
+            "type": type_str,
+            "description": desc
+        }
+        try:
+            resp = requests.post(f"{BASE_URL}/ledger/transaction", json=payload, timeout=2)
+            return resp.status_code == 201
+        except Exception as e:
+            print(f"API Error add_transaction: {e}")
+        return False
+
+    @staticmethod
+    def payout_kid(kid_id):
+        try:
+            resp = requests.post(f"{BASE_URL}/ledger/{kid_id}/payout", timeout=2)
+            return resp.status_code == 201
+        except Exception as e:
+            print(f"API Error payout_kid: {e}")
+        return False
+
+    @staticmethod
+    def delete_transaction(entry_id):
+        try:
+            resp = requests.delete(f"{BASE_URL}/ledger/transaction/{entry_id}", timeout=2)
+            return resp.status_code == 200
+        except Exception as e:
+            print(f"API Error delete_transaction: {e}")
+        return False

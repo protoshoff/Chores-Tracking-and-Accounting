@@ -37,3 +37,19 @@ def add_transaction(
 def get_history(kid_id: int, session: Session = Depends(get_session)):
     service = LedgerService(session)
     return service.get_history(kid_id)
+
+@router.post("/{kid_id}/payout", status_code=201)
+def payout_kid(kid_id: int, session: Session = Depends(get_session)):
+    service = LedgerService(session)
+    entry = service.process_payout(kid_id)
+    if not entry:
+         raise HTTPException(status_code=400, detail="Nothing to pay out or kid not found")
+    return entry
+
+@router.delete("/transaction/{entry_id}")
+def delete_transaction(entry_id: int, session: Session = Depends(get_session)):
+    service = LedgerService(session)
+    success = service.delete_transaction(entry_id)
+    if not success:
+        raise HTTPException(status_code=404, detail="Transaction not found")
+    return {"status": "deleted", "id": entry_id}
