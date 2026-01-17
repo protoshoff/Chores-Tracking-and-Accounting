@@ -57,3 +57,36 @@ class AdminDashboardView(QWidget):
         btn_rep.setFixedSize(300, 150)
         btn_rep.clicked.connect(self.reports_clicked.emit)
         grid.addWidget(btn_rep, 1, 1)
+        
+        # 5. Change PIN
+        btn_pin = HoloButton("CHANGE PIN", is_primary=False)
+        btn_pin.setFixedSize(300, 100) # Smaller
+        btn_pin.clicked.connect(self.change_pin_flow)
+        grid.addWidget(btn_pin, 2, 0, 1, 2) # Span 2 columns
+
+    def change_pin_flow(self):
+        from .pin_pad import PinPad
+        from ..components.holo_keyboard import HoloKeyboard
+        from ..services.api import ApiService
+        
+        # 1. Ask for New PIN using Keyboard (so we get full keypad if needed, or re-use PinPad logic?)
+        # Let's use a specialized PinPad mode or just a text dialog.
+        # Ideally we want the PinPad UI but for "Entry".
+        # For simplicity in v0.1, let's use the HoloKeyboard since it has numbers now.
+        
+        dlg = HoloKeyboard(self.window(), "")
+        # Center
+        rect = self.window().geometry()
+        dlg.move(
+            rect.center().x() - dlg.width() // 2,
+            rect.center().y() - dlg.height() // 2
+        )
+        
+        if dlg.exec():
+            new_pin = dlg.get_text()
+            if len(new_pin) >= 4:
+                success = ApiService.update_pin(new_pin)
+                # We could show a toast here?
+                print(f"PIN Update Success: {success}")
+            else:
+                print("PIN too short")

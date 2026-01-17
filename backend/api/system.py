@@ -33,3 +33,39 @@ def connect_wifi(payload: dict = Body(...)):
         return {"status": "connected", "ssid": ssid}
     else:
         raise HTTPException(status_code=500, detail="Connection Failed")
+
+# --- PIN Management ---
+from ..db import get_session
+from ..models import Settings
+from sqlmodel import Session
+from fastapi import Depends
+
+@router.post("/pin/verify")
+def verify_pin(payload: dict = Body(...), session: Session = Depends(get_session)):
+    """Verify parent PIN. Payload: {pin: "..."}"""
+    input_pin = payload.get("pin")
+    if not input_pin:
+        return {"valid": False}
+        
+    # Get stored PIN or default
+    setting = session.get(Settings, "parent_pin")
+    stored_pin = setting.value if setting else "1234"
+    
+    return {"valid": input_pin == stored_pin}
+
+@router.put("/pin")
+def update_pin(payload: dict = Body(...), session: Session = Depends(get_session)):
+    """Update parent PIN. Payload: {pin: "..."}"""
+    new_pin = payload.get("pin")
+    if not new_pin or len(new_pin) < 4:
+         raise HTTPException(status_code=400, detail="PIN must be at least 4 digits")
+         
+    setting = session.get(Settings, "parent_pin")
+    if not setting:
+        setting = Settings(key="parent_pin", value=new_pin)
+    else:
+        setting.value = new_pin
+        
+    session.add(setting)
+    session.commit()
+    return {"status": "updated"}

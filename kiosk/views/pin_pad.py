@@ -118,12 +118,16 @@ class PinPad(QDialog):
         SoundService.play_click()
         self.display.clear()
 
+from ..services.api import ApiService
+
     def verify_pin(self):
         SoundService.play_click()
         code = self.display.text()
-        if code == "1234": # HARDCODED FOR V0.1
+        
+        # Verify via API
+        if ApiService.verify_pin(code):
             self.accept()
         else:
             SoundService.play_error()
             self.display.clear()
-            # Visual feedback could go here (flash red)
+            self.display.setPlaceholderText("INVALID")
