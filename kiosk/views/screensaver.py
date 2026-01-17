@@ -63,20 +63,37 @@ class ScreensaverView(QWidget):
         next_x = x + self.vx
         next_y = y + self.vy
         
-        if next_x <= 0 or next_x + lw >= w:
-            self.vx *= -1
+        # Check X collisions
+        if next_x <= 0:
+            self.vx = abs(self.vx) # Force positive
+            next_x = 0
+            self.style_color()
+        elif next_x + lw >= w:
+            self.vx = -abs(self.vx) # Force negative
+            next_x = w - lw
             self.style_color()
             
-        if next_y <= 0 or next_y + lh >= h:
-            self.vy *= -1
+        # Check Y collisions
+        if next_y <= 0:
+            self.vy = abs(self.vy) # Force positive
+            next_y = 0
+            self.style_color()
+        elif next_y + lh >= h:
+            self.vy = -abs(self.vy) # Force negative
+            next_y = h - lh
             self.style_color()
             
-        self.lbl.move(x + self.vx, y + self.vy)
+        self.lbl.move(next_x, next_y)
 
     def style_color(self):
         # Change color on bounce for fun
         colors = ["#00E5FF", "#FFD700", "#FF0055", "#00FF00"]
         c = random.choice(colors)
+        
+        # Only update colors, don't resize or change text content dynamically
+        # changing text content causes resize which causes bugs
+        
+        # Update stylesheet but keep font sizes fixed as defined in init/style
         self.lbl.setStyleSheet(f"""
             color: {c}; 
             font-family: 'Orbitron'; 
@@ -87,8 +104,14 @@ class ScreensaverView(QWidget):
             background-color: rgba(0, 20, 40, 220);
             border-radius: 15px;
         """)
-        self.lbl.setText(f"SYSTEM STANDBY\n<span style='font-size: 30px; color:{c};'>TOUCH TO RESUME</span>")
-        self.lbl.adjustSize() # Re-adjust in case font metric differs slightly
+        
+        # Re-set text to ensure the span color matches if we want, or just let CSS handle main color.
+        # The span color override in previous code might be fighting.
+        # Let's simplify: Inherit color for the span unless we explicitly want it different.
+        # Actually, simpler: Just set the main widget color. The span will inherit if we remove 'color:{c}' from span style.
+        
+        self.lbl.setText(f"SYSTEM STANDBY\n<span style='font-size: 30px;'>TOUCH TO RESUME</span>")
+        # self.lbl.adjustSize() <-- REMOVED to prevent jitter
 
     def mousePressEvent(self, event):
         self.wake_up.emit()
