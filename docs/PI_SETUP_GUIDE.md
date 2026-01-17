@@ -101,8 +101,19 @@ mkdir -p ~/chores_app/releases
     ```
 The Kiosk should now start automatically on TV/Screen.
 
+
 ## 6. Maintenance
 - **Update**: Commit/Push changes, then SSH in and run `deploy_release.sh`.
 - **Logs**:
     - Backend: `journalctl -u chores-backend -f`
-    - Kiosk: `journalctl -u chores-kiosk -f`
+    - Kiosk: `cat /tmp/kiosk.log` (stdout/stderr is redirected here for robustness)
+
+## 7. Troubleshooting
+- **Black Screen**:
+  - Usually means Python crashed before showing a window.
+  - Check `/tmp/kiosk.log`.
+  - Common culprit: Missing audio drivers (`pipewire`). If errors persist, install `gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-alsa`.
+
+- **Window not Fullscreen**:
+  - Ensure `.xinitrc` passes `--fullscreen`.
+  - Ensure `openbox` is installed if you want window management, or use our "Frameless" mode in bare X11.

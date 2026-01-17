@@ -42,8 +42,8 @@ os.makedirs("static", exist_ok=True)
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 # Mount Admin Web
-os.makedirs("backend/admin", exist_ok=True) # Ensure it exists
-app.mount("/admin", StaticFiles(directory="backend/admin", html=True), name="admin")
+os.makedirs("admin", exist_ok=True) # Ensure it exists
+app.mount("/admin", StaticFiles(directory="admin", html=True), name="admin")
 
 # Include Routers
 app.include_router(debug.router)
@@ -51,7 +51,6 @@ app.include_router(kids.router)
 app.include_router(chores.router)
 app.include_router(approvals.router)
 app.include_router(ledger.router)
-app.include_router(finances.router)
 app.include_router(finances.router)
 app.include_router(system.router)
 app.include_router(management.router)

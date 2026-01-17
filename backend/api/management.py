@@ -66,6 +66,13 @@ def update_kid(kid_id: int, kid: KidUpdate, session: Session = Depends(get_sessi
 
 # --- Chore Endpoints ---
 
+@router.get("/chores", response_model=List[Chore])
+def list_chores(archived: bool = False, session: Session = Depends(get_session)):
+    stmt = select(Chore)
+    if not archived:
+        stmt = stmt.where(Chore.archived == False)
+    return session.exec(stmt).all()
+
 @router.post("/chores", response_model=Chore)
 def create_chore(chore: ChoreCreate, session: Session = Depends(get_session)):
     # Verify kid exists

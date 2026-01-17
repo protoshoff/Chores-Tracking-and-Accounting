@@ -453,7 +453,7 @@
         async function submitAddKid() {
             const name = $('#kid-name').value;
             if (!name) return;
-            const res = await api('/management/users', 'POST', { name: name });
+            const res = await api('/management/kids', 'POST', { name: name });
             if (res) { closeModal(); loadKids(); }
         }
 
