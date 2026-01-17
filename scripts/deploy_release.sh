@@ -33,6 +33,10 @@ source "$NEW_release_DIR/venv/bin/activate"
 echo "Installing dependencies..."
 pip install -r "$NEW_release_DIR/requirements.txt"
 
+# 4b. Install System Fonts (Roboto)
+echo "Installing System Fonts..."
+sudo apt-get update && sudo apt-get install -y fonts-roboto
+
 # 5. Backup DB (Safety)
 DB_PATH="/var/lib/chores_app/chores.db"
 if [ -f "$DB_PATH" ]; then
