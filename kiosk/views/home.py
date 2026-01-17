@@ -6,10 +6,10 @@ from ..services.sound import SoundService
 class HoloKidCard(HoloFrame):
     clicked = Signal(int) 
 
-    def __init__(self, data, parent=None):
+    def __init__(self, data, width=300, height=380, parent=None):
         super().__init__(title="", parent=parent) # No title on card frame itself
         self.kid_id = data["id"]
-        self.setFixedSize(300, 380) # Adjusted size for glow margins
+        self.setFixedSize(width, height) # Dynamic size
         
         # Internal layout respecting HoloFrame margins
         layout = QVBoxLayout(self)
@@ -132,10 +132,31 @@ class HomeView(QWidget):
              # Placeholder for dev if API fails
              kids_data = [{"id": 0, "name": "OFFLINE", "balance_cents": 0}]
 
+        count = len(kids_data)
+        
+        # Responsive Layout Logic
+        if count <= 2:
+            # 1 or 2 kids: Big Cards, Wide Spacing
+            card_w, card_h = 400, 500
+            self.grid.setHorizontalSpacing(150)
+            self.grid.setVerticalSpacing(50)
+            MAX_COLS = 2
+        elif count == 3:
+            # 3 kids: Medium cards, Medium spacing
+            card_w, card_h = 350, 450
+            self.grid.setHorizontalSpacing(80)
+            self.grid.setVerticalSpacing(30)
+            MAX_COLS = 3
+        else:
+            # 4+ kids: Standard cards, Tight grid
+            card_w, card_h = 300, 380
+            self.grid.setHorizontalSpacing(30)
+            self.grid.setVerticalSpacing(30)
+            MAX_COLS = 3
+
         row, col = 0, 0
-        MAX_COLS = 3
         for k in kids_data:
-            card = HoloKidCard(k)
+            card = HoloKidCard(k, width=card_w, height=card_h)
             card.clicked.connect(self.on_card_clicked)
             self.grid.addWidget(card, row, col)
             col += 1
