@@ -246,7 +246,7 @@
 <body>
 
     <header>
-        <div class="brand">Command Center</div>
+        <div class="brand">COMMAND CENTER</div>
         <div id="status-indicator">CONNECTING...</div>
     </header>
 
@@ -528,8 +528,8 @@
                 tbody.innerHTML += `
                 <tr>
                     <td>${c.name}</td>
-                    <td>${formatMoney(c.value_cents)}</td>
-                    <td>${c.is_weekly ? 'WEEKLY' : 'DAILY'}</td>
+                    <td>${formatMoney(c.weight)}</td>
+                    <td>${c.frequency}</td>
                     <td>
                         <button class="action-btn danger" onclick="deleteChore(${c.id})">DEL</button>
                     </td>
@@ -539,29 +539,47 @@
         }
 
         function showAddChoreModal() {
-            showModal(`
-            <h3>New Quest</h3>
-            <input id="chore-name" placeholder="Title" />
-            <input id="chore-val" type="number" placeholder="Reward (cents)" />
-            <select id="chore-type">
-                <option value="false">Daily</option>
-                <option value="true">Weekly</option>
-            </select>
-            <div class="flex-between">
-                <button class="action-btn danger" onclick="closeModal()">CANCEL</button>
-                <button class="action-btn" onclick="submitAddChore()">SAVE</button>
-            </div>
-        `);
+            // Need kid selection too! Chores are per-kid in this DB schema (kid_id foreign key)
+            // But wait, the API requires kid_id. The UI didn't have kid selection in the modal??
+            // Let's check api requirements. 
+            // ChoreCreate: kid_id, name, weight, frequency.
+            // The previous code didn't send kid_id! It would fail.
+            // I need to add a kid selector to the modal.
+
+            api('/kids').then(kids => {
+                let options = "";
+                kids.forEach(k => options += `<option value="${k.id}">${k.name}</option>`);
+
+                showModal(`
+                    <h3>New Quest</h3>
+                    <select id="chore-kid">${options}</select>
+                    <input id="chore-name" placeholder="Title" />
+                    <input id="chore-val" type="number" placeholder="Reward (cents)" />
+                    <select id="chore-type">
+                        <option value="DAILY">Daily</option>
+                        <option value="WEEKLY">Weekly</option>
+                    </select>
+                    <div class="flex-between">
+                        <button class="action-btn danger" onclick="closeModal()">CANCEL</button>
+                        <button class="action-btn" onclick="submitAddChore()">SAVE</button>
+                    </div>
+                `);
+            });
         }
 
         async function submitAddChore() {
+            const kidId = $('#chore-kid').value;
             const name = $('#chore-name').value;
             const val = parseInt($('#chore-val').value);
-            const weekly = $('#chore-type').value === "true";
-            if (!name || isNaN(val)) return;
+            const freq = $('#chore-type').value;
+
+            if (!name || isNaN(val) || !kidId) return;
 
             const res = await api('/management/chores', 'POST', {
-                name, value_cents: val, is_weekly: weekly, description: "", icon: "star"
+                kid_id: parseInt(kidId),
+                name: name,
+                weight: val,
+                frequency: freq
             });
             if (res) { closeModal(); loadChores(); }
         }
