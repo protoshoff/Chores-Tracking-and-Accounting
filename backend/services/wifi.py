@@ -60,12 +60,37 @@ class WifiService:
             return True
             
         try:
+            # 1. Cleanup existing connection profile for this SSID (avoids conflict/stale secrets)
+            # failure here is fine (e.g. doesn't exist)
+            subprocess.run([self.nmcli_path, "connection", "delete", ssid], capture_output=True)
+
+            # 2. Connect
             # nmcli dev wifi connect <ssid> password <password>
             cmd = [self.nmcli_path, "dev", "wifi", "connect", ssid, "password", password]
-            subprocess.run(cmd, check=True, capture_output=True)
-            return True
-        except subprocess.CalledProcessError as e:
-            logger.error(f"Wifi Connect Failed: {e}")
+            
+            # Use run with capture_output to get detailed error
+            result = subprocess.run(cmd, capture_output=True, text=True)
+            
+            if result.returncode == 0:
+                return True
+            
+            # Failed
+            err_msg = result.stderr or result.stdout or "Unknown Error"
+            logger.error(f"Wifi Connect Failed: {err_msg}")
+            
+            # Write to debug log for user visibility
+            try:
+                import os
+                home = os.path.expanduser("~")
+                with open(os.path.join(home, "wifi_connect_error.log"), "w") as f:
+                    f.write(f"SSID: {ssid}\nError: {err_msg}\n")
+            except:
+                pass
+                
+            return False
+            
+        except Exception as e:
+            logger.error(f"Wifi Connect Exception: {e}")
             return False
 
     def get_status(self) -> Dict:
