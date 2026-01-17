@@ -15,7 +15,7 @@ class ScreensaverView(QWidget):
         self.lbl = QLabel("SYSTEM STANDBY\nTOUCH TO RESUME", self)
         self.lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.lbl.setStyleSheet("color: #00E5FF; font-family: 'Courier New'; font-weight: bold;")
-        font = QFont("Courier New", 48) # Doubled from 24
+        font = QFont("Courier New", 100) # Increased to 100 for visibility
         font.setBold(True)
         self.lbl.setFont(font)
         self.lbl.adjustSize()
