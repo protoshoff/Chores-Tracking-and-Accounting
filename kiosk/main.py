@@ -15,8 +15,23 @@ def main():
     qt_app = QApplication(args)
     
     print("DEBUG: Init KioskApp (Loading Views)...")
-    window = KioskApp()
-    print("DEBUG: KioskApp Ready.")
+    try:
+        window = KioskApp()
+    except Exception as e:
+        print(f"CRITICAL: Failed to launch KioskApp: {e}")
+        import traceback
+        traceback.print_exc()
+        
+        # EMERGENCY MODE
+        from PySide6.QtWidgets import QLabel, QMainWindow
+        window = QMainWindow()
+        window.setWindowTitle("FATAL ERROR")
+        lbl = QLabel(f"FATAL STARTUP ERROR:\n{e}\n\nCheck logs locally.")
+        lbl.setStyleSheet("background: red; color: white; font-size: 24px; padding: 50px;")
+        lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        window.setCentralWidget(lbl)
+    
+    print("DEBUG: KioskApp Ready (or Failed).")
     
     if "--fullscreen" in args:
         print("DEBUG: Mode = Fullscreen")
