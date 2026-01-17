@@ -52,8 +52,10 @@ echo "Switching Symlink..."
 ln -sfn "$NEW_release_DIR" "$APP_ROOT/current"
 
 # 8. Restart Services
+# 8. Restart Services
 echo "Restarting Services..."
-sudo systemctl restart chores-backend
-sudo systemctl restart chores-kiosk
+# Only restart if they are already running/installed
+sudo systemctl try-restart chores-backend || echo "Backend service not installed yet (skipping restart)"
+sudo systemctl try-restart chores-kiosk || echo "Kiosk service not installed yet (skipping restart)"
 
 echo "Deployment Complete: $TIMESTAMP"
