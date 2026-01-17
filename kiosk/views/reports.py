@@ -7,12 +7,14 @@ class ReportsView(QWidget):
     back_clicked = Signal()
 
     def __init__(self, parent=None):
+        print("DEBUG: ReportsView start init")
         super().__init__(parent)
         
         main = QVBoxLayout(self)
         
         # Header
         top = QHBoxLayout()
+        print("DEBUG: ReportsView creating HoloButton")
         btn_back = HoloButton("← BACK", is_primary=False)
         btn_back.setFixedSize(120, 50)
         btn_back.clicked.connect(self.back_clicked.emit)
@@ -25,7 +27,9 @@ class ReportsView(QWidget):
         main.addLayout(top)
         
         # Table
+        print("DEBUG: ReportsView creating QTableWidget")
         self.table = QTableWidget()
+        print("DEBUG: ReportsView QTableWidget created")
         self.table.setColumnCount(5)
         self.table.setHorizontalHeaderLabels(["WEEK", "RECRUIT", "TOTAL WGT", "DONE WGT", "PAYOUT"])
         self.table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
@@ -52,6 +56,7 @@ class ReportsView(QWidget):
         """)
         
         main.addWidget(self.table)
+        print("DEBUG: ReportsView init finished")
         
     def showEvent(self, event):
         self.refresh_data()
