@@ -25,11 +25,11 @@ class ConnectThread(QThread):
             self.finished.emit(False, str(e))
 
 class SimpleKeyboard(QDialog):
-    """ Crude on-screen keyboard for password entry. Staying basic for now but dark mode. """
+    """ On-screen keyboard with Shift and Special Characters support. """
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setWindowTitle("Enter Password")
-        self.setFixedSize(600, 400)
+        self.setFixedSize(700, 450)
         self.setStyleSheet("background-color: #0A0A12; color: #E0E0E0;")
         
         layout = QVBoxLayout(self)
@@ -38,45 +38,131 @@ class SimpleKeyboard(QDialog):
         self.display.setStyleSheet("font-size: 24px; padding: 10px; border: 1px solid #00F; background: #000; color: #FFF;")
         layout.addWidget(self.display)
         
-        # Keys
-        rows = [
+        self.is_shifted = False
+        self.is_symbols = False
+        
+        # Container for keys to allow refreshing layout
+        self.keys_widget = QWidget()
+        self.keys_layout = QVBoxLayout(self.keys_widget)
+        layout.addWidget(self.keys_widget)
+        
+        self.render_keys()
+        
+    def render_keys(self):
+        # Clear existing keys
+        if self.keys_layout.count():
+            child = self.keys_layout.takeAt(0)
+            while child:
+                if child.widget(): child.widget().deleteLater()
+                child = self.keys_layout.takeAt(0)
+
+        # Define Layouts
+        # Normal (Lower)
+        chars_lower = [
             "1234567890",
             "qwertyuiop",
             "asdfghjkl",
             "zxcvbnm"
         ]
         
-        for row_str in rows:
+        # Shifted (Upper)
+        chars_upper = [
+            "!@#$%^&*()",
+            "QWERTYUIOP",
+            "ASDFGHJKL",
+            "ZXCVBNM"
+        ]
+        
+        # Symbols
+        chars_sym = [
+            "1234567890",
+            "-/:;()$&@\"",
+            ".,?!'[]{}",
+            "~<>\\|^=£€" # Common special chars
+        ]
+
+        if self.is_symbols:
+            current_rows = chars_sym
+        elif self.is_shifted:
+            current_rows = chars_upper
+        else:
+            current_rows = chars_lower
+
+        # Render rows
+        for i, row_str in enumerate(current_rows):
             row_layout = QHBoxLayout()
             for char in row_str:
                 btn = QPushButton(char)
-                btn.setFixedSize(50, 50)
-                btn.setStyleSheet("background: #222; border: 1px solid #555; font-size: 18px;")
+                btn.setFixedSize(55, 50)
+                btn.setStyleSheet("background: #222; border: 1px solid #555; font-size: 20px; border-radius: 4px;")
                 btn.clicked.connect(lambda _, c=char: self.display.setText(self.display.text() + c))
                 row_layout.addWidget(btn)
-            layout.addLayout(row_layout)
             
-        # Controls
+            # Add Backspace to first row
+            if i == 0:
+                btn_bs = QPushButton("⌫")
+                btn_bs.setFixedSize(55, 50)
+                btn_bs.setStyleSheet("background: #442222; border: 1px solid #F55; font-size: 18px;")
+                btn_bs.clicked.connect(self.backspace)
+                row_layout.addWidget(btn_bs)
+
+            self.keys_layout.addLayout(row_layout)
+
+        # Control Row (Shift, Space, Sym, Enter)
         ctrl_layout = QHBoxLayout()
-        btn_clear = QPushButton("CLR")
-        btn_clear.clicked.connect(self.display.clear)
-        ctrl_layout.addWidget(btn_clear)
         
+        # Shift
+        lbl_shift = "⇧ SHIFT" if not self.is_shifted else "⬆ SHIFT"
+        style_shift = "background: #222;" if not self.is_shifted else "background: #004488; color: white;"
+        btn_shift = QPushButton(lbl_shift)
+        btn_shift.setFixedSize(100, 50)
+        btn_shift.setStyleSheet(style_shift + " border: 1px solid #555;")
+        btn_shift.clicked.connect(self.toggle_shift)
+        ctrl_layout.addWidget(btn_shift)
+
+        # Symbols
+        lbl_sym = "?123" if not self.is_symbols else "ABC"
+        btn_sym = QPushButton(lbl_sym)
+        btn_sym.setFixedSize(80, 50)
+        btn_sym.setStyleSheet("background: #222; border: 1px solid #555;")
+        btn_sym.clicked.connect(self.toggle_symbols)
+        ctrl_layout.addWidget(btn_sym)
+
+        # Space
         btn_space = QPushButton("SPACE")
+        btn_space.setFixedHeight(50) 
+        btn_space.setStyleSheet("background: #333; border: 1px solid #666;")
         btn_space.clicked.connect(lambda: self.display.setText(self.display.text() + " "))
         ctrl_layout.addWidget(btn_space)
-        
-        btn_ok = QPushButton("OK")
-        btn_ok.setStyleSheet("background-color: #007BFF; color: white;")
+
+        # OK / Cancel
+        btn_cancel = QPushButton("CANCEL")
+        btn_cancel.setFixedSize(90, 50)
+        btn_cancel.setStyleSheet("background: #552222; color: white;")
+        btn_cancel.clicked.connect(self.reject)
+        ctrl_layout.addWidget(btn_cancel)
+
+        btn_ok = QPushButton("CONNECT")
+        btn_ok.setFixedSize(110, 50)
+        btn_ok.setStyleSheet("background: #007BFF; color: white; font-weight: bold;")
         btn_ok.clicked.connect(self.accept)
         ctrl_layout.addWidget(btn_ok)
         
-        btn_cancel = QPushButton("Cancel")
-        btn_cancel.clicked.connect(self.reject)
-        ctrl_layout.addWidget(btn_cancel)
-        
-        layout.addLayout(ctrl_layout)
-        
+        self.keys_layout.addLayout(ctrl_layout)
+
+    def toggle_shift(self):
+        self.is_shifted = not self.is_shifted
+        self.render_keys()
+
+    def toggle_symbols(self):
+        self.is_symbols = not self.is_symbols
+        self.is_shifted = False # Reset shift when switching modes
+        self.render_keys()
+
+    def backspace(self):
+        text = self.display.text()
+        self.display.setText(text[:-1])
+
     def get_text(self):
         return self.display.text()
 

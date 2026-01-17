@@ -11,42 +11,20 @@ class WifiService:
         self.mock_mode = self.nmcli_path is None
         self._log_debug(f"WifiService Init. nmcli_path={self.nmcli_path}, mock={self.mock_mode}")
 
-    def _log_debug(self, msg):
-        try:
-            # Write to home dir to avoid PrivateTmp issues
-            import os
-            home = os.path.expanduser("~")
-            log_path = os.path.join(home, "wifi_debug.log")
-            with open(log_path, "a") as f:
-                f.write(f"{msg}\n")
-        except:
-            pass
-
     def scan_networks(self) -> List[Dict]:
         """Returns list of {ssid, signal, security}"""
         if self.mock_mode:
             return [{"ssid": "Mock Network", "signal": 100, "security": "WPA2"}]
         
         try:
-            self._log_debug("--- Starting Scan ---")
             # 1. Ensure WiFi is on
             import time
             subprocess.run([self.nmcli_path, "radio", "wifi", "on"], check=False)
             time.sleep(5)
             
-            # DEBUG: Check if it actually turned on
-            status_res = subprocess.run([self.nmcli_path, "general", "status"], capture_output=True, text=True)
-            self._log_debug(f"Radio Status Check:\n{status_res.stdout}")
-            
             # 2. Run nmcli
             cmd = [self.nmcli_path, "-t", "-f", "SSID,SIGNAL,SECURITY", "dev", "wifi", "list", "--rescan", "yes"]
-            self._log_debug(f"Running: {' '.join(cmd)}")
-            
             result = subprocess.run(cmd, capture_output=True, text=True) # Don't check=True yet
-            
-            self._log_debug(f"Return Code: {result.returncode}")
-            self._log_debug(f"Stdout: {result.stdout}")
-            self._log_debug(f"Stderr: {result.stderr}")
             
             if result.returncode != 0:
                 logger.error(f"Wifi Scan Error: {result.stderr}")
@@ -69,11 +47,9 @@ class WifiService:
                     networks.append({"ssid": ssid, "signal": signal, "security": security})
                     seen_ssids.add(ssid)
                     
-            self._log_debug(f"Found {len(networks)} networks")
             return sorted(networks, key=lambda x: x['signal'], reverse=True)
             
         except Exception as e:
-            self._log_debug(f"Exception: {str(e)}")
             logger.error(f"Wifi Scan Failed: {e}")
             return []
 
