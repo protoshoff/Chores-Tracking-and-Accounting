@@ -17,13 +17,13 @@ class ScreensaverView(QWidget):
         # Use simple CSS for everything to avoid QFont/QSS conflicts
         self.lbl.setStyleSheet("""
             color: #00E5FF; 
-            font-family: 'Courier New'; 
+            font-family: 'Orbitron'; 
             font-weight: bold; 
-            font-size: 80px;
+            font-size: 60px;
             border: 2px solid #00E5FF;
-            padding: 20px;
-            background-color: rgba(0, 20, 40, 200);
-            border-radius: 10px;
+            padding: 40px;
+            background-color: rgba(0, 20, 40, 220);
+            border-radius: 15px;
         """)
         self.lbl.adjustSize()
         
@@ -79,14 +79,15 @@ class ScreensaverView(QWidget):
         c = random.choice(colors)
         self.lbl.setStyleSheet(f"""
             color: {c}; 
-            font-family: 'Courier New'; 
+            font-family: 'Orbitron'; 
             font-weight: bold; 
-            font-size: 80px;
+            font-size: 60px;
             border: 2px solid {c};
-            padding: 20px;
-            background-color: rgba(0, 20, 40, 200);
-            border-radius: 10px;
+            padding: 40px;
+            background-color: rgba(0, 20, 40, 220);
+            border-radius: 15px;
         """)
+        self.lbl.adjustSize() # Re-adjust in case font metric differs slightly
 
     def mousePressEvent(self, event):
         self.wake_up.emit()
