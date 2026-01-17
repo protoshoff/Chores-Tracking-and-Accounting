@@ -8,6 +8,7 @@ class HoloKidCard(HoloFrame):
 
     def __init__(self, data, width=300, height=380, parent=None):
         super().__init__(title="", parent=parent) # No title on card frame itself
+        self.setObjectName("KidCard")
         self.kid_id = data["id"]
         self.setFixedSize(width, height) # Dynamic size
         

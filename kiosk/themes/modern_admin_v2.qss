@@ -76,17 +76,26 @@ QLabel#QuestDesc {
     color: #8899AA; /* --text-dim */
 }
 
-/* 6. Panels (HoloFrame) */
+/* 6. Panels (HoloFrame / Cards) */
 QFrame {
-    /* Base style for frames */
     border: none;
 }
 
-/* The Grid Cards */
-QFrame#HoloFrameBody, HoloFrame, HoloKidCard {
-    background-color: rgba(0, 20, 40, 204); /* --panel-bg (0.8 alpha) */
-    border: 1px solid rgba(0, 229, 255, 76); /* --border roughly 0.3 alpha */
-    border-radius: 8px; /* --radius */
+/* Explicit Object Targeting for reliability */
+QFrame#HoloBox, QFrame#KidCard {
+    /* Lighter blue background to stand out against #050510 */
+    background-color: rgba(20, 35, 55, 0.95); 
+    
+    /* Stronger Border */
+    border: 1px solid rgba(0, 229, 255, 0.5); 
+    
+    border-radius: 8px;
+}
+
+/* Specific hover effect for Kid Cards to make them interactive */
+QFrame#KidCard:hover {
+    background-color: rgba(0, 229, 255, 0.15);
+    border: 1px solid #00E5FF;
 }
 
 /* 7. Tables */

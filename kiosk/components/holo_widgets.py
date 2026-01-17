@@ -30,6 +30,7 @@ class HoloButton(QPushButton):
 class HoloFrame(QFrame):
     def __init__(self, title="PANEL", parent=None):
         super().__init__(parent)
+        self.setObjectName("HoloBox")
         self.title = title
         self.setStyleSheet("background: transparent;")
         
