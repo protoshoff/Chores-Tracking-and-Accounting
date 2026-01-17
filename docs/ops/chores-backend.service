@@ -6,6 +6,7 @@ After=network.target
 User=pi
 WorkingDirectory=/home/pi/chores_app/current
 ExecStart=/home/pi/chores_app/current/venv/bin/uvicorn backend.main:app --host 0.0.0.0 --port 8000
+Environment=CHORES_DATA_DIR=/var/lib/chores_app
 Restart=always
 
 [Install]
