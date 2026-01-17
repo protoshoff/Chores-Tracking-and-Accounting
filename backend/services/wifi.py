@@ -22,9 +22,15 @@ class WifiService:
             ]
         
         try:
-            # Run nmcli: list available wifi, formatted fields
+            # 1. Ensure WiFi is on (Software unblock)
+            # Check status first to avoid redundant calls? Or just force on. 
+            # Force on is safer and fast.
+            subprocess.run([self.nmcli_path, "radio", "wifi", "on"], check=False)
+            
+            # 2. Run nmcli: list available wifi
             # -t = terse (colon separated), -f = fields
-            cmd = [self.nmcli_path, "-t", "-f", "SSID,SIGNAL,SECURITY", "dev", "wifi"]
+            # --rescan yes forces a fresh scan
+            cmd = [self.nmcli_path, "-t", "-f", "SSID,SIGNAL,SECURITY", "dev", "wifi", "list", "--rescan", "yes"]
             result = subprocess.run(cmd, capture_output=True, text=True, check=True)
             
             networks = []
