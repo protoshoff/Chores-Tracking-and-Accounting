@@ -11,6 +11,11 @@ def main():
     
     if "--fullscreen" in sys.argv:
         print("Starting in Fullscreen Mode")
+        # Force geometry to match screen (fix for no-WM environments)
+        screen = qt_app.primaryScreen()
+        rect = screen.geometry()
+        print(f"Detected Screen: {rect.width()}x{rect.height()}")
+        window.setGeometry(rect)
         window.showFullScreen()
     else:
         print("Starting in Windowed Mode")
