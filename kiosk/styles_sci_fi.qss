@@ -15,16 +15,16 @@ QMainWindow {
 }
 
 /* --- Headers (Keep Orbitron for that Sci-Fi feel) --- */
-/* --- Headers (Clean Roboto) --- */
+/* --- Headers (Match Web Admin: Orbitron) --- */
 QLabel#HoloHeader {
-    font-family: 'Roboto', sans-serif;
+    font-family: 'Orbitron', sans-serif;
     font-size: 36px;
     font-weight: bold;
-    color: #00E5FF; /* Keep accent color for numbers */
+    color: #00E5FF; 
 }
 
 QLabel#CardTitle {
-    font-family: 'Roboto', sans-serif;
+    font-family: 'Orbitron', sans-serif;
     font-size: 28px;
     font-weight: bold;
     color: #FFFFFF; 

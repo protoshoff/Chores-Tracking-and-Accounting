@@ -91,13 +91,12 @@ class HoloFrame(QFrame):
         self.title = title
         self.setStyleSheet("background: transparent;")
         
-        # Glow (Replaced with specific shadow for depth, or disabled for clean look)
-        # self._glow = QGraphicsDropShadowEffect(self)
-        # self._glow.setBlurRadius(30)
-        # self._glow.setColor(QColor("#007BFF"))
-        # self._glow.setOffset(0,0)
-        # self.setGraphicsEffect(self._glow)
-        pass
+        # Glow (Match Web Admin box-shadow: 0 0 30px rgba(0, 229, 255, 0.2))
+        self._glow = QGraphicsDropShadowEffect(self)
+        self._glow.setBlurRadius(30)
+        self._glow.setColor(QColor(0, 229, 255, 50)) # ~0.2 alpha
+        self._glow.setOffset(0,0)
+        self.setGraphicsEffect(self._glow)
 
     def paintEvent(self, event):
         painter = QPainter(self)
@@ -129,15 +128,14 @@ class HoloFrame(QFrame):
         path.lineTo(x, y + c)
         path.closeSubpath()
         
-        # Fill
-        painter.setBrush(QBrush(QColor(0, 20, 40, 200))) # Dark Blue, matches Web Admin
-
+        # Fill (Match Web Admin --panel-bg: rgba(0, 20, 40, 0.8))
+        painter.setBrush(QBrush(QColor(0, 20, 40, 205))) 
         painter.setPen(Qt.PenStyle.NoPen)
         painter.drawPath(path)
         
-        # Border
-        pen = QPen(QColor(255, 255, 255, 40)) # White, low opacity (Glassy)
-        pen.setWidth(1) # Thinner border
+        # Border (Match Web Admin: 1px solid rgba(0, 229, 255, 0.3))
+        pen = QPen(QColor(0, 229, 255, 76)) 
+        pen.setWidth(1)
         painter.setPen(pen)
         painter.setBrush(Qt.BrushStyle.NoBrush)
         painter.drawPath(path)
