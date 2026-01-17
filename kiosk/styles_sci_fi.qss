@@ -8,6 +8,13 @@ QWidget {
     background-color: transparent;
 }
 
+/* Global Buttons (Match Web Admin: Orbitron) */
+QPushButton {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 18px;
+    font-weight: bold;
+}
+
 /* Main Window Background */
 QMainWindow {
     background-color: #050510; 
