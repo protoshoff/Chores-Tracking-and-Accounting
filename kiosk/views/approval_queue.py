@@ -59,7 +59,24 @@ class ApprovalQueueView(QWidget):
             self.list_layout.addWidget(lbl)
             return
 
+        # Group by Date
+        from datetime import datetime
+        
+        # Sort pending by date descending (Newest first)
+        pending.sort(key=lambda x: x['date'], reverse=True)
+        
+        current_date_header = None
+        
         for p in pending:
+            # Check date header
+            p_date = p['date'].split("T")[0] # ISO string prefix
+            if p_date != current_date_header:
+                current_date_header = p_date
+                # Create Header
+                header = QLabel(f"📅 {p_date}")
+                header.setStyleSheet("color: #00E5FF; font-size: 20px; font-weight: bold; margin-top: 20px; border-bottom: 2px solid #00E5FF;")
+                self.list_layout.addWidget(header)
+                
             row = self._create_row(p)
             self.list_layout.addWidget(row)
             

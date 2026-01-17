@@ -253,7 +253,7 @@
     <nav>
         <button class="nav-btn active" onclick="switchView('overview')">OVERVIEW</button>
         <button class="nav-btn" onclick="switchView('kids')">CREW</button>
-        <button class="nav-btn" onclick="switchView('chores')">QUESTS</button>
+        <button class="nav-btn" onclick="switchView('approvals')">APPROVALS</button>
         <button class="nav-btn" onclick="switchView('ledger')">LEDGER</button>
         <button class="nav-btn" onclick="switchView('settings')">SYSTEM</button>
     </nav>
@@ -269,9 +269,18 @@
             <div class="card">
                 <h3>Quick Actions</h3>
                 <div class="flex-between">
+                    <button class="action-btn" onclick="switchView('approvals')">REVIEW PENDING</button>
                     <button class="action-btn" onclick="switchView('ledger')">PAYOUT ALLOWANCE</button>
                     <button class="action-btn" onclick="switchView('chores')">MANAGE QUESTS</button>
                 </div>
+            </div>
+        </section>
+
+        <!-- APPROVALS (NEW) -->
+        <section id="view-approvals" class="view-section">
+            <h2>Mission Command (Approvals)</h2>
+            <div id="approvals-container">
+                <!-- Injected ordered by date -->
             </div>
         </section>
 
@@ -381,6 +390,7 @@
             if (viewName === 'kids') loadKids();
             if (viewName === 'chores') loadChores();
             if (viewName === 'ledger') loadKidsForLedger();
+            if (viewName === 'approvals') loadApprovals();
         }
 
         // API
@@ -417,6 +427,57 @@
             }
 
             loadKids();
+            // Optional: Default to approvals if param set?
+        }
+
+        // --- APPROVALS ---
+        async function loadApprovals() {
+            const list = await api('/approvals/pending');
+            const cont = $('#approvals-container');
+            cont.innerHTML = "";
+
+            if (!list || list.length === 0) {
+                cont.innerHTML = "<div style='color:var(--text-dim)'>No pending authorizations.</div>";
+                return;
+            }
+
+            // Group by Date
+            // Format 2026-01-15 -> "Jan 15"
+            // Sort keys descending
+            const groups = {};
+            list.forEach(item => {
+                const d = item.date.split('T')[0];
+                if (!groups[d]) groups[d] = [];
+                groups[d].push(item);
+            });
+
+            // Iterate Dates Descending (Newest First)
+            const sortedDates = Object.keys(groups).sort().reverse();
+
+            sortedDates.forEach(dateStr => {
+                // Header
+                cont.innerHTML += `<h3 style='color:var(--primary); border-bottom:1px solid var(--primary); padding-bottom:5px; margin-top:20px;'>${dateStr}</h3>`;
+
+                // Items
+                groups[dateStr].forEach(item => {
+                    cont.innerHTML += `
+                    <div class="card flex-between" style="border-left: 4px solid var(--warning);">
+                        <div>
+                            <div class="sci-fi-font" style="font-size:1.2rem; color:white;">${item.kid_name}</div>
+                            <div style="color:var(--text-dim)">${item.chore_name}</div>
+                        </div>
+                        <div style="display:flex; gap:10px;">
+                            <button class="action-btn" onclick="review('${item.id}', 'APPROVE')">APPROVE</button>
+                            <button class="action-btn danger" onclick="review('${item.id}', 'REJECT')">REJECT</button>
+                        </div>
+                    </div>`;
+                });
+            });
+        }
+
+        async function review(id, action) {
+            const res = await api(`/approvals/${id}/review`, 'POST', { action: action });
+            if (res) loadApprovals();
         }
 
         // KIDS

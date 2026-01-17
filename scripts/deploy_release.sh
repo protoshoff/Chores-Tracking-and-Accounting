@@ -63,7 +63,12 @@ sudo cp "$NEW_release_DIR/ops/chores-kiosk.service" /etc/systemd/system/
 sudo cp "$NEW_release_DIR/ops/chores-backend.service" /etc/systemd/system/
 
 echo "Patching Service Files with correct User/Path..."
-# 8a. Patch Service Files (Replace 'pi' with current user)
+# 8a. Permissions: Ensure user can manage WiFi (netdev) and USB (plugdev)
+echo "Ensuring user permission groups..."
+sudo usermod -aG netdev $USER || echo "netdev group not found, skipping"
+sudo usermod -aG plugdev $USER || echo "plugdev group not found, skipping"
+
+# 8b. Patch Service Files (Replace 'pi' with current user)
 sudo sed -i "s/User=pi/User=$USER/g" /etc/systemd/system/chores-backend.service
 sudo sed -i "s/User=pi/User=$USER/g" /etc/systemd/system/chores-kiosk.service
 sudo sed -i "s/Group=pi/Group=$USER/g" /etc/systemd/system/chores-backend.service
