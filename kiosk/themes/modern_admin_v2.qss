@@ -11,7 +11,7 @@ QWidget {
 /* 2. Main Window */
 QMainWindow {
     background-color: #050510; /* Exact match --bg-color */
-    /* No bg image, just dark tech solid */
+    border-image: url('kiosk/assets/bg_scifi.png') 0 0 0 0 stretch stretch;
 }
 
 /* 3. Global Buttons (HoloButton now uses this) */
