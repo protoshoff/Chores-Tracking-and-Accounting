@@ -1,5 +1,5 @@
 from PySide6.QtWidgets import QWidget, QGridLayout, QLabel, QVBoxLayout, QHBoxLayout, QProgressBar
-from PySide6.QtCore import Qt, Signal
+from PySide6.QtCore import Qt, Signal, QTimer
 from ..components.holo_widgets import HoloFrame, HoloButton
 from ..services.sound import SoundService
 
@@ -116,6 +116,10 @@ class HomeView(QWidget):
         foot_layout.addWidget(btn_admin)
         main_layout.addLayout(foot_layout)
         
+        # Auto-Retry Timer
+        self.retry_timer = QTimer(self)
+        self.retry_timer.timeout.connect(self.refresh_data)
+        
         # Load Data
         self.refresh_data()
 
@@ -129,8 +133,13 @@ class HomeView(QWidget):
         kids_data = ApiService.get_kids()
         
         if not kids_data:
-             # Placeholder for dev if API fails
-             kids_data = [{"id": 0, "name": "OFFLINE", "balance_cents": 0}]
+             # If API fails, show connecting and retry
+             kids_data = [{"id": 0, "name": "CONNECTING...", "balance_cents": 0}]
+             if not self.retry_timer.isActive():
+                 self.retry_timer.start(2000) # Retry every 2s
+        else:
+             # Success - stop retrying
+             self.retry_timer.stop()
 
         count = len(kids_data)
         
