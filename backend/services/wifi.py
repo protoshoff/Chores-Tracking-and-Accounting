@@ -9,12 +9,15 @@ class WifiService:
     def __init__(self):
         self.nmcli_path = shutil.which("nmcli")
         self.mock_mode = self.nmcli_path is None
-        if self.mock_mode:
-            logger.warning("nmcli not found. Running in WiFi Mock Mode.")
+        self._log_debug(f"WifiService Init. nmcli_path={self.nmcli_path}, mock={self.mock_mode}")
 
     def _log_debug(self, msg):
         try:
-            with open("/tmp/wifi_debug_service.log", "a") as f:
+            # Write to home dir to avoid PrivateTmp issues
+            import os
+            home = os.path.expanduser("~")
+            log_path = os.path.join(home, "wifi_debug.log")
+            with open(log_path, "a") as f:
                 f.write(f"{msg}\n")
         except:
             pass
