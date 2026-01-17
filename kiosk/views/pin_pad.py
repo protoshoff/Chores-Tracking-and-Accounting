@@ -98,9 +98,10 @@ class PinPad(QDialog):
         # -- Cancel --
         frame_layout.addStretch()
         btn_cancel = QPushButton("CANCEL")
-        btn_cancel.setFixedHeight(50)
+        btn_cancel.setFixedHeight(70) # Taller as requested
         btn_cancel.setCursor(Qt.CursorShape.PointingHandCursor)
-        btn_cancel.setStyleSheet("background: transparent; color: #888; font-size: 16px; border: 1px solid #333; border-radius: 4px; margin-top: 20px;")
+        # High Contrast Red
+        btn_cancel.setStyleSheet("background: rgba(255, 0, 85, 0.1); color: #FF0055; font-size: 20px; border: 1px solid #FF0055; border-radius: 4px; margin-top: 20px; font-weight: bold;") 
         btn_cancel.clicked.connect(self.reject)
         frame_layout.addWidget(btn_cancel)
         

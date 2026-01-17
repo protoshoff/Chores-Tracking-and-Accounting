@@ -32,7 +32,7 @@ class HoloFrame(QFrame):
         super().__init__(parent)
         self.setObjectName("HoloBox")
         self.title = title
-        self.setStyleSheet("background: transparent;")
+        # self.setStyleSheet("background: transparent;") # DISABLED to allow QSS background
         
         # Glow (Match Web Admin box-shadow: 0 0 30px rgba(0, 229, 255, 0.2))
         self._glow = QGraphicsDropShadowEffect(self)
