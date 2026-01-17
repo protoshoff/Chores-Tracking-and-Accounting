@@ -23,7 +23,8 @@ sudo apt install -y git python3-venv python3-pip libpq-dev
 # X11 & Window Manager (Minimal)
 sudo apt install -y xserver-xorg x11-xserver-utils xinit openbox
 # Qt dependencies
-sudo apt install -y libgl1-mesa-glx
+sudo apt install -y libgl1 libegl1
+# If explicit platform plugin required later: libxcb-cursor0
 ```
 
 ### B. Auto-Login
@@ -46,26 +47,21 @@ sudo chown pi:pi /var/lib/chores_app
 mkdir -p ~/chores_app/releases
 ```
 
-## 5. First Deployment (Local Transfer)
-Since you are deploying from your development machine:
+## 5. First Deployment (Public Repo)
 
-1.  **Transfer Code**:
-    Run this from your **Mac** (in the project root):
+1.  **Clone Repo**:
+    On the Pi:
     ```bash
-    # Exclude venv, .git, and __pycache__ to be safe
-    rsync -avz --exclude 'venv' --exclude '.git' --exclude '__pycache__' ./ pi@chores-kiosk.local:~/chores_repo/
+    git clone https://github.com/protoshoff/Chores-Tracking-and-Accounting.git ~/chores_repo
     ```
-    *(Note: If `rsync` isn't available, use `scp -r . pi@chores-kiosk.local:~/chores_repo/` but clean up venv first)*
 
-2.  **Run Deployment Script (On Pi)**:
-    SSH into the Pi: `ssh pi@chores-kiosk.local`
+2.  **Run Deployment Script**:
     ```bash
     chmod +x ~/chores_repo/scripts/*.sh
     ~/chores_repo/scripts/deploy_release.sh main
     ```
 
-3.  **Install Services (On Pi)**:
-    The deployment script creates `/opt/chores_app/current`. Now links services.
+3.  **Install Services**:
     ```bash
     sudo cp /opt/chores_app/current/docs/ops/chores-backend.service /etc/systemd/system/
     sudo cp /opt/chores_app/current/docs/ops/chores-kiosk.service /etc/systemd/system/
