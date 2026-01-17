@@ -12,57 +12,61 @@ class WifiService:
         if self.mock_mode:
             logger.warning("nmcli not found. Running in WiFi Mock Mode.")
 
+    def _log_debug(self, msg):
+        try:
+            with open("/tmp/wifi_debug_service.log", "a") as f:
+                f.write(f"{msg}\n")
+        except:
+            pass
+
     def scan_networks(self) -> List[Dict]:
         """Returns list of {ssid, signal, security}"""
         if self.mock_mode:
-            return [
-                {"ssid": "Mock Network 5G", "signal": 95, "security": "WPA2"},
-                {"ssid": "Neighbor WiFi", "signal": 40, "security": "WPA2"},
-                {"ssid": "Coffee Shop", "signal": 80, "security": "OPEN"},
-            ]
+            return [{"ssid": "Mock Network", "signal": 100, "security": "WPA2"}]
         
         try:
-            # 1. Ensure WiFi is on (Software unblock)
-            # Check status first to avoid redundant calls? Or just force on. 
-            # Force on is safer and fast.
+            self._log_debug("--- Starting Scan ---")
+            # 1. Ensure WiFi is on
             import time
             subprocess.run([self.nmcli_path, "radio", "wifi", "on"], check=False)
-            time.sleep(4) # Allow 4 seconds for radio to wake up
+            time.sleep(4)
             
-            # 2. Run nmcli: list available wifi
-            # -t = terse (colon separated), -f = fields
-            # --rescan yes forces a fresh scan
+            # 2. Run nmcli
             cmd = [self.nmcli_path, "-t", "-f", "SSID,SIGNAL,SECURITY", "dev", "wifi", "list", "--rescan", "yes"]
-            result = subprocess.run(cmd, capture_output=True, text=True, check=True)
+            self._log_debug(f"Running: {' '.join(cmd)}")
+            
+            result = subprocess.run(cmd, capture_output=True, text=True) # Don't check=True yet
+            
+            self._log_debug(f"Return Code: {result.returncode}")
+            self._log_debug(f"Stdout: {result.stdout}")
+            self._log_debug(f"Stderr: {result.stderr}")
+            
+            if result.returncode != 0:
+                logger.error(f"Wifi Scan Error: {result.stderr}")
+                return []
             
             networks = []
             seen_ssids = set()
             
             for line in result.stdout.strip().split('\n'):
-                # nmcli output can be messy with escapes, basic parse
                 parts = line.split(':')
                 if len(parts) >= 2:
                     ssid = parts[0]
                     if not ssid or ssid in seen_ssids:
                         continue
-                        
                     try:
                         signal = int(parts[1])
                     except:
                         signal = 0
-                        
                     security = parts[2] if len(parts) > 2 else ""
-                    
-                    networks.append({
-                        "ssid": ssid,
-                        "signal": signal,
-                        "security": security
-                    })
+                    networks.append({"ssid": ssid, "signal": signal, "security": security})
                     seen_ssids.add(ssid)
                     
+            self._log_debug(f"Found {len(networks)} networks")
             return sorted(networks, key=lambda x: x['signal'], reverse=True)
             
-        except subprocess.CalledProcessError as e:
+        except Exception as e:
+            self._log_debug(f"Exception: {str(e)}")
             logger.error(f"Wifi Scan Failed: {e}")
             return []
 
