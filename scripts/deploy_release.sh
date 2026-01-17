@@ -59,6 +59,17 @@ sudo cp "$NEW_release_DIR/ops/chores-kiosk.service" /etc/systemd/system/
 sudo cp "$NEW_release_DIR/ops/chores-backend.service" /etc/systemd/system/
 sudo systemctl daemon-reload
 
+# 8b. Update .xinitrc (Ensure it points to 'current' and logs properly)
+echo "Updating .xinitrc..."
+echo '#!/bin/bash' > /home/$USER/.xinitrc
+echo "xset s off" >> /home/$USER/.xinitrc
+echo "xset -dpms" >> /home/$USER/.xinitrc
+echo "xset s noblank" >> /home/$USER/.xinitrc
+echo "cd /home/$USER/chores_app/current" >> /home/$USER/.xinitrc
+echo "exec venv/bin/python3 -u -m kiosk.main --fullscreen > /tmp/kiosk.log 2>&1" >> /home/$USER/.xinitrc
+chmod +x /home/$USER/.xinitrc
+chown $USER:$USER /home/$USER/.xinitrc
+
 # 9. Restart Services
 echo "Restarting Services..."
 # Enable and start/restart
