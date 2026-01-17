@@ -17,10 +17,8 @@ QWidget {
 
 /* Main Window Background */
 QMainWindow {
-    background-color: #050510; /* Very dark blue/black */
-    background-image: url('kiosk/assets/bg_scifi.png'); /* Placeholder */
-    background-position: center;
-    background-repeat: no-repeat;
+    background-color: #050510; /* Very dark blue/black fallback */
+    border-image: url('kiosk/assets/bg_scifi.png') 0 0 0 0 stretch stretch;
 }
 
 /* Text Styles */
