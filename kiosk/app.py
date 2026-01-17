@@ -13,7 +13,6 @@ from .views.quest_log import QuestLogView # Keeping for ref/future
 from .views.pin_pad import PinPad
 from .views.admin_dashboard import AdminDashboardView
 from .views.manage_users import ManageUsersView
-from .views.manage_users import ManageUsersView
 from .views.manage_chores import ManageChoresView
 from .views.ledger import LedgerView
 
@@ -92,7 +91,14 @@ class KioskApp(QMainWindow):
         print("DEBUG: Init QuestLogView...")
         self.view_quest = QuestLogView()
         print("DEBUG: Init LedgerView...")
-        self.view_ledger = LedgerView()
+        try:
+            self.view_ledger = LedgerView()
+        except Exception as e:
+            print(f"CRITICAL ERROR initializing LedgerView: {e}")
+            import traceback
+            traceback.print_exc()
+            # Create a dummy widget so stack doesn't crash on addWidget
+            self.view_ledger = QWidget()
         print("DEBUG: Init ScreensaverView...")
         self.view_saver = ScreensaverView()
         
