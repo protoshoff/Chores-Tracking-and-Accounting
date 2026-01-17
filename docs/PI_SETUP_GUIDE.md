@@ -39,7 +39,7 @@ Edit `/boot/firmware/config.txt` to add `dtoverlay=vc4-kms-v3d,rotate=xxx` if us
 We use `/var/lib/chores_app/` for the SQLite DB so it persists outside release folders.
 ```bash
 sudo mkdir -p /var/lib/chores_app
-sudo chown pi:pi /var/lib/chores_app
+sudo chown $USER:$USER /var/lib/chores_app
 ```
 
 ## 4. App Directory Structure
@@ -65,6 +65,11 @@ mkdir -p ~/chores_app/releases
     ```bash
     sudo cp /opt/chores_app/current/docs/ops/chores-backend.service /etc/systemd/system/
     sudo cp /opt/chores_app/current/docs/ops/chores-kiosk.service /etc/systemd/system/
+    
+    # Update service user if not 'pi'
+    sudo sed -i "s/User=pi/User=$USER/g" /etc/systemd/system/chores-backend.service
+    sudo sed -i "s/User=pi/User=$USER/g" /etc/systemd/system/chores-kiosk.service
+    sudo sed -i "s/Group=pi/Group=$USER/g" /etc/systemd/system/chores-kiosk.service
     
     # Reload & Enable
     sudo systemctl daemon-reload

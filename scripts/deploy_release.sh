@@ -1,15 +1,14 @@
 #!/bin/bash
 # scripts/deploy_release.sh
 # Usage: ./scripts/deploy_release.sh [branch] (defaults to main)
-# Run as user 'pi'
-
+# Run as the deployment user
 set -e
 
-APP_ROOT="/home/pi/chores_app"
+APP_ROOT="/home/$USER/chores_app"
 RELEASES_DIR="$APP_ROOT/releases"
 TIMESTAMP=$(date +%Y%m%d%H%M%S)
 NEW_release_DIR="$RELEASES_DIR/$TIMESTAMP"
-REPO_URL="git@github.com:youruser/chores-kiosk.git" # TODO: Update with actual URL or use local path
+REPO_URL="https://github.com/protoshoff/Chores-Tracking-and-Accounting.git"
 # For now, we assume this script is running from the repo checkout location or the repo is separate.
 # Let's assume user is running this from their dev machine via ssh or on the pi from a 'repo' dir.
 # OPTION B (Self-contained): We clone from remote.
