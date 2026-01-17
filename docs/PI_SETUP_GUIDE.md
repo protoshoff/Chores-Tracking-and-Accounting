@@ -23,7 +23,7 @@ sudo apt install -y git python3-venv python3-pip libpq-dev
 # X11 & Window Manager (Minimal)
 sudo apt install -y xserver-xorg x11-xserver-utils xinit openbox
 # Qt dependencies
-sudo apt install -y libgl1 libegl1
+sudo apt install -y libgl1 libegl1 libpulse0 libasound2
 # If explicit platform plugin required later: libxcb-cursor0
 
 # Allow non-console user to start X (Required for systemd service)
