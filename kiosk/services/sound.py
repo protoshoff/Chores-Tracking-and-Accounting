@@ -21,8 +21,10 @@ class SoundService:
             print(f"Warning: Sound file not found: {path}")
 
     def play(self, name):
-        if name in self.effects:
-            self.effects[name].play()
+        # MOCKED: Do nothing safely
+        pass
+        # if name in self.effects:
+        #    self.effects[name].play()
             
     @staticmethod
     def play_click():
