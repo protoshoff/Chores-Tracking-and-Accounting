@@ -107,6 +107,10 @@ class KioskApp(QMainWindow):
         self.stack.addWidget(self.view_saver)     # 9
         
         # Signals
+        print("DEBUG: Widgets added.")
+        
+        # Signals
+        print("DEBUG: Connecting signals...")
         self.view_home.kid_selected.connect(self.go_to_dashboard)
         self.view_home.parent_zone_clicked.connect(self.go_to_approvals)
         self.view_home.admin_clicked.connect(self.go_to_admin_auth)
@@ -129,14 +133,17 @@ class KioskApp(QMainWindow):
         self.view_quest.close_clicked.connect(self.go_to_home)
         self.view_saver.wake_up.connect(self.wake_up)
         
+        print("DEBUG: Starting idle timer...")
         # Idle Timer
         self.idle_timer = QTimer(self)
         self.idle_timer.timeout.connect(self.enter_screensaver)
         self.idle_timer.start(120000) # 2 minutes
         
+        print("DEBUG: Installing event filter...")
         # Install Event Filter to catch all input
         QApplication.instance().installEventFilter(self)
         
+        print("DEBUG: KioskApp Init COMPLETE.")
         # self.show() -> Moved to main.py to handle args better
 
     def eventFilter(self, obj, event):
