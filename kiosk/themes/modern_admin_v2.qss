@@ -1,0 +1,150 @@
+/* Modern Admin V2 - Strict Alignment with Web Admin */
+
+/* 1. Global Reset */
+QWidget {
+    font-family: 'Roboto', 'Verdana', sans-serif;
+    font-size: 18px; /* Strict minimum for readability */
+    color: #FFFFFF;
+    background-color: transparent;
+}
+
+/* 2. Main Window */
+QMainWindow {
+    background-color: #050510; /* Exact match --bg-color */
+    /* No bg image, just dark tech solid */
+}
+
+/* 3. Global Buttons (HoloButton now uses this) */
+QPushButton {
+    /* Font */
+    font-family: 'Orbitron', sans-serif;
+    font-size: 18px;
+    font-weight: bold;
+    text-transform: uppercase;
+    
+    /* Box Model */
+    background-color: rgba(0, 229, 255, 0.1); /* --primary with 0.1 alpha */
+    border: 1px solid #00E5FF; /* --primary */
+    border-radius: 4px; /* Optional slight rounding like Web inputs */
+    padding: 10px 20px;
+    color: #00E5FF;
+}
+
+QPushButton:hover {
+    background-color: #00E5FF; /* --primary */
+    color: #050510; /* --bg-color */
+}
+
+QPushButton:pressed {
+    background-color: rgba(0, 229, 255, 0.8);
+    border: 1px solid #FFFFFF;
+}
+
+QPushButton:disabled {
+    border-color: #445566;
+    color: #445566;
+    background: transparent;
+}
+
+/* 4. Danger Buttons (Delete/Cancel) - need a way to target them.
+   If 'is_primary' logic was used, we might need object names. 
+   For now, we styling all buttons the same primary style unless overridden.
+*/
+
+/* 5. Headers */
+/* Header Label (Top Left) */
+QLabel#HoloHeader {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 32px; /* Large header */
+    font-weight: bold;
+    color: #00E5FF; /* --primary */
+    text-transform: uppercase;
+}
+
+/* Card Titles */
+QLabel#CardTitle {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 24px;
+    font-weight: bold;
+    color: #FFFFFF;
+}
+
+/* Quest Description / Section labels */
+QLabel#QuestDesc {
+    font-family: 'Roboto', sans-serif;
+    font-size: 16px;
+    color: #8899AA; /* --text-dim */
+}
+
+/* 6. Panels (HoloFrame) */
+QFrame {
+    /* Base style for frames */
+    border: none;
+}
+
+/* The Grid Cards */
+QFrame#HoloFrameBody, HoloFrame, HoloKidCard {
+    background-color: rgba(0, 20, 40, 204); /* --panel-bg (0.8 alpha) */
+    border: 1px solid rgba(0, 229, 255, 76); /* --border roughly 0.3 alpha */
+    border-radius: 8px; /* --radius */
+}
+
+/* 7. Tables */
+QTableWidget {
+    background-color: rgba(0, 20, 40, 204);
+    border: 1px solid rgba(0, 229, 255, 76);
+    gridline-color: rgba(0, 229, 255, 40);
+    color: #FFFFFF;
+    font-size: 18px;
+}
+
+QTableWidget::item {
+    padding: 10px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+QHeaderView::section {
+    background-color: rgba(0, 10, 20, 240);
+    color: #00E5FF;
+    border: none;
+    border-bottom: 2px solid #00E5FF;
+    padding: 12px;
+    font-family: 'Orbitron';
+    font-weight: bold;
+    font-size: 16px;
+    text-transform: uppercase;
+}
+
+/* 8. ScrollBars (Slim Tech) */
+QScrollBar:vertical {
+    border: none;
+    background: #0A0A12;
+    width: 12px;
+    margin: 0px;
+    border-radius: 6px;
+}
+QScrollBar::handle:vertical {
+    background: #00E5FF;
+    min-height: 20px;
+    border-radius: 6px;
+}
+QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical { height: 0px; }
+
+/* 9. Inputs (Dialogs) */
+QLineEdit {
+    background-color: rgba(0, 0, 0, 0.5);
+    border: 1px solid #445566;
+    color: #FFFFFF;
+    padding: 8px;
+    border-radius: 4px;
+    font-size: 18px;
+}
+QLineEdit:focus {
+    border: 1px solid #00E5FF;
+}
+
+/* 10. Dialogs/Alerts */
+QDialog {
+    background-color: #0a1020;
+    border: 1px solid #00E5FF;
+}

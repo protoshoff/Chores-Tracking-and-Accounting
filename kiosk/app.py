@@ -75,8 +75,8 @@ class KioskApp(QMainWindow):
         try:
             import os
             # Theme Configuration
-            THEME_NAME = "scifi_v1.qss" 
-            # Options: "scifi_v1.qss", "modern_admin.qss"
+            THEME_NAME = "modern_admin_v2.qss" 
+            # Options: "scifi_v1.qss", "modern_admin.qss", "modern_admin_v2.qss"
             
             base_dir = os.path.dirname(os.path.dirname(__file__)) # Go up from kiosk/app.py to root
             theme_path = os.path.join(base_dir, "kiosk", "themes", THEME_NAME)
