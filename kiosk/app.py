@@ -50,6 +50,17 @@ class KioskApp(QMainWindow):
         self.setGeometry(0, 0, 1024, 600)
         
         # Load Styles (Sci-Fi)
+        # Load Fonts
+        from PySide6.QtGui import QFontDatabase
+        import os
+        font_dir = os.path.join(os.path.dirname(__file__), "assets", "fonts")
+        if os.path.exists(font_dir):
+            for f in os.listdir(font_dir):
+                if f.endswith(".ttf"):
+                    QFontDatabase.addApplicationFont(os.path.join(font_dir, f))
+                    print(f"DEBUG: Loaded Font {f}")
+        
+        # Load Stylesheet
         try:
             with open("kiosk/styles_sci_fi.qss", "r") as f:
                 self.setStyleSheet(f.read())

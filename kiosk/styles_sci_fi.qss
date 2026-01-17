@@ -1,41 +1,30 @@
-/* Sci-Fi HUD Theme */
+/* Sci-Fi HUD Theme - Web Admin Alignment (Roboto/White/dark-blue) */
 
-/* Color Variables (Approximation for QSS)
-   Cyan Glow: #00E5FF
-   Deep Blue: #007BFF
-   Dark BG:   #0A0A12
-   Text:      #E0F7FA
-   Muted:     #455A64
-*/
-
+/* Global Reset */
 QWidget {
-    font-family: 'Orbitron', 'Verdana', sans-serif;
+    font-family: 'Roboto', 'Verdana', sans-serif;
     font-size: 16px;
-    color: #E0F7FA;
-    background-color: transparent; /* Default transparent for layering */
+    color: #FFFFFF; /* Pure White Text */
+    background-color: transparent;
 }
 
 /* Main Window Background */
 QMainWindow {
-    background-color: #050510; /* Very dark blue/black fallback */
+    background-color: #050510;
     border-image: url('kiosk/assets/bg_scifi.png') 0 0 0 0 stretch stretch;
 }
 
-/* Text Styles */
-QLabel {
-    color: #E0F7FA;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-}
-
+/* --- Headers (Keep Orbitron for that Sci-Fi feel) --- */
 QLabel#HoloHeader {
+    font-family: 'Orbitron', sans-serif;
     font-size: 32px;
     font-weight: bold;
-    color: #00E5FF;
-    /* text-shadow not supported in QSS, use QGraphicsEffect if needed */
+    color: #00E5FF; /* Cyan Accents remain */
 }
 
+/* Headings inside cards */
 QLabel#QuestHeading {
+    font-family: 'Orbitron', sans-serif;
     font-size: 24px;
     font-weight: bold;
     color: #FFFFFF;
@@ -44,37 +33,52 @@ QLabel#QuestHeading {
 
 QLabel#QuestDesc {
     font-size: 16px;
-    color: #B0BEC5;
-    text-transform: none; /* Normal case for descriptions */
-    letter-spacing: 1px;
+    color: #B0BEC5; /* Slightly muted white/grey */
 }
 
-/* ScrollBars (Sci-Fi Tech) */
+/* --- Panels (Glassmorphism) --- */
+/* Matches Web Admin: rgba(0, 20, 40, 0.8) */
+QFrame#HoloFrameBody {
+    background-color: rgba(0, 20, 40, 200); 
+    border: 1px solid rgba(0, 229, 255, 100);
+    border-radius: 8px;
+}
+
+/* Tables */
+QTableWidget {
+    background-color: rgba(0, 20, 40, 200);
+    border: 1px solid rgba(0, 229, 255, 80);
+    gridline-color: rgba(0, 229, 255, 40);
+    color: #FFFFFF;
+    selection-background-color: rgba(0, 229, 255, 50);
+}
+QHeaderView::section {
+    background-color: rgba(0, 10, 20, 240);
+    color: #00E5FF;
+    border: none;
+    padding: 8px;
+    font-family: 'Orbitron';
+    font-weight: bold;
+}
+
+/* ScrollBars */
 QScrollBar:vertical {
-    border: 1px solid #007BFF;
+    border: 1px solid #004488;
     background: #0A0A12;
     width: 20px;
     margin: 4px;
     border-radius: 4px;
 }
 QScrollBar::handle:vertical {
-    background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #007BFF, stop:1 #00E5FF);
-    min-height: 30px;
+    background: #00E5FF;
+    min-height: 20px;
     border-radius: 2px;
-    margin: 2px;
 }
-QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
-    height: 0px;
-    background: none;
-}
-QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
-    background: none;
-}
+QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical { height: 0px; }
 
 /* Tooltips */
 QToolTip {
     border: 1px solid #00E5FF;
-    background-color: rgba(10, 10, 18, 200);
+    background-color: rgba(0, 20, 40, 240);
     color: #00E5FF;
-    font-size: 14px;
 }
