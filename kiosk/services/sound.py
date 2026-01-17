@@ -1,4 +1,3 @@
-```python
 # from PySide6.QtMultimedia import QSoundEffect
 from PySide6.QtCore import QUrl
 import os
