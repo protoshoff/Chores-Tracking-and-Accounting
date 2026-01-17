@@ -7,12 +7,17 @@ def main():
     # sys.path.append(...)
     
     print(f"DEBUG: Startup Args: {sys.argv}")
+    args = list(sys.argv) # Safe copy
     
-    qt_app = QApplication(sys.argv)
+    print("DEBUG: Init QApplication...")
+    qt_app = QApplication(args)
+    
+    print("DEBUG: Init KioskApp (Loading Views)...")
     window = KioskApp()
+    print("DEBUG: KioskApp Ready.")
     
-    if "--fullscreen" in sys.argv:
-        print("Starting in Fullscreen Mode")
+    if "--fullscreen" in args:
+        print("DEBUG: Mode = Fullscreen")
         # Force geometry to match screen (fix for no-WM environments)
         screen = qt_app.primaryScreen()
         rect = screen.geometry()
