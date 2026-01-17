@@ -14,10 +14,17 @@ class ScreensaverView(QWidget):
         # Floating Label
         self.lbl = QLabel("SYSTEM STANDBY\nTOUCH TO RESUME", self)
         self.lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.lbl.setStyleSheet("color: #00E5FF; font-family: 'Courier New'; font-weight: bold;")
-        font = QFont("Courier New", 100) # Increased to 100 for visibility
-        font.setBold(True)
-        self.lbl.setFont(font)
+        # Use simple CSS for everything to avoid QFont/QSS conflicts
+        self.lbl.setStyleSheet("""
+            color: #00E5FF; 
+            font-family: 'Courier New'; 
+            font-weight: bold; 
+            font-size: 80px;
+            border: 2px solid #00E5FF;
+            padding: 20px;
+            background-color: rgba(0, 20, 40, 200);
+            border-radius: 10px;
+        """)
         self.lbl.adjustSize()
         
         # Animation Timer
@@ -70,7 +77,16 @@ class ScreensaverView(QWidget):
         # Change color on bounce for fun
         colors = ["#00E5FF", "#FFD700", "#FF0055", "#00FF00"]
         c = random.choice(colors)
-        self.lbl.setStyleSheet(f"color: {c}; font-family: 'Courier New'; font-weight: bold;")
+        self.lbl.setStyleSheet(f"""
+            color: {c}; 
+            font-family: 'Courier New'; 
+            font-weight: bold; 
+            font-size: 80px;
+            border: 2px solid {c};
+            padding: 20px;
+            background-color: rgba(0, 20, 40, 200);
+            border-radius: 10px;
+        """)
 
     def mousePressEvent(self, event):
         self.wake_up.emit()
