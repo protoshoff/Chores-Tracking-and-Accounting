@@ -125,7 +125,7 @@ class KioskApp(QMainWindow):
         # Install Event Filter to catch all input
         QApplication.instance().installEventFilter(self)
         
-        self.show()
+        # self.show() -> Moved to main.py to handle args better
 
     def eventFilter(self, obj, event):
         if event.type() in (QEvent.MouseButtonPress, QEvent.MouseMove, QEvent.KeyPress, QEvent.TouchBegin):

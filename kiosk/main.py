@@ -10,7 +10,11 @@ def main():
     window = KioskApp()
     
     if "--fullscreen" in sys.argv:
+        print("Starting in Fullscreen Mode")
         window.showFullScreen()
+    else:
+        print("Starting in Windowed Mode")
+        window.show()
     
     sys.exit(qt_app.exec())
 
