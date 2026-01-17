@@ -57,8 +57,12 @@ class KioskApp(QMainWindow):
         if os.path.exists(font_dir):
             for f in os.listdir(font_dir):
                 if f.endswith(".ttf"):
-                    QFontDatabase.addApplicationFont(os.path.join(font_dir, f))
-                    print(f"DEBUG: Loaded Font File {f}")
+                    font_id = QFontDatabase.addApplicationFont(os.path.join(font_dir, f))
+                    if font_id != -1:
+                        families = QFontDatabase.applicationFontFamilies(font_id)
+                        print(f"DEBUG: Loaded Font File {f} -> Families: {families}")
+                    else:
+                        print(f"DEBUG: Failed to load font {f}")
         
         # Debug: Print available font families to check for Roboto/Orbitron
         print("DEBUG: Available Font Families (Partial):", QFontDatabase.families()[:50])
