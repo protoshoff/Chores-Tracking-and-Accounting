@@ -14,7 +14,6 @@ from .views.pin_pad import PinPad
 from .views.admin_dashboard import AdminDashboardView
 from .views.manage_users import ManageUsersView
 from .views.manage_chores import ManageChoresView
-from .views.ledger import LedgerView
 
 class HeaderWidget(QFrame): 
     # Re-introducing Header but styling it transparently later if needed
@@ -92,6 +91,7 @@ class KioskApp(QMainWindow):
         self.view_quest = QuestLogView()
         print("DEBUG: Init LedgerView...")
         try:
+            from .views.ledger import LedgerView
             self.view_ledger = LedgerView()
         except Exception as e:
             print(f"CRITICAL ERROR initializing LedgerView: {e}")
