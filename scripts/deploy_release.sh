@@ -53,9 +53,16 @@ ln -sfn "$NEW_release_DIR" "$APP_ROOT/current"
 
 # 8. Restart Services
 # 8. Restart Services
+# 8. Update Service Definitions (Ensure we use repo version)
+echo "Updating Systemd Services..."
+sudo cp "$NEW_release_DIR/ops/chores-kiosk.service" /etc/systemd/system/
+sudo cp "$NEW_release_DIR/ops/chores-backend.service" /etc/systemd/system/
+sudo systemctl daemon-reload
+
+# 9. Restart Services
 echo "Restarting Services..."
-# Only restart if they are already running/installed
-sudo systemctl try-restart chores-backend || echo "Backend service not installed yet (skipping restart)"
-sudo systemctl try-restart chores-kiosk || echo "Kiosk service not installed yet (skipping restart)"
+# Enable and start/restart
+sudo systemctl enable chores-backend chores-kiosk
+sudo systemctl restart chores-backend chores-kiosk
 
 echo "Deployment Complete: $TIMESTAMP"
