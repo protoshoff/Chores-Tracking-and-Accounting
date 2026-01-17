@@ -293,9 +293,12 @@
             <div class="card">
                 <h3>Quick Actions</h3>
                 <div class="flex-between">
-                    <button class="action-btn" onclick="switchView('approvals')">REVIEW PENDING</button>
-                    <button class="action-btn" onclick="switchView('ledger')">PAYOUT ALLOWANCE</button>
-                    <button class="action-btn" onclick="switchView('chores')">MANAGE QUESTS</button>
+                    <button class="action-btn" onclick="switchView('approvals')"><i class="fa fa-clipboard-check"></i>
+                        REVIEW PENDING</button>
+                    <button class="action-btn" onclick="switchView('ledger')"><i class="fa fa-coins"></i> PAYOUT
+                        ALLOWANCE</button>
+                    <button class="action-btn" onclick="switchView('chores')"><i class="fa fa-tasks"></i> MANAGE
+                        QUESTS</button>
                 </div>
             </div>
         </section>
@@ -312,7 +315,7 @@
         <section id="view-kids" class="view-section">
             <div class="flex-between">
                 <h2>Crew Roster</h2>
-                <button class="action-btn" onclick="showAddKidModal()">+ RECRUIT</button>
+                <button class="action-btn" onclick="showAddKidModal()"><i class="fa fa-plus"></i> RECRUIT</button>
             </div>
             <div id="kids-grid" class="grid">
                 <!-- Kids cards injected here -->
@@ -323,7 +326,7 @@
         <section id="view-chores" class="view-section">
             <div class="flex-between">
                 <h2>Quest Database</h2>
-                <button class="action-btn" onclick="showAddChoreModal()">+ NEW QUEST</button>
+                <button class="action-btn" onclick="showAddChoreModal()"><i class="fa fa-plus"></i> NEW QUEST</button>
             </div>
             <table id="chores-table">
                 <thead>
@@ -356,8 +359,10 @@
                         <div class="balance-display" id="ledger-balance">$0.00</div>
                     </div>
                     <div>
-                        <button class="action-btn danger" onclick="doPayout()">PAYOUT ALL</button>
-                        <button class="action-btn" onclick="showAdjustModal()">ADJUST (+/-)</button>
+                        <button class="action-btn danger" onclick="doPayout()"><i class="fa fa-money-bill-wave"></i>
+                            PAYOUT ALL</button>
+                        <button class="action-btn" onclick="showAdjustModal()"><i class="fa fa-sliders-h"></i> ADJUST
+                            (+/-)</button>
                     </div>
                 </div>
 
@@ -395,13 +400,37 @@
         <!-- Dynamic Content -->
     </div>
 
+    <!-- TOASTS -->
+    <div id="toast-container" style="position:fixed; bottom:20px; right:20px; z-index:2000;"></div>
+
     <script>
-        const API_BASE = ""; // Relative path /api is used below
+        const API_BASE = "";
 
         // UTILS
         function $(sel) { return document.querySelector(sel); }
         function $all(sel) { return document.querySelectorAll(sel); }
         function formatMoney(cents) { return "$" + (cents / 100).toFixed(2); }
+
+        function showToast(msg, type = 'info') {
+            const c = $('#toast-container');
+            const el = document.createElement('div');
+            el.style.background = 'rgba(0, 20, 40, 0.95)';
+            el.style.border = type === 'error' ? '1px solid var(--accent)' : '1px solid var(--primary)';
+            el.style.color = 'white';
+            el.style.padding = '1rem 2rem';
+            el.style.marginBottom = '10px';
+            el.style.borderRadius = '4px';
+            el.style.boxShadow = '0 0 10px rgba(0,0,0,0.5)';
+            el.style.fontFamily = "'Orbitron', sans-serif";
+            el.style.animation = 'fadeIn 0.3s';
+            el.innerHTML = `<i class="fa ${type === 'error' ? 'fa-exclamation-triangle' : 'fa-check-circle'}" style="color:${type === 'error' ? 'var(--accent)' : 'var(--primary)'}"></i> &nbsp; ${msg}`;
+
+            c.appendChild(el);
+            setTimeout(() => {
+                el.style.opacity = '0';
+                setTimeout(() => el.remove(), 300);
+            }, 3000);
+        }
 
         // NAV
         function switchView(viewName) {
@@ -428,7 +457,7 @@
                 return await res.json();
             } catch (e) {
                 console.error(e);
-                alert("API Error: " + e.message);
+                showToast("API Error: " + e.message, 'error');
                 return null;
             }
         }
@@ -441,8 +470,8 @@
                     $('#status-indicator').textContent = `ONLINE (v${status.version})`;
                     $('#status-indicator').className = 'online';
                     $('#dashboard-stats').innerHTML = `
-                    <p>System Time: ${status.timestamp}</p>
-                    <p>Uptime: ${status.uptime}</p>
+                    <p><i class="fa fa-clock"></i> System Time: ${status.timestamp}</p>
+                    <p><i class="fa fa-server"></i> Uptime: ${status.uptime}</p>
                 `;
                 }
             } catch (e) {
@@ -451,7 +480,6 @@
             }
 
             loadKids();
-            // Optional: Default to approvals if param set?
         }
 
         // --- APPROVALS ---
@@ -461,13 +489,11 @@
             cont.innerHTML = "";
 
             if (!list || list.length === 0) {
-                cont.innerHTML = "<div style='color:var(--text-dim)'>No pending authorizations.</div>";
+                cont.innerHTML = "<div style='color:var(--text-dim)'><i class='fa fa-check-double'></i> &nbsp; All caught up! No pending authorizations.</div>";
                 return;
             }
 
             // Group by Date
-            // Format 2026-01-15 -> "Jan 15"
-            // Sort keys descending
             const groups = {};
             list.forEach(item => {
                 const d = item.date.split('T')[0];
@@ -475,14 +501,11 @@
                 groups[d].push(item);
             });
 
-            // Iterate Dates Descending (Newest First)
             const sortedDates = Object.keys(groups).sort().reverse();
 
             sortedDates.forEach(dateStr => {
-                // Header
-                cont.innerHTML += `<h3 style='color:var(--primary); border-bottom:1px solid var(--primary); padding-bottom:5px; margin-top:20px;'>${dateStr}</h3>`;
+                cont.innerHTML += `<h3 style='color:var(--primary); border-bottom:1px solid var(--primary); padding-bottom:5px; margin-top:20px;'><i class='fa fa-calendar-alt'></i> ${dateStr}</h3>`;
 
-                // Items
                 groups[dateStr].forEach(item => {
                     cont.innerHTML += `
                     <div class="card flex-between" style="border-left: 4px solid var(--warning);">
@@ -491,8 +514,8 @@
                             <div style="color:var(--text-dim)">${item.chore_name}</div>
                         </div>
                         <div style="display:flex; gap:10px;">
-                            <button class="action-btn" onclick="review('${item.id}', 'APPROVE')">APPROVE</button>
-                            <button class="action-btn danger" onclick="review('${item.id}', 'REJECT')">REJECT</button>
+                            <button class="action-btn" onclick="review('${item.id}', 'APPROVE')"><i class="fa fa-beer"></i> APPROVE</button>
+                            <button class="action-btn danger" onclick="review('${item.id}', 'REJECT')"><i class="fa fa-times"></i> REJECT</button>
                         </div>
                     </div>`;
                 });
@@ -501,7 +524,10 @@
 
         async function review(id, action) {
             const res = await api(`/approvals/${id}/review`, 'POST', { action: action });
-            if (res) loadApprovals();
+            if (res) {
+                showToast(`Mission ${action === 'APPROVE' ? 'Authorized' : 'Rejected'}`, 'success');
+                loadApprovals();
+            }
         }
 
         // KIDS
@@ -514,10 +540,10 @@
             kids.forEach(k => {
                 grid.innerHTML += `
                 <div class="card">
-                    <h3>${k.name}</h3>
+                    <h3><i class="fa fa-user-astronaut"></i> ${k.name}</h3>
                     <div class="balance-display">${formatMoney(k.balance_cents)}</div>
                     <div style="margin-top:1rem;">
-                        <button class="action-btn" onclick="editKid(${k.id}, '${k.name}')">EDIT</button>
+                        <button class="action-btn" onclick="editKid(${k.id}, '${k.name}')"><i class="fa fa-pen"></i> EDIT</button>
                     </div>
                 </div>
             `;
@@ -527,24 +553,29 @@
         function showAddKidModal() {
             showModal(`
             <h3>Recruit Crew Member</h3>
-            <input id="kid-name" placeholder="Name" />
+            <div style="margin-bottom:1rem;"><i class="fa fa-user-plus fa-3x" style="color:var(--primary)"></i></div>
+            <input id="kid-name" placeholder="Enter Name" autofocus />
             <div class="flex-between">
                 <button class="action-btn danger" onclick="closeModal()">CANCEL</button>
-                <button class="action-btn" onclick="submitAddKid()">SAVE</button>
+                <button class="action-btn" onclick="submitAddKid()">CONFIRM</button>
             </div>
         `);
         }
 
         async function submitAddKid() {
             const name = $('#kid-name').value;
-            if (!name) return;
+            if (!name) return showToast("Name required", 'error');
             const res = await api('/management/kids', 'POST', { name: name });
-            if (res) { closeModal(); loadKids(); }
+            if (res) {
+                showToast("Crew Member Recruited", 'success');
+                closeModal();
+                loadKids();
+            }
         }
 
         function editKid(id, currentName) {
             showModal(`
-            <h3>Edit Crew Member</h3>
+            <h3>Edit Profile</h3>
             <input id="edit-kid-name" value="${currentName}" placeholder="Name" />
             <div class="flex-between">
                 <button class="action-btn danger" onclick="closeModal()">CANCEL</button>
@@ -555,10 +586,13 @@
 
         async function submitEditKid(id) {
             const name = $('#edit-kid-name').value;
-            if (!name) return;
-            // Calls PUT /management/kids/{id}
+            if (!name) return showToast("Name required", 'error');
             const res = await api(`/management/kids/${id}`, 'PUT', { name: name });
-            if (res) { closeModal(); loadKids(); }
+            if (res) {
+                showToast("Profile Updated", 'success');
+                closeModal();
+                loadKids();
+            }
         }
 
         // CHORES
@@ -572,9 +606,9 @@
                 <tr>
                     <td>${c.name}</td>
                     <td>${formatMoney(c.weight)}</td>
-                    <td>${c.frequency}</td>
+                    <td><span class="badge">${c.frequency}</span></td>
                     <td>
-                        <button class="action-btn danger" onclick="deleteChore(${c.id})">DEL</button>
+                        <button class="action-btn danger" onclick="deleteChore(${c.id})"><i class="fa fa-trash"></i></button>
                     </td>
                 </tr>
             `;
@@ -582,29 +616,23 @@
         }
 
         function showAddChoreModal() {
-            // Need kid selection too! Chores are per-kid in this DB schema (kid_id foreign key)
-            // But wait, the API requires kid_id. The UI didn't have kid selection in the modal??
-            // Let's check api requirements. 
-            // ChoreCreate: kid_id, name, weight, frequency.
-            // The previous code didn't send kid_id! It would fail.
-            // I need to add a kid selector to the modal.
-
             api('/kids').then(kids => {
                 let options = "";
                 kids.forEach(k => options += `<option value="${k.id}">${k.name}</option>`);
 
                 showModal(`
                     <h3>New Quest</h3>
+                    <label>Assignee:</label>
                     <select id="chore-kid">${options}</select>
-                    <input id="chore-name" placeholder="Title" />
+                    <input id="chore-name" placeholder="Quest Title" />
                     <input id="chore-val" type="number" placeholder="Reward (cents)" />
                     <select id="chore-type">
                         <option value="DAILY">Daily</option>
                         <option value="WEEKLY">Weekly</option>
                     </select>
-                    <div class="flex-between">
+                    <div class="flex-between" style="margin-top:1rem;">
                         <button class="action-btn danger" onclick="closeModal()">CANCEL</button>
-                        <button class="action-btn" onclick="submitAddChore()">SAVE</button>
+                        <button class="action-btn" onclick="submitAddChore()">CREATE</button>
                     </div>
                 `);
             });
@@ -616,7 +644,7 @@
             const val = parseInt($('#chore-val').value);
             const freq = $('#chore-type').value;
 
-            if (!name || isNaN(val) || !kidId) return;
+            if (!name || isNaN(val) || !kidId) return showToast("Invalid Data", 'error');
 
             const res = await api('/management/chores', 'POST', {
                 kid_id: parseInt(kidId),
@@ -624,12 +652,17 @@
                 weight: val,
                 frequency: freq
             });
-            if (res) { closeModal(); loadChores(); }
+            if (res) {
+                showToast("Quest Created", 'success');
+                closeModal();
+                loadChores();
+            }
         }
 
         async function deleteChore(id) {
-            if (confirm("Delete this quest?")) {
+            if (confirm("Delete this quest from the database?")) {
                 await api(`/management/chores/${id}`, 'DELETE');
+                showToast("Quest Deleted", 'success');
                 loadChores();
             }
         }
@@ -651,8 +684,7 @@
             if (!id) { panel.classList.add('hidden'); return; }
             panel.classList.remove('hidden');
 
-            // Parallel fetch balance + history in real app, but serial is fine
-            const k = (await api('/kids')).find(x => x.id == id); // lazy refresh
+            const k = (await api('/kids')).find(x => x.id == id);
             $('#ledger-balance').textContent = formatMoney(k.balance_cents);
 
             const history = await api(`/ledger/${id}/history`);
@@ -667,7 +699,7 @@
                     <td style="color:${isPos ? 'var(--success)' : 'var(--accent)'}">
                         ${isPos ? '+' : ''}${formatMoney(h.amount_cents)}
                     </td>
-                    <td><button class="action-btn danger" style="padding:0.2rem" onclick="deleteTx(${h.id})">X</button></td>
+                    <td><button class="action-btn danger" style="padding:0.2rem 0.5rem" onclick="deleteTx(${h.id})"><i class="fa fa-undo"></i></button></td>
                 </tr>
             `;
             });
@@ -678,6 +710,7 @@
             if (!id) return;
             if (confirm("Process Full Payout? This will reset balance to $0.")) {
                 await api(`/ledger/${id}/payout`, 'POST');
+                showToast("Payout Processed", 'success');
                 loadLedgerHistory();
             }
         }
@@ -685,6 +718,7 @@
         async function deleteTx(id) {
             if (confirm("Reverse and delete this transaction?")) {
                 await api(`/ledger/transaction/${id}`, 'DELETE');
+                showToast("Transaction Reversed", 'success');
                 loadLedgerHistory();
             }
         }
@@ -693,7 +727,7 @@
             showModal(`
             <h3>Manual Adjustment</h3>
             <input id="adj-amt" type="number" placeholder="Amount (cents)" />
-            <input id="adj-desc" placeholder="Reason" />
+            <input id="adj-desc" placeholder="Reason (e.g. Bonus)" />
             <div class="flex-between">
                 <button class="action-btn danger" onclick="closeModal()">CANCEL</button>
                 <div style="display:flex; gap:0.5rem">
@@ -708,20 +742,16 @@
             const id = $('#ledger-kid-select').value;
             const amt = parseInt($('#adj-amt').value);
             const desc = $('#adj-desc').value || "Manual";
-            if (!id || isNaN(amt)) return;
+            if (!id || isNaN(amt)) return showToast("Invalid Amount", 'error');
 
             const type = sign > 0 ? "BONUS" : "SPEND";
             await api('/ledger/transaction', 'POST', {
                 kid_id: parseInt(id),
-                amount_cents: amt * sign, // Wait, api expects positive usually?
-                // Looking at api: amount_cents is passed directly.
-                // If I send -500, it adds -500.
-                // So pass raw signed value. 
-                // Wait, UI input is usually positive.
                 amount_cents: Math.abs(amt) * sign,
                 type: type,
                 description: desc
             });
+            showToast("Ledger Updated", 'success');
             closeModal();
             loadLedgerHistory();
         }
@@ -729,16 +759,16 @@
         // SETTINGS
         async function updatePin() {
             const p = $('#new-pin').value;
-            if (p.length < 4) return alert("PIN too short");
+            if (p.length < 4) return showToast("PIN must be 4 digits", 'error');
             await api('/system/pin', 'PUT', { pin: p });
-            alert("PIN Updated");
+            showToast("System PIN Updated", 'success');
             $('#new-pin').value = "";
         }
 
         // MODAL SYSTEM
         function showModal(html) {
             const c = $('#modal-container');
-            c.innerHTML = `<div class="modal">${html}</div>`;
+            c.innerHTML = `<div class="modal fade-in">${html}</div>`;
             c.classList.remove('hidden');
         }
         function closeModal() {
