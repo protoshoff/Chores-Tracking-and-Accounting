@@ -11,11 +11,11 @@ class HoloButton(QPushButton):
         self.setMinimumHeight(50)
         self.setMinimumWidth(120)
         
-        # Glow Effect
+        # Glow Effect - Subtle Depth instead of Neon
         self._glow = QGraphicsDropShadowEffect(self)
-        self._glow.setBlurRadius(15)
-        self._glow.setColor(QColor("#00E5FF"))
-        self._glow.setOffset(0, 0)
+        self._glow.setBlurRadius(10)
+        self._glow.setColor(QColor(0, 0, 0, 100)) # Black shadow
+        self._glow.setOffset(2, 2)
         self.setGraphicsEffect(self._glow)
 
     def mousePressEvent(self, e):
@@ -91,12 +91,13 @@ class HoloFrame(QFrame):
         self.title = title
         self.setStyleSheet("background: transparent;")
         
-        # Glow
-        self._glow = QGraphicsDropShadowEffect(self)
-        self._glow.setBlurRadius(30)
-        self._glow.setColor(QColor("#007BFF"))
-        self._glow.setOffset(0,0)
-        self.setGraphicsEffect(self._glow)
+        # Glow (Replaced with specific shadow for depth, or disabled for clean look)
+        # self._glow = QGraphicsDropShadowEffect(self)
+        # self._glow.setBlurRadius(30)
+        # self._glow.setColor(QColor("#007BFF"))
+        # self._glow.setOffset(0,0)
+        # self.setGraphicsEffect(self._glow)
+         pass
 
     def paintEvent(self, event):
         painter = QPainter(self)
@@ -135,8 +136,8 @@ class HoloFrame(QFrame):
         painter.drawPath(path)
         
         # Border
-        pen = QPen(QColor(0, 229, 255, 80)) # Cyan, 30% opacity to match Web Admin
-        pen.setWidth(2)
+        pen = QPen(QColor(255, 255, 255, 40)) # White, low opacity (Glassy)
+        pen.setWidth(1) # Thinner border
         painter.setPen(pen)
         painter.setBrush(Qt.BrushStyle.NoBrush)
         painter.drawPath(path)
