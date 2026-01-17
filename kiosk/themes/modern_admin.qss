@@ -1,0 +1,88 @@
+/* Modern Admin Theme (Matching Web Portal) */
+
+/* Global Reset */
+QWidget {
+    font-family: 'Roboto', 'Verdana', sans-serif;
+    font-size: 16px;
+    color: #FFFFFF;
+    background-color: transparent;
+}
+
+/* Main Window */
+QMainWindow {
+    background-color: #050510;
+    /* No bg image for modern clean look, or subtle gradient */
+}
+
+/* Headers */
+QLabel#HoloHeader, QLabel#CardTitle {
+    font-family: 'Orbitron', sans-serif;
+    font-weight: bold;
+    color: #FFFFFF;
+}
+
+/* Web Admin Brand Color for Headers */
+QLabel#HoloHeader {
+    color: #00E5FF;
+    font-size: 32px;
+}
+
+/* Panels (Cards) */
+/* Web: rgba(0, 20, 40, 0.8) border: 1px solid rgba(0, 229, 255, 0.3) backdrop-filter: blur(5px) */
+QFrame#HoloFrameBody {
+    background-color: rgba(0, 20, 40, 200);
+    border: 1px solid rgba(0, 229, 255, 76); /* ~30% alpha */
+    border-radius: 8px;
+}
+
+/* Buttons */
+/* Web: rgba(0, 229, 255, 0.1) border: 1px solid #00E5FF color: #00E5FF */
+QPushButton {
+    font-family: 'Orbitron', sans-serif;
+    background-color: rgba(0, 229, 255, 25);
+    border: 1px solid #00E5FF;
+    color: #00E5FF;
+    border-radius: 0px; 
+    padding: 10px;
+    font-weight: bold;
+}
+
+QPushButton:pressed {
+    background-color: #00E5FF;
+    color: #050510;
+}
+
+/* Danger Button Variation (Manual assignment in code or object name needed for exact match, 
+   but for now we style fallback or specific IDs if we added them. 
+   We'll treat standard buttons as Primary) */
+
+/* Tables */
+QTableWidget {
+    background-color: rgba(0, 20, 40, 200);
+    border: 1px solid rgba(0, 229, 255, 76);
+    gridline-color: rgba(255, 255, 255, 25);
+    color: #FFFFFF;
+}
+
+QHeaderView::section {
+    background-color: rgba(0, 0, 0, 128);
+    color: #00E5FF;
+    border: none;
+    padding: 8px;
+    font-family: 'Orbitron';
+    font-weight: bold;
+    border-bottom: 2px solid #00E5FF;
+}
+
+/* ScrollBars */
+QScrollBar:vertical {
+    border: none;
+    background: rgba(0,0,0,0.5);
+    width: 10px;
+    margin: 0px;
+}
+QScrollBar::handle:vertical {
+    background: #00E5FF;
+    min-height: 20px;
+    border-radius: 5px;
+}

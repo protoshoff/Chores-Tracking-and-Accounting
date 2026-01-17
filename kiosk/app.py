@@ -74,16 +74,19 @@ class KioskApp(QMainWindow):
         # Load Stylesheet
         try:
             import os
-            base_dir = os.path.dirname(os.path.dirname(__file__)) # Go up from kiosk/app.py to root
-            style_path = os.path.join(base_dir, "kiosk", "styles_sci_fi.qss")
+            # Theme Configuration
+            THEME_NAME = "modern_admin.qss" 
+            # Options: "scifi_v1.qss", "modern_admin.qss"
             
-            with open(style_path, "r") as f:
+            base_dir = os.path.dirname(os.path.dirname(__file__)) # Go up from kiosk/app.py to root
+            theme_path = os.path.join(base_dir, "kiosk", "themes", THEME_NAME)
+            
+            with open(theme_path, "r") as f:
                 style_content = f.read()
-                print(f"DEBUG: Loading Stylesheet from {style_path}")
-                print(f"DEBUG: Content Start: {style_content[:50]}")
+                print(f"DEBUG: Loading Theme: {THEME_NAME}")
                 self.setStyleSheet(style_content)
         except Exception as e:
-            print(f"Warning: styles_sci_fi.qss not found. Error: {e}")
+            print(f"Warning: Theme {THEME_NAME} not found. Error: {e}")
 
         # Central Container
         central = QWidget()
