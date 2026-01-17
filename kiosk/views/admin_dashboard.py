@@ -65,28 +65,41 @@ class AdminDashboardView(QWidget):
         grid.addWidget(btn_pin, 2, 0, 1, 2) # Span 2 columns
 
     def change_pin_flow(self):
-        from .pin_pad import PinPad
         from ..components.holo_keyboard import HoloKeyboard
+        from ..components.holo_alert import HoloAlert
         from ..services.api import ApiService
         
-        # 1. Ask for New PIN using Keyboard (so we get full keypad if needed, or re-use PinPad logic?)
-        # Let's use a specialized PinPad mode or just a text dialog.
-        # Ideally we want the PinPad UI but for "Entry".
-        # For simplicity in v0.1, let's use the HoloKeyboard since it has numbers now.
+        # 1. Ask for New PIN
+        dlg = HoloKeyboard(self.window(), "", title="ENTER NEW PIN")
+        self._center_dialog(dlg)
         
-        dlg = HoloKeyboard(self.window(), "")
-        # Center
+        if dlg.exec():
+            new_pin = dlg.get_text()
+            if len(new_pin) < 4:
+                HoloAlert("INVALID", "PIN must be at least 4 digits.", self.window(), is_error=True).exec()
+                return
+
+            # 2. Confirm PIN
+            dlg_confirm = HoloKeyboard(self.window(), "", title="CONFIRM PIN")
+            self._center_dialog(dlg_confirm)
+            
+            if dlg_confirm.exec():
+                confirm_pin = dlg_confirm.get_text()
+                
+                if new_pin != confirm_pin:
+                    HoloAlert("MISMATCH", "PINs did not match. Please try again.", self.window(), is_error=True).exec()
+                    return
+                    
+                # 3. Update API
+                success = ApiService.update_pin(new_pin)
+                if success:
+                    HoloAlert("SUCCESS", "System access code updated successfully.", self.window()).exec()
+                else:
+                    HoloAlert("ERROR", "Failed to update PIN. Check logs.", self.window(), is_error=True).exec()
+
+    def _center_dialog(self, dlg):
         rect = self.window().geometry()
         dlg.move(
             rect.center().x() - dlg.width() // 2,
             rect.center().y() - dlg.height() // 2
         )
-        
-        if dlg.exec():
-            new_pin = dlg.get_text()
-            if len(new_pin) >= 4:
-                success = ApiService.update_pin(new_pin)
-                # We could show a toast here?
-                print(f"PIN Update Success: {success}")
-            else:
-                print("PIN too short")

@@ -3,16 +3,23 @@ from PySide6.QtCore import Qt, Signal
 from .holo_widgets import HoloButton
 
 class HoloKeyboard(QDialog):
-    def __init__(self, parent=None, initial_text=""):
+    def __init__(self, parent=None, initial_text="", title="KEYPAD"):
         super().__init__(parent)
         self.setWindowFlags(Qt.WindowType.FramelessWindowHint | Qt.WindowType.Dialog)
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
-        self.setFixedSize(800, 450)
+        self.setFixedSize(800, 500) # Slightly taller for title
         
         self.result_text = initial_text
         
         layout = QVBoxLayout(self)
         layout.setContentsMargins(20, 20, 20, 20)
+        
+        # Title
+        if title:
+             lbl_title = QLabel(title)
+             lbl_title.setStyleSheet("font-size: 20px; color: #FFD700; font-weight: bold; margin-bottom: 5px;")
+             lbl_title.setAlignment(Qt.AlignmentFlag.AlignCenter)
+             layout.addWidget(lbl_title)
         
         # Display Area
         self.display = QLabel(initial_text)
