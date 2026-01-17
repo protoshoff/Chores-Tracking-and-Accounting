@@ -1,63 +1,631 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chores Admin</title>
+    <title>Chores Control Deck</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto:wght@300;400;700&display=swap"
+        rel="stylesheet">
     <style>
-        body { font-family: sans-serif; padding: 20px; background: #f0f0f0; }
-        .card { background: white; padding: 20px; border-radius: 8px; margin-top: 20px; }
-        h1 { color: #333; }
-        .success { color: green; }
-        .error { color: red; }
+        :root {
+            --bg-color: #050510;
+            --panel-bg: rgba(0, 20, 40, 0.8);
+            --primary: #00E5FF;
+            --accent: #FF0055;
+            --success: #00FF9D;
+            --warning: #FFD700;
+            --text-main: #FFFFFF;
+            --text-dim: #8899AA;
+            --border: 1px solid var(--primary);
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        h1,
+        h2,
+        h3,
+        button,
+        .sci-fi-font {
+            font-family: 'Orbitron', sans-serif;
+            text-transform: uppercase;
+        }
+
+        /* Header */
+        header {
+            background: rgba(0, 0, 0, 0.5);
+            border-bottom: 2px solid var(--primary);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .brand {
+            font-size: 1.5rem;
+            color: var(--primary);
+            text-shadow: 0 0 10px var(--primary);
+        }
+
+        #status-indicator {
+            font-size: 0.9rem;
+            color: var(--text-dim);
+        }
+
+        #status-indicator.online {
+            color: var(--success);
+        }
+
+        #status-indicator.offline {
+            color: var(--accent);
+        }
+
+        /* Nav */
+        nav {
+            background: rgba(0, 20, 40, 0.9);
+            padding: 0.5rem 2rem;
+            display: flex;
+            gap: 1rem;
+            overflow-x: auto;
+        }
+
+        .nav-btn {
+            background: transparent;
+            border: 1px solid transparent;
+            color: var(--text-dim);
+            padding: 0.8rem 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+        }
+
+        .nav-btn:hover {
+            color: var(--primary);
+            background: rgba(0, 229, 255, 0.1);
+        }
+
+        .nav-btn.active {
+            color: var(--bg-color);
+            background: var(--primary);
+            box-shadow: 0 0 15px var(--primary);
+        }
+
+        /* Main Content */
+        main {
+            flex: 1;
+            padding: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .view-section {
+            display: none;
+            animation: fadeIn 0.3s;
+        }
+
+        .view-section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Cards & Lists */
+        .card {
+            background: var(--panel-bg);
+            border: 1px solid rgba(0, 229, 255, 0.3);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            backdrop-filter: blur(5px);
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .flex-between {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        /* Controls */
+        button.action-btn {
+            background: rgba(0, 229, 255, 0.1);
+            border: 1px solid var(--primary);
+            color: var(--primary);
+            padding: 0.6rem 1.2rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        button.action-btn:hover {
+            background: var(--primary);
+            color: var(--bg-color);
+        }
+
+        button.danger {
+            border-color: var(--accent);
+            color: var(--accent);
+            background: rgba(255, 0, 85, 0.1);
+        }
+
+        button.danger:hover {
+            background: var(--accent);
+            color: white;
+        }
+
+        input,
+        select {
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid #445566;
+            color: white;
+            padding: 0.5rem;
+            border-radius: 4px;
+            width: 100%;
+            margin-bottom: 0.5rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        th,
+        td {
+            text-align: left;
+            padding: 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        th {
+            color: var(--primary);
+        }
+
+        /* Utility */
+        .balance-display {
+            font-size: 2rem;
+            color: var(--primary);
+            font-weight: bold;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal {
+            background: #0a1020;
+            border: 2px solid var(--primary);
+            padding: 2rem;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 0 30px rgba(0, 229, 255, 0.2);
+        }
     </style>
 </head>
-<body>
-    <h1>Chores Admin Panel</h1>
-    
-    <div class="card">
-        <h2>System Status</h2>
-        <div id="status">Checking...</div>
-    </div>
 
-    <div class="card">
-        <h2>Kids</h2>
-        <ul id="kids-list">Loading...</ul>
+<body>
+
+    <header>
+        <div class="brand">CHORES :: COMMAND</div>
+        <div id="status-indicator">CONNECTING...</div>
+    </header>
+
+    <nav>
+        <button class="nav-btn active" onclick="switchView('overview')">OVERVIEW</button>
+        <button class="nav-btn" onclick="switchView('kids')">CREW</button>
+        <button class="nav-btn" onclick="switchView('chores')">QUESTS</button>
+        <button class="nav-btn" onclick="switchView('ledger')">LEDGER</button>
+        <button class="nav-btn" onclick="switchView('settings')">SYSTEM</button>
+    </nav>
+
+    <main>
+        <!-- OVERVIEW -->
+        <section id="view-overview" class="view-section active">
+            <div class="card">
+                <h2>System Status</h2>
+                <div id="dashboard-stats">Loading stats...</div>
+            </div>
+
+            <div class="card">
+                <h3>Quick Actions</h3>
+                <div class="flex-between">
+                    <button class="action-btn" onclick="switchView('ledger')">PAYOUT ALLOWANCE</button>
+                    <button class="action-btn" onclick="switchView('chores')">MANAGE QUESTS</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- KIDS MANAGE -->
+        <section id="view-kids" class="view-section">
+            <div class="flex-between">
+                <h2>Crew Roster</h2>
+                <button class="action-btn" onclick="showAddKidModal()">+ RECRUIT</button>
+            </div>
+            <div id="kids-grid" class="grid">
+                <!-- Kids cards injected here -->
+            </div>
+        </section>
+
+        <!-- CHORES MANAGE -->
+        <section id="view-chores" class="view-section">
+            <div class="flex-between">
+                <h2>Quest Database</h2>
+                <button class="action-btn" onclick="showAddChoreModal()">+ NEW QUEST</button>
+            </div>
+            <table id="chores-table">
+                <thead>
+                    <tr>
+                        <th>NAME</th>
+                        <th>REWARD</th>
+                        <th>TYPE</th>
+                        <th>ACTIONS</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Rows -->
+                </tbody>
+            </table>
+        </section>
+
+        <!-- LEDGER -->
+        <section id="view-ledger" class="view-section">
+            <h2>Ledger Operations</h2>
+            <div style="margin-bottom: 1rem;">
+                <select id="ledger-kid-select" onchange="loadLedgerHistory()">
+                    <option value="">Select Crew Member...</option>
+                </select>
+            </div>
+
+            <div class="card hidden" id="ledger-panel">
+                <div class="flex-between">
+                    <div>
+                        <div style="color:var(--text-dim)">CURRENT BALANCE</div>
+                        <div class="balance-display" id="ledger-balance">$0.00</div>
+                    </div>
+                    <div>
+                        <button class="action-btn danger" onclick="doPayout()">PAYOUT ALL</button>
+                        <button class="action-btn" onclick="showAdjustModal()">ADJUST (+/-)</button>
+                    </div>
+                </div>
+
+                <h3>Transaction History</h3>
+                <table id="ledger-table">
+                    <thead>
+                        <tr>
+                            <th>DATE</th>
+                            <th>DESC</th>
+                            <th>AMOUNT</th>
+                            <th>ACTION</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- SETTINGS -->
+        <section id="view-settings" class="view-section">
+            <h2>System Configuration</h2>
+            <div class="card">
+                <h3>Security</h3>
+                <div style="display:flex; gap:1rem; align-items:center;">
+                    <input type="password" id="new-pin" placeholder="Enter New PIN (4 digits)" style="max-width:200px;">
+                    <button class="action-btn" onclick="updatePin()">UPDATE PIN</button>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- MODALS -->
+    <div id="modal-container" class="modal-overlay hidden">
+        <!-- Dynamic Content -->
     </div>
 
     <script>
-        const API_BASE = "http://localhost:8000/api";
+        const API_BASE = ""; // Relative path /api is used below
 
-        async function checkStatus() {
-            try {
-                const res = await fetch(`${API_BASE}/system/status`);
-                const data = await res.json();
-                document.getElementById('status').innerHTML = 
-                    `<span class="success">Online</span> (Version: ${data.version})`;
-            } catch (e) {
-                document.getElementById('status').innerHTML = 
-                    `<span class="error">Offline</span>`;
-            }
+        // UTILS
+        function $(sel) { return document.querySelector(sel); }
+        function $all(sel) { return document.querySelectorAll(sel); }
+        function formatMoney(cents) { return "$" + (cents / 100).toFixed(2); }
+
+        // NAV
+        function switchView(viewName) {
+            $all('.view-section').forEach(el => el.classList.remove('active'));
+            $(`#view-${viewName}`).classList.add('active');
+
+            $all('.nav-btn').forEach(el => el.classList.remove('active'));
+            $all(`.nav-btn[onclick="switchView('${viewName}')"]`).forEach(el => el.classList.add('active'));
+
+            if (viewName === 'kids') loadKids();
+            if (viewName === 'chores') loadChores();
+            if (viewName === 'ledger') loadKidsForLedger();
         }
 
-        async function loadKids() {
+        // API
+        async function api(endpoint, method = "GET", body = null) {
             try {
-                const res = await fetch(`${API_BASE}/kids`);
-                const kids = await res.json();
-                const list = document.getElementById('kids-list');
-                list.innerHTML = "";
-                kids.forEach(k => {
-                    const li = document.createElement('li');
-                    li.textContent = `${k.name} - Balance: $${(k.balance_cents/100).toFixed(2)}`;
-                    list.appendChild(li);
-                });
+                const opts = { method, headers: { 'Content-Type': 'application/json' } };
+                if (body) opts.body = JSON.stringify(body);
+                const res = await fetch(`/api${endpoint}`, opts);
+                if (!res.ok) throw new Error(res.statusText);
+                if (method === "DELETE") return true;
+                return await res.json();
             } catch (e) {
                 console.error(e);
+                alert("API Error: " + e.message);
+                return null;
             }
         }
 
-        checkStatus();
-        loadKids();
+        // INIT
+        async function init() {
+            try {
+                const status = await api('/system/status');
+                if (status) {
+                    $('#status-indicator').textContent = `ONLINE (v${status.version})`;
+                    $('#status-indicator').className = 'online';
+                    $('#dashboard-stats').innerHTML = `
+                    <p>System Time: ${status.timestamp}</p>
+                    <p>Uptime: ${status.uptime}</p>
+                `;
+                }
+            } catch (e) {
+                $('#status-indicator').textContent = 'OFFLINE';
+                $('#status-indicator').className = 'offline';
+            }
+
+            loadKids();
+        }
+
+        // KIDS
+        async function loadKids() {
+            const kids = await api('/kids');
+            if (!kids) return;
+
+            const grid = $('#kids-grid');
+            grid.innerHTML = "";
+            kids.forEach(k => {
+                grid.innerHTML += `
+                <div class="card">
+                    <h3>${k.name}</h3>
+                    <div class="balance-display">${formatMoney(k.balance_cents)}</div>
+                    <div style="margin-top:1rem;">
+                        <button class="action-btn" onclick="editKid(${k.id}, '${k.name}')">EDIT</button>
+                    </div>
+                </div>
+            `;
+            });
+        }
+
+        function showAddKidModal() {
+            showModal(`
+            <h3>Recruit Crew Member</h3>
+            <input id="kid-name" placeholder="Name" />
+            <div class="flex-between">
+                <button class="action-btn danger" onclick="closeModal()">CANCEL</button>
+                <button class="action-btn" onclick="submitAddKid()">SAVE</button>
+            </div>
+        `);
+        }
+
+        async function submitAddKid() {
+            const name = $('#kid-name').value;
+            if (!name) return;
+            const res = await api('/management/users', 'POST', { name: name });
+            if (res) { closeModal(); loadKids(); }
+        }
+
+        // CHORES
+        async function loadChores() {
+            const chores = await api('/management/chores');
+            if (!chores) return;
+            const tbody = $('#chores-table tbody');
+            tbody.innerHTML = "";
+            chores.forEach(c => {
+                tbody.innerHTML += `
+                <tr>
+                    <td>${c.name}</td>
+                    <td>${formatMoney(c.value_cents)}</td>
+                    <td>${c.is_weekly ? 'WEEKLY' : 'DAILY'}</td>
+                    <td>
+                        <button class="action-btn danger" onclick="deleteChore(${c.id})">DEL</button>
+                    </td>
+                </tr>
+            `;
+            });
+        }
+
+        function showAddChoreModal() {
+            showModal(`
+            <h3>New Quest</h3>
+            <input id="chore-name" placeholder="Title" />
+            <input id="chore-val" type="number" placeholder="Reward (cents)" />
+            <select id="chore-type">
+                <option value="false">Daily</option>
+                <option value="true">Weekly</option>
+            </select>
+            <div class="flex-between">
+                <button class="action-btn danger" onclick="closeModal()">CANCEL</button>
+                <button class="action-btn" onclick="submitAddChore()">SAVE</button>
+            </div>
+        `);
+        }
+
+        async function submitAddChore() {
+            const name = $('#chore-name').value;
+            const val = parseInt($('#chore-val').value);
+            const weekly = $('#chore-type').value === "true";
+            if (!name || isNaN(val)) return;
+
+            const res = await api('/management/chores', 'POST', {
+                name, value_cents: val, is_weekly: weekly, description: "", icon: "star"
+            });
+            if (res) { closeModal(); loadChores(); }
+        }
+
+        async function deleteChore(id) {
+            if (confirm("Delete this quest?")) {
+                await api(`/management/chores/${id}`, 'DELETE');
+                loadChores();
+            }
+        }
+
+        // LEDGER
+        async function loadKidsForLedger() {
+            const kids = await api('/kids');
+            const sel = $('#ledger-kid-select');
+            sel.innerHTML = '<option value="">Select Crew Member...</option>';
+            kids.forEach(k => {
+                sel.innerHTML += `<option value="${k.id}">${k.name}</option>`;
+            });
+        }
+
+        async function loadLedgerHistory() {
+            const id = $('#ledger-kid-select').value;
+            const panel = $('#ledger-panel');
+
+            if (!id) { panel.classList.add('hidden'); return; }
+            panel.classList.remove('hidden');
+
+            // Parallel fetch balance + history in real app, but serial is fine
+            const k = (await api('/kids')).find(x => x.id == id); // lazy refresh
+            $('#ledger-balance').textContent = formatMoney(k.balance_cents);
+
+            const history = await api(`/ledger/${id}/history`);
+            const tbody = $('#ledger-table tbody');
+            tbody.innerHTML = "";
+            history.forEach(h => {
+                const isPos = h.amount_cents > 0;
+                tbody.innerHTML += `
+                <tr>
+                    <td>${h.timestamp.split('T')[0]}</td>
+                    <td>${h.description}</td>
+                    <td style="color:${isPos ? 'var(--success)' : 'var(--accent)'}">
+                        ${isPos ? '+' : ''}${formatMoney(h.amount_cents)}
+                    </td>
+                    <td><button class="action-btn danger" style="padding:0.2rem" onclick="deleteTx(${h.id})">X</button></td>
+                </tr>
+            `;
+            });
+        }
+
+        async function doPayout() {
+            const id = $('#ledger-kid-select').value;
+            if (!id) return;
+            if (confirm("Process Full Payout? This will reset balance to $0.")) {
+                await api(`/ledger/${id}/payout`, 'POST');
+                loadLedgerHistory();
+            }
+        }
+
+        async function deleteTx(id) {
+            if (confirm("Reverse and delete this transaction?")) {
+                await api(`/ledger/transaction/${id}`, 'DELETE');
+                loadLedgerHistory();
+            }
+        }
+
+        function showAdjustModal() {
+            showModal(`
+            <h3>Manual Adjustment</h3>
+            <input id="adj-amt" type="number" placeholder="Amount (cents)" />
+            <input id="adj-desc" placeholder="Reason" />
+            <div class="flex-between">
+                <button class="action-btn danger" onclick="closeModal()">CANCEL</button>
+                <div style="display:flex; gap:0.5rem">
+                    <button class="action-btn danger" onclick="submitAdjust(-1)">SUBTRACT</button>
+                    <button class="action-btn" onclick="submitAdjust(1)">ADD</button>
+                </div>
+            </div>
+        `);
+        }
+
+        async function submitAdjust(sign) {
+            const id = $('#ledger-kid-select').value;
+            const amt = parseInt($('#adj-amt').value);
+            const desc = $('#adj-desc').value || "Manual";
+            if (!id || isNaN(amt)) return;
+
+            const type = sign > 0 ? "BONUS" : "SPEND";
+            await api('/ledger/transaction', 'POST', {
+                kid_id: parseInt(id),
+                amount_cents: amt * sign, // Wait, api expects positive usually?
+                // Looking at api: amount_cents is passed directly.
+                // If I send -500, it adds -500.
+                // So pass raw signed value. 
+                // Wait, UI input is usually positive.
+                amount_cents: Math.abs(amt) * sign,
+                type: type,
+                description: desc
+            });
+            closeModal();
+            loadLedgerHistory();
+        }
+
+        // SETTINGS
+        async function updatePin() {
+            const p = $('#new-pin').value;
+            if (p.length < 4) return alert("PIN too short");
+            await api('/system/pin', 'PUT', { pin: p });
+            alert("PIN Updated");
+            $('#new-pin').value = "";
+        }
+
+        // MODAL SYSTEM
+        function showModal(html) {
+            const c = $('#modal-container');
+            c.innerHTML = `<div class="modal">${html}</div>`;
+            c.classList.remove('hidden');
+        }
+        function closeModal() {
+            $('#modal-container').classList.add('hidden');
+        }
+
+        // BOOT
+        init();
     </script>
 </body>
+
 </html>
