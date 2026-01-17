@@ -1,6 +1,7 @@
 from PySide6.QtWidgets import QWidget, QFrame, QPushButton, QGraphicsDropShadowEffect, QVBoxLayout, QLabel
-from PySide6.QtCore import Qt, QRectF, QPointF
-from PySide6.QtGui import QPainter, QPen, QColor, QPainterPath, QBrush, QFont
+from PySide6.QtCore import Qt, QRectF, QPointF, QSize
+from PySide6.QtGui import QPainter, QPen, QColor, QPainterPath, QBrush, QFont, QPalette
+from ..services.sound import SoundService
 
 class HoloButton(QPushButton):
     def __init__(self, text, parent=None, is_primary=True):
@@ -16,6 +17,10 @@ class HoloButton(QPushButton):
         self._glow.setColor(QColor("#00E5FF"))
         self._glow.setOffset(0, 0)
         self.setGraphicsEffect(self._glow)
+
+    def mousePressEvent(self, e):
+        SoundService.play_click()
+        super().mousePressEvent(e)
         
     def paintEvent(self, event):
         painter = QPainter(self)

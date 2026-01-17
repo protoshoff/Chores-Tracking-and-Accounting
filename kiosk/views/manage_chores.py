@@ -255,9 +255,7 @@ class ManageChoresView(QWidget):
         for k in self.kids:
             self.combo_kid.addItem(k.get("name", "Unknown"), k.get("id"))
             
-        # 2. Fetch All Chores (Iterate kids for now or assumption? We will iterate kids since create_chore needs kid_id)
-        # Ideally backend should have /management/chores/all but we don't.
-        # Let's just fetch for each kid.
+        # 2. Fetch All Chores
         self.list_widget.clear()
         self.chores = []
         
@@ -286,18 +284,6 @@ class ManageChoresView(QWidget):
         idx = self.combo_freq.findText(freq)
         if idx >= 0: self.combo_freq.setCurrentIndex(idx)
         
-        # Set Kid Assiged - need to find by Kid ID
-        # Wait, get_kid_chores returns chore dict. Does it have kid_id?
-        # Standard model has kid_id. Let's hope api returns it.
-        # If not, we attached "kid_name".
-        # Let's find index by user data (id)
-        current_kid_id = None
-        # In refresh_data loop we know the kid. But the chore dict from API likely doesn't have it if using get_kid_chores unless model includes it.
-        # Let's check api result in prev steps.
-        # api/kids.py get_kid_chores constructs dict manually: {id, name, weight...}
-        # It DOES NOT include kid_id.
-        # Fix: In refresh_data, I am attaching 'kid_name'. I should attach 'kid_id' too.
-        
         target_kid_name = data.get("kid_name")
         for i in range(self.combo_kid.count()):
             if self.combo_kid.itemText(i) == target_kid_name:
@@ -314,7 +300,6 @@ class ManageChoresView(QWidget):
         self.inp_desc.clear()
         self.spin_weight.setValue(1)
         self.combo_freq.setCurrentIndex(0)
-        # Keep kid selection as is or reset? Keep is fine.
         
         self.btn_save.setText("CREATE QUEST")
         self.btn_delete.hide()
@@ -332,8 +317,6 @@ class ManageChoresView(QWidget):
         if self.selected_chore:
             # Update
             cid = self.selected_chore["id"]
-            # Note: We can't change kid_id in update currently (API limitation maybe? or just logic). 
-            # If changed, we might need to recreate. For now let's assume simple update.
             ApiService.update_chore(cid, name=name, description=desc, weight=weight, frequency=freq)
         else:
             # Create

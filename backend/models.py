@@ -47,6 +47,7 @@ class Chore(SQLModel, table=True):
     kid_id: int = Field(foreign_key="users.id", index=True)
     name: str
     description: Optional[str] = None
+    icon_name: str = Field(default="star") # Default icon
     weight: int = Field(default=1)
     frequency: Frequency
     due_time: Optional[time] = Field(default=None)

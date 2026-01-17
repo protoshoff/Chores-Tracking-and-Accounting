@@ -1,6 +1,7 @@
 from PySide6.QtWidgets import QWidget, QGridLayout, QLabel, QVBoxLayout, QHBoxLayout, QProgressBar
 from PySide6.QtCore import Qt, Signal
 from ..components.holo_widgets import HoloFrame, HoloButton
+from ..services.sound import SoundService
 
 class HoloKidCard(HoloFrame):
     clicked = Signal(int) 
@@ -77,6 +78,7 @@ class HoloKidCard(HoloFrame):
             layout.addWidget(lbl_pend)
 
     def mousePressEvent(self, event):
+        SoundService.play_click()
         self.clicked.emit(self.kid_id)
 
 class HomeView(QWidget):

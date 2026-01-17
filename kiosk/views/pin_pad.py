@@ -1,6 +1,7 @@
 from PySide6.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout, QLineEdit, QPushButton, QLabel, QGridLayout, QFrame
 from PySide6.QtCore import Qt, Signal
 from ..components.holo_widgets import HoloButton
+from ..services.sound import SoundService
 
 class PinPad(QDialog):
     def __init__(self, parent=None):
@@ -109,16 +110,20 @@ class PinPad(QDialog):
 
 
     def add_digit(self, digit):
+        SoundService.play_click()
         if len(self.display.text()) < 4:
             self.display.setText(self.display.text() + digit)
 
     def clear_pin(self):
+        SoundService.play_click()
         self.display.clear()
 
     def verify_pin(self):
+        SoundService.play_click()
         code = self.display.text()
         if code == "1234": # HARDCODED FOR V0.1
             self.accept()
         else:
+            SoundService.play_error()
             self.display.clear()
             # Visual feedback could go here (flash red)
