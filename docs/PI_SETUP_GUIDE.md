@@ -86,7 +86,7 @@ mkdir -p ~/chores_app/releases
     echo "xset -dpms" >> ~/.xinitrc
     echo "xset s noblank" >> ~/.xinitrc
     echo "cd /home/$USER/chores_app/current" >> ~/.xinitrc
-    echo "exec venv/bin/python3 -m kiosk.main --fullscreen" >> ~/.xinitrc
+    echo "exec venv/bin/python3 -u -m kiosk.main --fullscreen" >> ~/.xinitrc
     chmod +x ~/.xinitrc
     
     # Reload & Enable

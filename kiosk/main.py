@@ -6,6 +6,8 @@ def main():
     # Allow imports from parent dir if needed for models etc (though kiosk shouldn't use models directly)
     # sys.path.append(...)
     
+    print(f"DEBUG: Startup Args: {sys.argv}")
+    
     qt_app = QApplication(sys.argv)
     window = KioskApp()
     
