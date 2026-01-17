@@ -12,7 +12,7 @@ class ScreensaverView(QWidget):
         self.setStyleSheet("background-color: black;")
         
         # Floating Label
-        self.lbl = QLabel("SYSTEM STANDBY\nTOUCH TO RESUME", self)
+        self.lbl = QLabel("SYSTEM STANDBY\n<span style='font-size: 30px;'>TOUCH TO RESUME</span>", self)
         self.lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
         # Use simple CSS for everything to avoid QFont/QSS conflicts
         self.lbl.setStyleSheet("""
@@ -87,6 +87,7 @@ class ScreensaverView(QWidget):
             background-color: rgba(0, 20, 40, 220);
             border-radius: 15px;
         """)
+        self.lbl.setText(f"SYSTEM STANDBY\n<span style='font-size: 30px; color:{c};'>TOUCH TO RESUME</span>")
         self.lbl.adjustSize() # Re-adjust in case font metric differs slightly
 
     def mousePressEvent(self, event):
