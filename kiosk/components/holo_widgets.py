@@ -97,7 +97,7 @@ class HoloFrame(QFrame):
         # self._glow.setColor(QColor("#007BFF"))
         # self._glow.setOffset(0,0)
         # self.setGraphicsEffect(self._glow)
-         pass
+        pass
 
     def paintEvent(self, event):
         painter = QPainter(self)
