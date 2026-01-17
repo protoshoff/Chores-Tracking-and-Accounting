@@ -77,8 +77,8 @@ class SimpleKeyboard(QDialog):
         chars_sym = [
             "1234567890",
             "-/:;()$&@\"",
-            ".,?!'[]{}",
-            "~<>\\|^=£€" # Common special chars
+            ".,?!'[]{}*",
+            "~<>\\|^=+_%" 
         ]
 
         if self.is_symbols:
