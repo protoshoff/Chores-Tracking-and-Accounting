@@ -109,10 +109,30 @@ class WifiService:
                     active_ssid = line.split(':')[0]
                     break
             
-            # Get IP
-            ip_cmd = ["hostname", "-I"]
-            ip_res = subprocess.run(ip_cmd, capture_output=True, text=True)
-            ip = ip_res.stdout.strip().split(' ')[0] if ip_res.stdout else "Unknown"
+            # Get IP specifically for this active wifi connection/device
+            # Try to identify the device from the active connection or just assume wlan0?
+            # Safer to find the device that has the active wifi connection.
+            
+            # Simple approach: Find the device associated with the active wifi connection
+            # But wait, we iterate active connections above.
+            # let's try to get IP from the device we found. 
+            
+            # Better: `nmcli -t -f IP4.ADDRESS dev show wlan0` (assuming wlan0 is the mainly used one)
+            # Or iterate devices.
+            
+            ip = "Unknown"
+            try:
+                # Find wifi device name first?
+                # nmcli -t -f DEVICE,TYPE dev status | grep wifi
+                # Let's verify standard wlan0 first.
+                
+                cmd_ip = [self.nmcli_path, "-t", "-f", "IP4.ADDRESS", "dev", "show", "wlan0"]
+                res_ip = subprocess.run(cmd_ip, capture_output=True, text=True)
+                if res_ip.returncode == 0 and res_ip.stdout.strip():
+                    # Output is like "192.168.1.55/24"
+                    ip = res_ip.stdout.strip().split('/')[0]
+            except:
+                pass
 
             return {
                 "connected": active_ssid is not None,
