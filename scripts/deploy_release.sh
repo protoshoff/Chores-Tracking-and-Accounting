@@ -57,6 +57,16 @@ ln -sfn "$NEW_release_DIR" "$APP_ROOT/current"
 echo "Updating Systemd Services..."
 sudo cp "$NEW_release_DIR/ops/chores-kiosk.service" /etc/systemd/system/
 sudo cp "$NEW_release_DIR/ops/chores-backend.service" /etc/systemd/system/
+
+echo "Patching Service Files with correct User/Path..."
+# 8a. Patch Service Files (Replace 'pi' with current user)
+sudo sed -i "s/User=pi/User=$USER/g" /etc/systemd/system/chores-backend.service
+sudo sed -i "s/User=pi/User=$USER/g" /etc/systemd/system/chores-kiosk.service
+sudo sed -i "s/Group=pi/Group=$USER/g" /etc/systemd/system/chores-backend.service
+sudo sed -i "s/Group=pi/Group=$USER/g" /etc/systemd/system/chores-kiosk.service
+sudo sed -i "s|/home/pi|/home/$USER|g" /etc/systemd/system/chores-backend.service
+sudo sed -i "s|/home/pi|/home/$USER|g" /etc/systemd/system/chores-kiosk.service
+
 sudo systemctl daemon-reload
 
 # 8b. Update .xinitrc (Ensure it points to 'current' and logs properly)
