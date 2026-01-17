@@ -12,10 +12,10 @@ class ScreensaverView(QWidget):
         self.setStyleSheet("background-color: black;")
         
         # Floating Label
-        # Use HTML for multi-size text
-        self.lbl = QLabel("SYSTEM STANDBY\n<span style='font-size: 30px;'>TOUCH TO RESUME</span>", self)
+        self.lbl = QLabel(self)
+        self.lbl.setTextFormat(Qt.TextFormat.RichText) # Force HTML rendering
         self.lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.lbl.setFixedSize(600, 250) # Fixed size to prevent jitter
+        self.lbl.setFixedSize(900, 300) # Increased width to fit wide Orbitron font
         
         # Initial Style
         self.update_style("#00E5FF")
@@ -89,7 +89,7 @@ class ScreensaverView(QWidget):
         self.update_style(c)
         
     def update_style(self, color):
-        # Only update CSS, do NOT touch text content
+        # Only update CSS for the border/font settings
         self.lbl.setStyleSheet(f"""
             color: {color}; 
             font-family: 'Orbitron'; 
@@ -100,10 +100,9 @@ class ScreensaverView(QWidget):
             background-color: rgba(0, 20, 40, 220);
             border-radius: 15px;
         """)
-        # We rely on the initial setText being sufficient. 
-        # The color of the <span> in HTML won't update automatically via CSS 'color' unless it inherits?
-        # Actually standard HTML spans inherit color if not specified.
-        # In my initial setText I removed the color spec from span, so it should inherit correctly from the parent stylesheet.
+        
+        # Use full HTML wrapper to ensure proper rendering of the span
+        self.lbl.setText(f"<html><head/><body><p align='center'>SYSTEM STANDBY<br/><span style='font-size: 30px;'>TOUCH TO RESUME</span></p></body></html>")
 
     def mousePressEvent(self, event):
         self.wake_up.emit()
