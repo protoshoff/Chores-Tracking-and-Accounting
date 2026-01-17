@@ -40,8 +40,10 @@ class LedgerView(QWidget):
         
         self.card_frame = HoloFrame("CURRENT BALANCE")
         cf_layout = QVBoxLayout(self.card_frame)
+        cf_layout.setContentsMargins(10, 70, 10, 20) # Top 70 to clear 60px Title
         self.lbl_balance = QLabel("$0.00")
-        self.lbl_balance.setStyleSheet("font-size: 48px; color: #00E5FF; font-weight: bold;")
+        self.lbl_balance.setObjectName("HoloHeader") # Use theme font
+        self.lbl_balance.setStyleSheet("font-size: 48px;") # Override size only
         self.lbl_balance.setAlignment(Qt.AlignmentFlag.AlignCenter)
         cf_layout.addWidget(self.lbl_balance)
         left_layout.addWidget(self.card_frame)
