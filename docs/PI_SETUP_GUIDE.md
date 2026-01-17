@@ -25,6 +25,9 @@ sudo apt install -y xserver-xorg x11-xserver-utils xinit openbox
 # Qt dependencies
 sudo apt install -y libgl1 libegl1
 # If explicit platform plugin required later: libxcb-cursor0
+
+# Allow non-console user to start X (Required for systemd service)
+sudo sed -i 's/allowed_users=console/allowed_users=anybody/g' /etc/X11/Xwrapper.config || echo "allowed_users=anybody" | sudo tee /etc/X11/Xwrapper.config
 ```
 
 ### B. Auto-Login
