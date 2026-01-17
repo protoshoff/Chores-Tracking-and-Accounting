@@ -62,10 +62,17 @@ class KioskApp(QMainWindow):
         
         # Load Stylesheet
         try:
-            with open("kiosk/styles_sci_fi.qss", "r") as f:
-                self.setStyleSheet(f.read())
-        except FileNotFoundError:
-            print("Warning: styles_sci_fi.qss not found")
+            import os
+            base_dir = os.path.dirname(os.path.dirname(__file__)) # Go up from kiosk/app.py to root
+            style_path = os.path.join(base_dir, "kiosk", "styles_sci_fi.qss")
+            
+            with open(style_path, "r") as f:
+                style_content = f.read()
+                print(f"DEBUG: Loading Stylesheet from {style_path}")
+                print(f"DEBUG: Content Start: {style_content[:50]}")
+                self.setStyleSheet(style_content)
+        except Exception as e:
+            print(f"Warning: styles_sci_fi.qss not found. Error: {e}")
 
         # Central Container
         central = QWidget()
