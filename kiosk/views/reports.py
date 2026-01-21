@@ -76,7 +76,7 @@ class ReportsView(QWidget):
             name = item.get("kid_name", "Unknown")
             poss = str(item.get("total_weight_possible", 0))
             done = str(item.get("total_weight_completed", 0))
-            payout = f"${item.get('payout_cents', 0)/100:.2f}"
+            payout = f"${item.get('payout', 0.0):.2f}"
             
             self.table.setItem(row, 0, QTableWidgetItem(week))
             self.table.setItem(row, 1, QTableWidgetItem(name))

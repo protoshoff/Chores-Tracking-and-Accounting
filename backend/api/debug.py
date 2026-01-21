@@ -25,17 +25,17 @@ def reset_database(session: Session = Depends(get_session)):
     
     # Seed
     with Session(engine) as session:
-        alice = User(name="Grayson", balance_cents=1250, allowance_cents=500, avatar_path="/static/avatars/grayson.png")
-        bob = User(name="Owen", balance_cents=0, allowance_cents=500, avatar_path="/static/avatars/owen.png")
+        alice = User(name="Grayson", balance=12.50, allowance=5.00, avatar_path="/static/avatars/grayson.png")
+        bob = User(name="Owen", balance=0.0, allowance=5.00, avatar_path="/static/avatars/owen.png")
         session.add(alice)
         session.add(bob)
         session.commit()
     
         # Add Chores
         from ..models import Chore, Frequency
-        c1 = Chore(kid_id=alice.id, name="Walk Dog", frequency=Frequency.DAILY, weight=1)
-        c2 = Chore(kid_id=alice.id, name="Wash Dishes", frequency=Frequency.DAILY, weight=1)
-        c3 = Chore(kid_id=bob.id, name="Clean Room", frequency=Frequency.WEEKLY, weight=3)
+        c1 = Chore(kid_id=alice.id, name="Walk Dog", frequency=Frequency.DAILY, reward=1.0)
+        c2 = Chore(kid_id=alice.id, name="Wash Dishes", frequency=Frequency.DAILY, reward=1.0)
+        c3 = Chore(kid_id=bob.id, name="Clean Room", frequency=Frequency.WEEKLY, reward=3.0)
         session.add(c1)
         session.add(c2)
         session.add(c3)

@@ -168,7 +168,7 @@ class ManageUsersView(QWidget):
         data = item.data(Qt.ItemDataRole.UserRole)
         self.selected_user = data
         self.inp_name.setText(data.get("name", ""))
-        self.inp_allowance.setText(str(data.get("allowance_cents", 0)))
+        self.inp_allowance.setText(str(data.get("allowance", 0.0)))
         self.btn_save.setText("UPDATE RECORD")
         self.btn_delete.show()
 

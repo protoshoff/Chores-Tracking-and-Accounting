@@ -476,8 +476,10 @@
             showModal(`
             <h3>Recruit Crew Member</h3>
             <div style="margin-bottom:1rem;color:var(--primary)">NEW PROFILE ENTRY</div>
+            <label>Name:</label>
             <input id="kid-name" placeholder="Enter Name" autofocus />
-            <input id="kid-allowance" type="number" placeholder="Weekly Allowance ($)" step="0.5" />
+            <label>Weekly Allowance ($):</label>
+            <input id="kid-allowance" type="number" placeholder="0.00" step="0.5" />
             <div class="flex-between">
                 <button class="action-btn danger" onclick="closeModal()">CANCEL</button>
                 <button class="action-btn" onclick="submitAddKid()">CONFIRM</button>

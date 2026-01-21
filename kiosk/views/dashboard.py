@@ -84,7 +84,7 @@ class KidDashboardView(QWidget):
         kid = ApiService.get_kid(kid_id)
         if kid:
             self.name_lbl.setText(kid['name'])
-            self.bal_lbl.setText(f"${kid['balance_cents']/100:.2f}")
+            self.bal_lbl.setText(f"${kid['balance']:.2f}")
             self.lbl_title.setText(f"{kid['name'].upper()} // DASHBOARD")
             
             # Progress

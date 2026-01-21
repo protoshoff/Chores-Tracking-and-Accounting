@@ -68,7 +68,6 @@ class LedgerService:
         # 1. Reverse effect on balance
         kid = self.session.get(User, entry.kid_id)
         if kid:
-        if kid:
             # If entry was +100, we subtract 100. If entry was -50, we add 50.
             kid.balance -= entry.amount
             kid.balance = round(kid.balance, 2)
