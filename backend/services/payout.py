@@ -58,11 +58,22 @@ class PayoutService:
 
         total_completed = approved_reward
         
-        # 4. Calculate Payout (Prorated)
+        # 4. Calculate Payout (Binary Threshold Model)
+        # Fetch Threshold
+        from ..models import Settings
+        t_set = self.session.get(Settings, "payout_threshold")
+        threshold_pct = int(t_set.value) if t_set else 80 # Default 80%
+
         payout = 0.0
         if total_possible > 0:
-            ratio = min(1.0, total_completed / total_possible)
-            payout = round(kid.allowance * ratio, 2)
+            # Calculate completion percent
+            pct = (total_completed / total_possible) * 100
+            
+            # Binary Rule: If >= Threshold, get 100% Allowance. Else 0.
+            if pct >= threshold_pct:
+                payout = round(kid.allowance, 2)
+            else:
+                payout = 0.0
             
         # 5. Execute Payout
         if payout > 0:

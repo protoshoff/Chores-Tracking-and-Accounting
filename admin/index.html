@@ -399,10 +399,10 @@
         <section id="view-settings" class="view-section">
             <h2>System Configuration</h2>
             <div class="card">
-                <h3>Security</h3>
-                <div style="display:flex; gap:1rem; align-items:center;">
-                    <input type="password" id="new-pin" placeholder="Enter New PIN (4 digits)" style="max-width:200px;">
-                    <button class="action-btn" onclick="updatePin()">UPDATE PIN</button>
+                <h3>Global Settings</h3>
+                <p>Configure Payout Thresholds and Security PIN.</p>
+                <div style="margin-top:1rem;">
+                    <button class="action-btn" onclick="showSettingsModal()">CONFIGURE SYSTEM</button>
                 </div>
             </div>
         </section>
@@ -662,12 +662,50 @@
         }
 
         // SETTINGS
-        async function updatePin() {
-            const p = $('#new-pin').value;
-            if (p.length < 4) return showToast("PIN must be 4 digits", 'error');
-            await api('/system/pin', 'PUT', { pin: p });
-            showToast("System PIN Updated", 'success');
-            $('#new-pin').value = "";
+        // SETTINGS
+        async function showSettingsModal() {
+            // Load current config
+            const config = await api('/system/config') || { payout_threshold: 80 };
+
+            showModal(`
+                <h3>System Configuration</h3>
+                
+                <label>Payout Threshold (%):</label>
+                <input id="cfg-threshold" type="number" value="${config.payout_threshold}" placeholder="80" min="0" max="100" />
+                <small style="color:#666; display:block; margin-bottom:1rem">
+                    Percentage of chores required to earn FULL allowance. Below this, allowance is 0.
+                </small>
+
+                <hr style="border:1px solid #333; margin: 1rem 0;" />
+
+                <label>Update Parent PIN (Optional):</label>
+                <input id="cfg-pin" type="password" placeholder="New PIN (4 digits)" />
+
+                <div class="flex-between" style="margin-top:2rem">
+                    <button class="action-btn danger" onclick="closeModal()">CANCEL</button>
+                    <button class="action-btn" onclick="submitSettings()">SAVE SETTINGS</button>
+                </div>
+            `);
+        }
+
+        async function submitSettings() {
+            const threshold = parseInt($('#cfg-threshold').value);
+            const pin = $('#cfg-pin').value;
+
+            if (isNaN(threshold) || threshold < 0 || threshold > 100) {
+                return showToast("Invalid Threshold (0-100)", 'error');
+            }
+
+            // Update Threshold
+            await api('/system/config', 'PUT', { payout_threshold: threshold });
+
+            // Update PIN if provided
+            if (pin && pin.length >= 4) {
+                await api('/system/pin', 'PUT', { pin: pin });
+            }
+
+            showToast("Settings Saved", 'success');
+            closeModal();
         }
 
         // MODAL SYSTEM

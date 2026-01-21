@@ -69,3 +69,45 @@ def update_pin(payload: dict = Body(...), session: Session = Depends(get_session
     session.add(setting)
     session.commit()
     return {"status": "updated"}
+
+# --- General Config ---
+@router.get("/config")
+def get_config(session: Session = Depends(get_session)):
+    """Get system config (Threshold, etc)."""
+    # Defaults
+    config = {
+        "payout_threshold": 80
+    }
+    
+    # Load overrides
+    t_set = session.get(Settings, "payout_threshold")
+    if t_set:
+        try:
+            config["payout_threshold"] = int(t_set.value)
+        except:
+            pass
+            
+    return config
+
+@router.put("/config")
+def update_config(payload: dict = Body(...), session: Session = Depends(get_session)):
+    """Update system config."""
+    # Threshold
+    if "payout_threshold" in payload:
+        val = payload["payout_threshold"]
+        try:
+            val_int = int(val)
+            if val_int < 0 or val_int > 100:
+                raise ValueError
+            
+            setting = session.get(Settings, "payout_threshold")
+            if not setting:
+                setting = Settings(key="payout_threshold", value=str(val_int))
+            else:
+                setting.value = str(val_int)
+            session.add(setting)
+        except ValueError:
+            raise HTTPException(status_code=400, detail="Threshold must be 0-100")
+            
+    session.commit()
+    return {"status": "updated"}
