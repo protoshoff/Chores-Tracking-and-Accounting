@@ -13,8 +13,8 @@ from pydantic import BaseModel
 class KidWithSummary(BaseModel):
     id: int
     name: str
-    balance_cents: int
-    allowance_cents: int
+    balance: float
+    allowance: float
     avatar_path: str
     chores_summary: dict
 
@@ -29,8 +29,8 @@ def list_kids(session: Session = Depends(get_session)):
         result.append(KidWithSummary(
             id=k.id, 
             name=k.name, 
-            balance_cents=k.balance_cents,
-            allowance_cents=k.allowance_cents,
+            balance=k.balance,
+            allowance=k.allowance,
             avatar_path=k.avatar_path,
             chores_summary=summary
         ))
@@ -48,8 +48,8 @@ def get_kid(kid_id: int, session: Session = Depends(get_session)):
     return KidWithSummary(
         id=kid.id,
         name=kid.name,
-        balance_cents=kid.balance_cents,
-        allowance_cents=kid.allowance_cents,
+        balance=kid.balance,
+        allowance=kid.allowance,
         avatar_path=kid.avatar_path,
         chores_summary=summary
     )
@@ -83,7 +83,7 @@ def get_kid_chores(
         result.append({
             "id": chore.id,
             "name": chore.name,
-            "weight": chore.weight,
+            "reward": chore.reward,
             "status": status,
             "description": chore.description,
             "frequency": chore.frequency,

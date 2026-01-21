@@ -25,8 +25,8 @@ class HoloKidCard(HoloFrame):
         layout.addWidget(self.name_lbl)
         
         # Balance
-        bal_cents = data.get("balance_cents", 0)
-        self.bal_lbl = QLabel(f"${bal_cents/100:.2f}")
+        bal = data.get("balance", 0.0)
+        self.bal_lbl = QLabel(f"${bal:.2f}")
         self.bal_lbl.setObjectName("HoloHeader") # Use cyan header style
         self.bal_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(self.bal_lbl)
@@ -136,7 +136,7 @@ class HomeView(QWidget):
         
         if not kids_data:
              # If API fails, show connecting and retry
-             kids_data = [{"id": 0, "name": "CONNECTING...", "balance_cents": 0}]
+             kids_data = [{"id": 0, "name": "CONNECTING...", "balance": 0.0}]
              if not self.retry_timer.isActive():
                  self.retry_timer.start(2000) # Retry every 2s
         else:

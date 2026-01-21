@@ -122,12 +122,12 @@ class LedgerView(QWidget):
         for k in kids:
             if k["id"] == self.kid_id:
                 self.lbl_title.setText(f"LEDGER: {k['name'].upper()}")
-                self.lbl_balance.setText(f"${k['balance_cents']/100:.2f}")
+                self.lbl_balance.setText(f"${k['balance']:.2f}")
                 break
         
         for r, entry in enumerate(history):
             dt = entry["timestamp"].split("T")[0]
-            amt = entry["amount_cents"] / 100
+            amt = entry["amount"]
             desc = entry["description"]
             
             # Format Amount
@@ -157,8 +157,7 @@ class LedgerView(QWidget):
             txt = dlg.get_text()
             try:
                 val = float(txt)
-                cents = int(val * 100)
-                if cents <= 0: raise ValueError
+                if val <= 0: raise ValueError
                 
                 # 2. Ask Description
                 dlg_desc = HoloKeyboard(self.window(), "", title="ENTER REASON")
@@ -168,7 +167,7 @@ class LedgerView(QWidget):
                     
                 # 3. Send
                 t_type = "BONUS" if sign > 0 else "SPEND"
-                success = ApiService.add_transaction(self.kid_id, cents * sign, t_type, desc)
+                success = ApiService.add_transaction(self.kid_id, val * sign, t_type, desc)
                 if success:
                     self.refresh()
                 else:

@@ -10,12 +10,12 @@ router = APIRouter(prefix="/api/management", tags=["Management"])
 # --- Models ---
 class KidCreate(BaseModel):
     name: str
-    allowance_cents: int = 0
+    allowance: float = 0.0
     avatar_path: str = "/static/default_avatar.png"
 
 class KidUpdate(BaseModel):
     name: Optional[str] = None
-    allowance_cents: Optional[int] = None
+    allowance: Optional[float] = None
     avatar_path: Optional[str] = None
     is_active: Optional[bool] = None
 
@@ -23,13 +23,13 @@ class ChoreCreate(BaseModel):
     kid_id: int
     name: str
     description: Optional[str] = None
-    weight: int = 1
+    reward: float = 1.0
     frequency: Frequency
 
 class ChoreUpdate(BaseModel):
     name: Optional[str] = None
     description: Optional[str] = None
-    weight: Optional[int] = None
+    reward: Optional[float] = None
     frequency: Optional[Frequency] = None
     archived: Optional[bool] = None
 
@@ -39,9 +39,9 @@ class ChoreUpdate(BaseModel):
 def create_kid(kid: KidCreate, session: Session = Depends(get_session)):
     db_kid = User(
         name=kid.name,
-        allowance_cents=kid.allowance_cents,
+        allowance=kid.allowance,
         avatar_path=kid.avatar_path,
-        balance_cents=0,
+        balance=0.0,
         is_active=True
     )
     session.add(db_kid)
@@ -84,7 +84,7 @@ def create_chore(chore: ChoreCreate, session: Session = Depends(get_session)):
         kid_id=chore.kid_id,
         name=chore.name,
         description=chore.description,
-        weight=chore.weight,
+        reward=chore.reward,
         frequency=chore.frequency,
         archived=False
     )

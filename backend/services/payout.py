@@ -32,43 +32,43 @@ class PayoutService:
         # Simplified Logic (v0.1): 
         # - Iterate all ACTIVE chores assigned to kid. 
         # - Check frequency. If DAILY, expect 7 instances. If WEEKLY, expect 1.
-        # - Sum up total expected weight.
-        # - Sum up total APPROVED weight from logs.
+        # - Sum up total expected reward.
+        # - Sum up total APPROVED reward from logs.
         
-        total_possible = 0
-        total_completed = 0
+        total_possible = 0.0
+        total_completed = 0.0
         
         # Get Active Chores
         chores = self.session.exec(select(Chore).where(Chore.kid_id == kid_id, Chore.archived == False)).all()
         
         for chore in chores:
             instances = 7 if chore.frequency == "DAILY" else 1
-            chore_weight = chore.weight * instances
-            total_possible += chore_weight
+            chore_total = chore.reward * instances
+            total_possible += chore_total
             
         # Get Approved Logs
-        approved_weight = 0
+        approved_reward = 0.0
         for log in logs:
             if log.status == ChoreStatus.APPROVED:
-                # We need the chore weight. 
-                # Ideally ChoreLog snapshots weight, but for now we join or lazy load
-                # Assuming weight hasn't changed drastically mid-week.
+                # We need the chore reward. 
+                # Ideally ChoreLog snapshots reward, but for now we join or lazy load
+                # Assuming reward hasn't changed drastically mid-week.
                 if log.chore:
-                    approved_weight += log.chore.weight
+                    approved_reward += log.chore.reward
 
-        total_completed = approved_weight
+        total_completed = approved_reward
         
         # 4. Calculate Payout (Prorated)
-        payout_cents = 0
+        payout = 0.0
         if total_possible > 0:
             ratio = min(1.0, total_completed / total_possible)
-            payout_cents = int(kid.allowance_cents * ratio)
+            payout = round(kid.allowance * ratio, 2)
             
         # 5. Execute Payout
-        if payout_cents > 0:
+        if payout > 0:
             self.ledger.add_transaction(
                 kid_id=kid_id,
-                amount_cents=payout_cents,
+                amount=payout,
                 transaction_type=TransactionType.ALLOWANCE,
                 description=f"Weekly Allowance ({week_id})",
                 week_id=week_id
@@ -78,9 +78,9 @@ class PayoutService:
         rollup = WeeklyRollup(
             kid_id=kid_id,
             week_id=week_id,
-            total_weight_possible=total_possible,
-            total_weight_completed=total_completed,
-            payout_cents=payout_cents,
+            total_reward_possible=total_possible,
+            total_reward_completed=total_completed,
+            payout=payout,
             finalized_at=datetime.utcnow()
         )
         self.session.add(rollup)

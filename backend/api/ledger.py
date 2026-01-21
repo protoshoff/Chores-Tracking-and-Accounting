@@ -9,14 +9,14 @@ router = APIRouter(prefix="/api/ledger", tags=["Ledger"])
 
 @router.post("/transaction", status_code=201)
 def add_transaction(
-    payload: dict = Body(...), # {kid_id: 1, amount_cents: 100, type: "BONUS", description: "Good job"}
+    payload: dict = Body(...), # {kid_id: 1, amount: 10.0, type: "BONUS", description: "Good job"}
     session: Session = Depends(get_session)
 ):
     kid_id = payload.get("kid_id")
-    amount = payload.get("amount_cents")
+    amount = payload.get("amount")
     
     if kid_id is None or amount is None:
-        raise HTTPException(status_code=400, detail="Missing kid_id or amount_cents")
+        raise HTTPException(status_code=400, detail="Missing kid_id or amount")
         
     t_type = payload.get("type", "ADJUSTMENT")
     try:
@@ -27,7 +27,7 @@ def add_transaction(
     service = LedgerService(session)
     entry = service.add_transaction(
         kid_id=kid_id,
-        amount_cents=amount,
+        amount=amount,
         transaction_type=t_enum,
         description=payload.get("description", "Manual Entry")
     )

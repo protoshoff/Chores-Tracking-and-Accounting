@@ -46,9 +46,9 @@ class ApiService:
         return False
 
     @staticmethod
-    def create_kid(name, allowance_cents=0):
+    def create_kid(name, allowance=0.0):
         try:
-            payload = {"name": name, "allowance_cents": allowance_cents}
+            payload = {"name": name, "allowance": allowance}
             resp = requests.post(f"{BASE_URL}/management/kids", json=payload, timeout=2)
             if resp.status_code in (200, 201):
                 return resp.json()
@@ -57,11 +57,11 @@ class ApiService:
         return None
 
     @staticmethod
-    def update_kid(kid_id, name=None, allowance_cents=None, is_active=None):
+    def update_kid(kid_id, name=None, allowance=None, is_active=None):
         try:
             payload = {}
             if name is not None: payload["name"] = name
-            if allowance_cents is not None: payload["allowance_cents"] = allowance_cents
+            if allowance is not None: payload["allowance"] = allowance
             if is_active is not None: payload["is_active"] = is_active
             
             resp = requests.put(f"{BASE_URL}/management/kids/{kid_id}", json=payload, timeout=2)
@@ -88,13 +88,13 @@ class ApiService:
 
     # --- Chore Management ---
     @staticmethod
-    def create_chore(kid_id, name, description="", weight=1, frequency="DAILY"):
+    def create_chore(kid_id, name, description="", reward=1.0, frequency="DAILY"):
         try:
             payload = {
                 "kid_id": kid_id,
                 "name": name,
                 "description": description,
-                "weight": weight,
+                "reward": reward,
                 "frequency": frequency
             }
             resp = requests.post(f"{BASE_URL}/management/chores", json=payload, timeout=2)
@@ -107,12 +107,12 @@ class ApiService:
         return None
 
     @staticmethod
-    def update_chore(chore_id, name=None, description=None, weight=None, frequency=None, archived=None):
+    def update_chore(chore_id, name=None, description=None, reward=None, frequency=None, archived=None):
         try:
             payload = {}
             if name is not None: payload["name"] = name
             if description is not None: payload["description"] = description
-            if weight is not None: payload["weight"] = weight
+            if reward is not None: payload["reward"] = reward
             if frequency is not None: payload["frequency"] = frequency
             if archived is not None: payload["archived"] = archived
             
@@ -157,10 +157,10 @@ class ApiService:
         return []
 
     @staticmethod
-    def add_transaction(kid_id, amount_cents, type_str, desc):
+    def add_transaction(kid_id, amount, type_str, desc):
         payload = {
             "kid_id": kid_id,
-            "amount_cents": amount_cents,
+            "amount": amount,
             "type": type_str,
             "description": desc
         }

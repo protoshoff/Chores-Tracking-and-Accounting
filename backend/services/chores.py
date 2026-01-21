@@ -49,23 +49,23 @@ class ChoreService:
             return new_log
 
     def calculate_weekly_progress(self, kid_id: int):
-        # 1. Calculate Total Possible Weight
+        # 1. Calculate Total Possible Reward
         # Get active chores
         stmt = select(Chore).where(Chore.kid_id == kid_id, Chore.archived == False)
         chores = self.session.exec(stmt).all()
         
-        total_possible = 0
+        total_possible = 0.0
         for chore in chores:
             if chore.frequency == "DAILY":
-                total_possible += chore.weight * 7
+                total_possible += chore.reward * 7
             else:
-                total_possible += chore.weight
+                total_possible += chore.reward
                 
         if total_possible == 0:
             return {
-                "total_weight": 0,
-                "completed_weight": 0,
-                "approved_weight": 0,
+                "total_reward": 0.0,
+                "completed_reward": 0.0,
+                "approved_reward": 0.0,
                 "pending_count": 0,
                 "today_done": 0,
                 "today_total": 0,
@@ -85,19 +85,19 @@ class ChoreService:
         
         logs = self.session.exec(stmt).all()
         
-        completed_weight = 0
-        approved_weight = 0
+        completed_reward = 0.0
+        approved_reward = 0.0
         pending_count = 0
         
         for log in logs:
             # Safe access
-            weight = log.chore.weight if log.chore else 0
+            reward = log.chore.reward if log.chore else 0.0
             
             if log.status in (ChoreStatus.APPROVED, ChoreStatus.PENDING, "COMPLETED"):
-                completed_weight += weight
+                completed_reward += reward
             
             if log.status == ChoreStatus.APPROVED:
-                approved_weight += weight
+                approved_reward += reward
                 
             if log.status == ChoreStatus.PENDING:
                 pending_count += 1
@@ -111,11 +111,11 @@ class ChoreService:
         daily_chores_count = len([c for c in chores if c.frequency == "DAILY"])
         
         return {
-            "total_weight": total_possible,
-            "completed_weight": completed_weight,
-            "approved_weight": approved_weight,
+            "total_reward": round(total_possible, 2),
+            "completed_reward": round(completed_reward, 2),
+            "approved_reward": round(approved_reward, 2),
             "pending_count": pending_count,
             "today_done": today_done,
             "today_total": daily_chores_count,
-            "week_pct": int((approved_weight / total_possible) * 100)
+            "week_pct": int((approved_reward / total_possible) * 100)
         }

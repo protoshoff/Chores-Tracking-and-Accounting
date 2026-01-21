@@ -33,8 +33,8 @@ class User(SQLModel, table=True):
     name: str = Field(index=True)
     pin_hash: Optional[str] = None
     avatar_path: str = Field(default="/static/default_avatar.png")
-    allowance_cents: int = Field(default=0)
-    balance_cents: int = Field(default=0)
+    allowance: float = Field(default=0.0)
+    balance: float = Field(default=0.0)
     is_active: bool = Field(default=True)
     
     chores: List["Chore"] = Relationship(back_populates="kid")
@@ -48,7 +48,7 @@ class Chore(SQLModel, table=True):
     name: str
     description: Optional[str] = None
     icon_name: str = Field(default="star") # Default icon
-    weight: int = Field(default=1)
+    reward: float = Field(default=1.0)
     frequency: Frequency
     due_time: Optional[time] = Field(default=None)
     archived: bool = Field(default=False)
@@ -76,7 +76,7 @@ class LedgerEntry(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     kid_id: int = Field(foreign_key="users.id", index=True)
     transaction_type: TransactionType
-    amount_cents: int
+    amount: float
     description: str
     timestamp: datetime = Field(default_factory=datetime.utcnow)
     week_id: Optional[str] = None
@@ -88,9 +88,9 @@ class WeeklyRollup(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     kid_id: int = Field(foreign_key="users.id")
     week_id: str
-    total_weight_possible: int
-    total_weight_completed: int
-    payout_cents: int
+    total_reward_possible: float
+    total_reward_completed: float
+    payout: float
     finalized_at: datetime = Field(default_factory=datetime.utcnow)
 
 class Streak(SQLModel, table=True):

@@ -423,7 +423,13 @@
         // UTILS
         function $(sel) { return document.querySelector(sel); }
         function $all(sel) { return document.querySelectorAll(sel); }
-        function formatMoney(cents) { return "$" + (cents / 100).toFixed(2); }
+        // UTILS
+        function $(sel) { return document.querySelector(sel); }
+        function $all(sel) { return document.querySelectorAll(sel); }
+        function formatMoney(amount) {
+            // Amount is already in dollars float
+            return "$" + parseFloat(amount).toFixed(2);
+        }
 
         function showToast(msg, type = 'info') {
             const c = $('#toast-container');
@@ -446,105 +452,7 @@
             }, 3000);
         }
 
-        // NAV
-        function switchView(viewName) {
-            $all('.view-section').forEach(el => el.classList.remove('active'));
-            $(`#view-${viewName}`).classList.add('active');
-
-            $all('.nav-btn').forEach(el => el.classList.remove('active'));
-            $all(`.nav-btn[onclick="switchView('${viewName}')"]`).forEach(el => el.classList.add('active'));
-
-            if (viewName === 'kids') loadKids();
-            if (viewName === 'chores') loadChores();
-            if (viewName === 'ledger') loadKidsForLedger();
-            if (viewName === 'approvals') loadApprovals();
-        }
-
-        // API
-        async function api(endpoint, method = "GET", body = null) {
-            try {
-                const opts = { method, headers: { 'Content-Type': 'application/json' } };
-                if (body) opts.body = JSON.stringify(body);
-                const res = await fetch(`/api${endpoint}`, opts);
-                if (!res.ok) throw new Error(res.statusText);
-                if (method === "DELETE") return true;
-                return await res.json();
-            } catch (e) {
-                console.error(e);
-                showToast("API Error: " + e.message, 'error');
-                return null;
-            }
-        }
-
-        // INIT
-        async function init() {
-            try {
-                const status = await api('/system/status');
-                if (status) {
-                    $('#status-indicator').textContent = `ONLINE (v${status.version})`;
-                    $('#status-indicator').className = 'online';
-                    $('#dashboard-stats').innerHTML = `
-                    <p>System Time: ${status.timestamp}</p>
-                    <p>Uptime: ${status.uptime}</p>
-                `;
-                }
-            } catch (e) {
-                $('#status-indicator').textContent = 'OFFLINE';
-                $('#status-indicator').className = 'offline';
-            }
-
-            loadKids();
-        }
-
-        // --- APPROVALS ---
-        async function loadApprovals() {
-            const list = await api('/approvals/pending');
-            const cont = $('#approvals-container');
-            cont.innerHTML = "";
-
-            if (!list || list.length === 0) {
-                cont.innerHTML = "<div style='color:var(--text-dim)'>All caught up! No pending authorizations.</div>";
-                return;
-            }
-
-            // Group by Date
-            const groups = {};
-            list.forEach(item => {
-                const d = item.date.split('T')[0];
-                if (!groups[d]) groups[d] = [];
-                groups[d].push(item);
-            });
-
-            const sortedDates = Object.keys(groups).sort().reverse();
-
-            sortedDates.forEach(dateStr => {
-                cont.innerHTML += `<h3 style='color:var(--primary); border-bottom:1px solid var(--primary); padding-bottom:5px; margin-top:20px;'>${dateStr}</h3>`;
-
-                groups[dateStr].forEach(item => {
-                    cont.innerHTML += `
-                    <div class="card flex-between" style="border-left: 4px solid var(--warning);">
-                        <div>
-                            <div class="sci-fi-font" style="font-size:1.2rem; color:white;">${item.kid_name}</div>
-                            <div style="color:var(--text-dim)">${item.chore_name}</div>
-                        </div>
-                        <div style="display:flex; gap:10px;">
-                            <button class="action-btn" onclick="review('${item.id}', 'APPROVE')">APPROVE</button>
-                            <button class="action-btn danger" onclick="review('${item.id}', 'REJECT')">REJECT</button>
-                        </div>
-                    </div>`;
-                });
-            });
-        }
-
-        async function review(id, action) {
-            const res = await api(`/approvals/${id}/review`, 'POST', { action: action });
-            if (res) {
-                showToast(`Mission ${action === 'APPROVE' ? 'Authorized' : 'Rejected'}`, 'success');
-                loadApprovals();
-            }
-        }
-
-        // KIDS
+        // --- KIDS ---
         async function loadKids() {
             const kids = await api('/kids');
             if (!kids) return;
@@ -555,9 +463,9 @@
                 grid.innerHTML += `
                 <div class="card">
                     <h3>${k.name}</h3>
-                    <div class="balance-display">${formatMoney(k.balance_cents)}</div>
+                    <div class="balance-display">${formatMoney(k.balance)}</div>
                     <div style="margin-top:1rem;">
-                        <button class="action-btn" onclick="editKid(${k.id}, '${k.name}', ${k.allowance_cents})">EDIT</button>
+                        <button class="action-btn" onclick="editKid(${k.id}, '${k.name}', ${k.allowance})">EDIT</button>
                     </div>
                 </div>
             `;
@@ -569,7 +477,7 @@
             <h3>Recruit Crew Member</h3>
             <div style="margin-bottom:1rem;color:var(--primary)">NEW PROFILE ENTRY</div>
             <input id="kid-name" placeholder="Enter Name" autofocus />
-            <input id="kid-allowance" type="number" placeholder="Weekly Allowance ($)" />
+            <input id="kid-allowance" type="number" placeholder="Weekly Allowance ($)" step="0.5" />
             <div class="flex-between">
                 <button class="action-btn danger" onclick="closeModal()">CANCEL</button>
                 <button class="action-btn" onclick="submitAddKid()">CONFIRM</button>
@@ -580,12 +488,12 @@
         async function submitAddKid() {
             const name = $('#kid-name').value;
             const allowanceVal = $('#kid-allowance').value;
-            const allowanceCents = allowanceVal ? Math.round(parseFloat(allowanceVal) * 100) : 0;
+            const allowance = allowanceVal ? parseFloat(allowanceVal) : 0.0;
 
             if (!name) return showToast("Name required", 'error');
             const res = await api('/management/kids', 'POST', {
                 name: name,
-                allowance_cents: allowanceCents
+                allowance: allowance
             });
             if (res) {
                 showToast("Crew Member Recruited", 'success');
@@ -594,14 +502,13 @@
             }
         }
 
-        function editKid(id, currentName, currentAllowanceCents) {
-            const currentAllowance = (currentAllowanceCents / 100).toFixed(2);
+        function editKid(id, currentName, currentAllowance) {
             showModal(`
             <h3>Edit Profile</h3>
             <label>Name:</label>
             <input id="edit-kid-name" value="${currentName}" placeholder="Name" />
             <label>Weekly Allowance ($):</label>
-            <input id="edit-kid-allowance" type="number" value="${currentAllowance}" placeholder="0.00" />
+            <input id="edit-kid-allowance" type="number" value="${currentAllowance}" placeholder="0.00" step="0.5" />
             <div class="flex-between">
                 <button class="action-btn danger" onclick="closeModal()">CANCEL</button>
                 <button class="action-btn" onclick="submitEditKid(${id})">UPDATE</button>
@@ -612,12 +519,12 @@
         async function submitEditKid(id) {
             const name = $('#edit-kid-name').value;
             const allowanceVal = $('#edit-kid-allowance').value;
-            const allowanceCents = allowanceVal ? Math.round(parseFloat(allowanceVal) * 100) : 0;
+            const allowance = allowanceVal ? parseFloat(allowanceVal) : 0.0;
 
             if (!name) return showToast("Name required", 'error');
             const res = await api(`/management/kids/${id}`, 'PUT', {
                 name: name,
-                allowance_cents: allowanceCents
+                allowance: allowance
             });
             if (res) {
                 showToast("Profile Updated", 'success');
@@ -626,7 +533,7 @@
             }
         }
 
-        // CHORES
+        // --- CHORES ---
         async function loadChores() {
             const chores = await api('/management/chores');
             if (!chores) return;
@@ -636,7 +543,7 @@
                 tbody.innerHTML += `
                 <tr>
                     <td>${c.name}</td>
-                    <td>${formatMoney(c.weight)}</td>
+                    <td>${formatMoney(c.reward)}</td>
                     <td><span class="badge">${c.frequency}</span></td>
                     <td>
                         <button class="action-btn danger" onclick="deleteChore(${c.id})">DEL</button>
@@ -656,7 +563,7 @@
                     <label>Assignee:</label>
                     <select id="chore-kid">${options}</select>
                     <input id="chore-name" placeholder="Quest Title" />
-                    <input id="chore-val" type="number" placeholder="Reward (cents)" />
+                    <input id="chore-val" type="number" placeholder="Reward ($)" step="0.5" />
                     <select id="chore-type">
                         <option value="DAILY">Daily</option>
                         <option value="WEEKLY">Weekly</option>
@@ -672,7 +579,7 @@
         async function submitAddChore() {
             const kidId = $('#chore-kid').value;
             const name = $('#chore-name').value;
-            const val = parseInt($('#chore-val').value);
+            const val = parseFloat($('#chore-val').value);
             const freq = $('#chore-type').value;
 
             if (!name || isNaN(val) || !kidId) return showToast("Invalid Data", 'error');
@@ -680,7 +587,7 @@
             const res = await api('/management/chores', 'POST', {
                 kid_id: parseInt(kidId),
                 name: name,
-                weight: val,
+                reward: val,
                 frequency: freq
             });
             if (res) {
@@ -690,24 +597,7 @@
             }
         }
 
-        async function deleteChore(id) {
-            if (confirm("Delete this quest from the database?")) {
-                await api(`/management/chores/${id}`, 'DELETE');
-                showToast("Quest Deleted", 'success');
-                loadChores();
-            }
-        }
-
-        // LEDGER
-        async function loadKidsForLedger() {
-            const kids = await api('/kids');
-            const sel = $('#ledger-kid-select');
-            sel.innerHTML = '<option value="">Select Crew Member...</option>';
-            kids.forEach(k => {
-                sel.innerHTML += `<option value="${k.id}">${k.name}</option>`;
-            });
-        }
-
+        // --- LEDGER ---
         async function loadLedgerHistory() {
             const id = $('#ledger-kid-select').value;
             const panel = $('#ledger-panel');
@@ -716,19 +606,19 @@
             panel.classList.remove('hidden');
 
             const k = (await api('/kids')).find(x => x.id == id);
-            $('#ledger-balance').textContent = formatMoney(k.balance_cents);
+            $('#ledger-balance').textContent = formatMoney(k.balance);
 
             const history = await api(`/ledger/${id}/history`);
             const tbody = $('#ledger-table tbody');
             tbody.innerHTML = "";
             history.forEach(h => {
-                const isPos = h.amount_cents > 0;
+                const isPos = h.amount > 0;
                 tbody.innerHTML += `
                 <tr>
                     <td>${h.timestamp.split('T')[0]}</td>
                     <td>${h.description}</td>
                     <td style="color:${isPos ? 'var(--success)' : 'var(--accent)'}">
-                        ${isPos ? '+' : ''}${formatMoney(h.amount_cents)}
+                        ${isPos ? '+' : ''}${formatMoney(h.amount)}
                     </td>
                     <td><button class="action-btn danger" style="padding:0.2rem 0.5rem" onclick="deleteTx(${h.id})">X</button></td>
                 </tr>
@@ -736,28 +626,10 @@
             });
         }
 
-        async function doPayout() {
-            const id = $('#ledger-kid-select').value;
-            if (!id) return;
-            if (confirm("Process Full Payout? This will reset balance to $0.")) {
-                await api(`/ledger/${id}/payout`, 'POST');
-                showToast("Payout Processed", 'success');
-                loadLedgerHistory();
-            }
-        }
-
-        async function deleteTx(id) {
-            if (confirm("Reverse and delete this transaction?")) {
-                await api(`/ledger/transaction/${id}`, 'DELETE');
-                showToast("Transaction Reversed", 'success');
-                loadLedgerHistory();
-            }
-        }
-
         function showAdjustModal() {
             showModal(`
             <h3>Manual Adjustment</h3>
-            <input id="adj-amt" type="number" placeholder="Amount (cents)" />
+            <input id="adj-amt" type="number" placeholder="Amount ($)" step="0.10" />
             <input id="adj-desc" placeholder="Reason (e.g. Bonus)" />
             <div class="flex-between">
                 <button class="action-btn danger" onclick="closeModal()">CANCEL</button>
@@ -771,14 +643,14 @@
 
         async function submitAdjust(sign) {
             const id = $('#ledger-kid-select').value;
-            const amt = parseInt($('#adj-amt').value);
+            const amt = parseFloat($('#adj-amt').value);
             const desc = $('#adj-desc').value || "Manual";
             if (!id || isNaN(amt)) return showToast("Invalid Amount", 'error');
 
             const type = sign > 0 ? "BONUS" : "SPEND";
             await api('/ledger/transaction', 'POST', {
                 kid_id: parseInt(id),
-                amount_cents: Math.abs(amt) * sign,
+                amount: Math.abs(amt) * sign,
                 type: type,
                 description: desc
             });
