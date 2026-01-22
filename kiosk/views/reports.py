@@ -71,7 +71,7 @@ class ReportsView(QWidget):
 
         self.table.setRowCount(len(data))
         for row, item in enumerate(data):
-            # item keys: week_id, kid_name, total_weight_possible, total_weight_completed, payout_cents
+            # item keys: week_id, kid_name, total_weight_possible, total_weight_completed, payout
             week = item.get("week_id", "")
             name = item.get("kid_name", "Unknown")
             poss = str(item.get("total_weight_possible", 0))

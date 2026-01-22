@@ -114,7 +114,7 @@ class LedgerView(QWidget):
         
         # Update Table
         self.table.setRowCount(len(history))
-        balance_cents = 0 # If we fetched user we'd have it. 
+        # Get current balance from kid data
         # Actually, let's just refetch 'get_kids' to find this kid's balance? 
         # Or better: Add 'get_kid(id)' to API. For now, let's loop kids.
         
