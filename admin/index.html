@@ -312,7 +312,7 @@
             <div class="card">
                 <h3>Quick Actions</h3>
                 <div class="flex-between">
-                    <button class="action-btn" onclick="switchView('approvals')">REVIEW PENDING</button>
+                    <button class="action-btn" onclick="initApprovals()">REVIEW PENDING</button>
                     <button class="action-btn" onclick="switchView('ledger')">PAYOUT ALLOWANCE</button>
                     <button class="action-btn" onclick="switchView('chores')">MANAGE QUESTS</button>
                 </div>
@@ -460,6 +460,7 @@
             loadKids();
             loadChores();
             loadStats();
+            loadApprovals(); // Check for pending items
         }
 
         // Navigation
@@ -626,6 +627,102 @@
             }
         }
 
+            }
+        }
+
+        // --- APPROVALS ---
+        async function initApprovals() {
+            switchView('approvals');
+            loadApprovals();
+        }
+
+        async function loadApprovals() {
+            const list = await api('/management/approvals');
+            const container = $('#approvals-container');
+            if (!container) return;
+
+            if (!list || list.length === 0) {
+                container.innerHTML = '<div style="color:var(--text-dim); text-align:center; padding:2rem;">All clear! No pending missions.</div>';
+                return;
+            }
+
+            container.innerHTML = "";
+            list.forEach(item => {
+                const dateStr = new Date(item.completed_at || item.date).toLocaleString();
+                container.innerHTML += `
+                <div class="card flex-between" style="border-left: 4px solid var(--accent)">
+                    <div>
+                        <h3 style="margin-bottom:0.2rem">${item.chore_name}</h3>
+                        <div style="color:var(--primary); font-weight:bold;">${item.kid_name}</div>
+                        <div style="font-size:0.8rem; color:var(--text-dim)">Submitted: ${dateStr}</div>
+                        <div style="margin-top:0.5rem; font-size:0.9rem">XP Reward: ${item.reward}</div>
+                    </div>
+                    <div style="display:flex; gap:1rem; align-items:center;">
+                        <button class="action-btn danger" onclick="processApproval(${item.id}, 'reject')">REJECT</button>
+                        <button class="action-btn" onclick="processApproval(${item.id}, 'approve')">APPROVE</button>
+                    </div>
+                </div>
+                `;
+            });
+        }
+
+        async function processApproval(id, action) {
+            const res = await api(\`/management/approvals/\${id}/\${action}\`, 'POST');
+             if (res) {
+                 showToast(action === 'approve' ? 'Approved!' : 'Rejected', action === 'approve' ? 'success' : 'info');
+                 loadApprovals();
+                 loadStats(); // Balance might change (conceptually)
+             }
+        }
+
+            }
+        }
+
+        // --- APPROVALS ---
+        async function initApprovals() {
+            switchView('approvals');
+            loadApprovals();
+        }
+
+        async function loadApprovals() {
+            const list = await api('/management/approvals');
+            const container = $('#approvals-container');
+            if (!container) return;
+            
+            if (!list || list.length === 0) {
+                container.innerHTML = '<div style="color:var(--text-dim); text-align:center; padding:2rem;">All clear! No pending missions.</div>';
+                return;
+            }
+
+            container.innerHTML = "";
+            list.forEach(item => {
+                const dateStr = new Date(item.completed_at || item.date).toLocaleString();
+                container.innerHTML += `
+                < div class= "card flex-between" style = "border-left: 4px solid var(--accent)" >
+                    <div>
+                        <h3 style="margin-bottom:0.2rem">${item.chore_name}</h3>
+                        <div style="color:var(--primary); font-weight:bold;">${item.kid_name}</div>
+                        <div style="font-size:0.8rem; color:var(--text-dim)">Submitted: ${dateStr}</div>
+                        <div style="margin-top:0.5rem; font-size:0.9rem">XP Reward: ${item.reward}</div>
+                    </div>
+                    <div style="display:flex; gap:1rem; align-items:center;">
+                        <button class="action-btn danger" onclick="processApproval(${item.id}, 'reject')">REJECT</button>
+                        <button class="action-btn" onclick="processApproval(${item.id}, 'approve')">APPROVE</button>
+                    </div>
+                </div >
+                `;
+            });
+        }
+
+        async function processApproval(id, action) {
+             const res = await api(\`/management/approvals/\${id}/\${action}\`, 'POST');
+             if (res) {
+                 showToast(action === 'approve' ? 'Approved!' : 'Rejected', action === 'approve' ? 'success' : 'info');
+                 loadApprovals();
+                 loadStats(); 
+             }
+        }
+
         // --- CHORES ---
         async function loadChores() {
             const chores = await api('/management/chores');
@@ -637,16 +734,16 @@
                 const freqClass = c.frequency === 'DAILY' ? 'badge-daily' : 'badge-weekly'; // You might need to add these classes in CSS or just use 'badge'
 
                 tbody.innerHTML += `
-                <tr>
+                < tr >
                     <td>${c.name}</td>
                     <td>XP Lv. ${c.reward}</td>
                     <td><span class="badge">${c.frequency}</span></td>
                     <td>
                         <button class="action-btn" onclick='editChore(${JSON.stringify(c).replace(/'/g, "&apos;")})'>EDIT</button>
                         <button class="action-btn danger" onclick="deleteChore(${c.id})">DEL</button>
-                    </td>
-                </tr>
-            `;
+                    </td >
+                </tr >
+                `;
             });
         }
 
@@ -659,11 +756,11 @@
                 let options = "";
                 kids.forEach(k => {
                     const selected = (chore && chore.kid_id === k.id) ? "selected" : "";
-                    options += `<option value="${k.id}" ${selected}>${k.name}</option>`;
+                    options += `< option value = "${k.id}" ${ selected }> ${ k.name }</option > `;
                 });
 
                 showModal(`
-                    <h3>${chore ? 'Edit Quest' : 'New Quest'}</h3>
+                < h3 > ${ chore ? 'Edit Quest' : 'New Quest' }</h3 >
                     <label>Assignee:</label>
                     <select id="chore-kid">${options}</select>
                     <input id="chore-name" placeholder="Quest Title" value="${chore ? chore.name : ''}" />
@@ -691,7 +788,7 @@
                         <button class="action-btn danger" onclick="closeModal()">CANCEL</button>
                         <button class="action-btn" onclick="submitAddChore()">SAVE</button>
                     </div>
-                `);
+            `);
 
                 // Set Due Day State
                 if (chore && chore.frequency === 'WEEKLY') {
@@ -734,7 +831,7 @@
             let res;
             if (editingChoreId) {
                 // UPDATE
-                res = await api(`/management/chores/${editingChoreId}`, 'PUT', payload);
+                res = await api(`/ management / chores / ${ editingChoreId } `, 'PUT', payload);
             } else {
                 // CREATE
                 res = await api('/management/chores', 'POST', payload);
@@ -759,7 +856,7 @@
             const k = (await api('/kids')).find(x => x.id == id);
             $('#ledger-balance').textContent = formatMoney(k.balance);
 
-            const history = await api(`/ledger/${id}/history`);
+            const history = await api(`/ ledger / ${ id }/history`);
             const tbody = $('#ledger-table tbody');
             tbody.innerHTML = "";
             history.forEach(h => {

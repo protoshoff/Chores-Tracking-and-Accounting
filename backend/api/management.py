@@ -3,7 +3,9 @@ from fastapi import APIRouter, Depends, HTTPException, Body
 from sqlmodel import Session, select
 from pydantic import BaseModel
 from ..db import get_session
-from ..models import User, Chore, Frequency
+from ..models import User, Chore, Frequency, ChoreLog, ChoreStatus
+from datetime import datetime, ChoreLog, ChoreStatus
+from datetime import datetime
 
 router = APIRouter(prefix="/api/management", tags=["Management"])
 
@@ -123,5 +125,109 @@ def delete_chore(chore_id: int, session: Session = Depends(get_session)):
         
     db_chore.archived = True
     session.add(db_chore)
+    db_chore.archived = True
+    session.add(db_chore)
     session.commit()
     return {"status": "archived", "id": chore_id}
+
+# --- Approvals Endpoints ---
+
+@router.get("/approvals")
+def list_pending_approvals(session: Session = Depends(get_session)):
+    # Join with User and Chore to get names
+    stmt = select(ChoreLog, User, Chore).where(
+        ChoreLog.status == ChoreStatus.PENDING,
+        ChoreLog.kid_id == User.id,
+        ChoreLog.chore_id == Chore.id
+    ).order_by(ChoreLog.completed_at)
+    
+    results = session.exec(stmt).all()
+    
+    # Format output
+    output = []
+    for log, kid, chore in results:
+        output.append({
+            "id": log.id,
+            "kid_name": kid.name,
+            "chore_name": chore.name,
+            "date": log.date.isoformat(),
+            "completed_at": log.completed_at,
+            "reward": chore.reward
+        })
+    return output
+
+@router.post("/approvals/{log_id}/{action}")
+def process_approval(log_id: int, action: str, session: Session = Depends(get_session)):
+    log = session.get(ChoreLog, log_id)
+    if not log:
+        raise HTTPException(status_code=404, detail="Log not found")
+        
+    if action == "approve":
+        log.status = ChoreStatus.APPROVED
+        log.reviewed_at = datetime.utcnow()
+        # Explicitly credit the balance immediately as per user expectation for quick feedback
+        kid = session.get(User, log.kid_id)
+        chore = session.get(Chore, log.chore_id)
+        if kid and chore:
+             kid.balance += chore.reward
+             session.add(kid)
+        
+    elif action == "reject":
+        log.status = ChoreStatus.REJECTED
+        log.reviewed_at = datetime.utcnow()
+    else:
+        raise HTTPException(status_code=400, detail="Invalid action")
+        
+    session.add(log)
+    session.commit()
+    return {"status": "success", "action": action}
+
+# --- Approvals Endpoints ---
+
+@router.get("/approvals")
+def list_pending_approvals(session: Session = Depends(get_session)):
+    # Join with User and Chore to get names
+    stmt = select(ChoreLog, User, Chore).where(
+        ChoreLog.status == ChoreStatus.PENDING,
+        ChoreLog.kid_id == User.id,
+        ChoreLog.chore_id == Chore.id
+    ).order_by(ChoreLog.completed_at)
+    
+    results = session.exec(stmt).all()
+    
+    # Format output
+    output = []
+    for log, kid, chore in results:
+        output.append({
+            "id": log.id,
+            "kid_name": kid.name,
+            "chore_name": chore.name,
+            "date": log.date.isoformat(),
+            "completed_at": log.completed_at,
+            "reward": chore.reward
+        })
+    return output
+
+@router.post("/approvals/{log_id}/{action}")
+def process_approval(log_id: int, action: str, session: Session = Depends(get_session)):
+    log = session.get(ChoreLog, log_id)
+    if not log:
+        raise HTTPException(status_code=404, detail="Log not found")
+        
+    if action == "approve":
+        log.status = ChoreStatus.APPROVED
+        log.reviewed_at = datetime.utcnow()
+        
+        # Credit the kid immediately? Usually handled by weekly rollup, 
+        # but if we want instant gratification or balance updates:
+        # For now, just mark approved. Payout calculation handles the rest.
+        
+    elif action == "reject":
+        log.status = ChoreStatus.REJECTED
+        log.reviewed_at = datetime.utcnow()
+    else:
+        raise HTTPException(status_code=400, detail="Invalid action")
+        
+    session.add(log)
+    session.commit()
+    return {"status": "success", "action": action}
