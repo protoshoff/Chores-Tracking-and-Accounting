@@ -642,6 +642,7 @@
                     <td>XP Lv. ${c.reward}</td>
                     <td><span class="badge">${c.frequency}</span></td>
                     <td>
+                        <button class="action-btn" onclick='editChore(${JSON.stringify(c).replace(/'/g, "&apos;")})'>EDIT</button>
                         <button class="action-btn danger" onclick="deleteChore(${c.id})">DEL</button>
                     </td>
                 </tr>
@@ -649,23 +650,30 @@
             });
         }
 
-        function showAddChoreModal() {
+        let editingChoreId = null;
+
+        function showAddChoreModal(chore = null) {
+            editingChoreId = chore ? chore.id : null;
+
             api('/kids').then(kids => {
                 let options = "";
-                kids.forEach(k => options += `<option value="${k.id}">${k.name}</option>`);
+                kids.forEach(k => {
+                    const selected = (chore && chore.kid_id === k.id) ? "selected" : "";
+                    options += `<option value="${k.id}" ${selected}>${k.name}</option>`;
+                });
 
                 showModal(`
-                    <h3>New Quest</h3>
+                    <h3>${chore ? 'Edit Quest' : 'New Quest'}</h3>
                     <label>Assignee:</label>
                     <select id="chore-kid">${options}</select>
-                    <input id="chore-name" placeholder="Quest Title" />
-                    <input id="chore-desc" placeholder="Briefing (Optional)" />
+                    <input id="chore-name" placeholder="Quest Title" value="${chore ? chore.name : ''}" />
+                    <input id="chore-desc" placeholder="Briefing (Optional)" value="${chore && chore.description ? chore.description : ''}" />
                     <label>XP Weight (1-10):</label>
-                    <input id="chore-val" type="number" placeholder="Weight (1-10)" min="1" max="10" value="1" />
+                    <input id="chore-val" type="number" placeholder="Weight (1-10)" min="1" max="10" value="${chore ? chore.reward : 1}" />
                     <label>Frequency:</label>
                     <select id="chore-type" onchange="toggleDueDay()">
-                        <option value="DAILY">Daily</option>
-                        <option value="WEEKLY">Weekly</option>
+                        <option value="DAILY" ${chore && chore.frequency === 'DAILY' ? 'selected' : ''}>Daily</option>
+                        <option value="WEEKLY" ${chore && chore.frequency === 'WEEKLY' ? 'selected' : ''}>Weekly</option>
                     </select>
                     <div id="due-day-container" class="hidden" style="margin-top:0.5rem">
                         <label>Due Day:</label>
@@ -681,10 +689,22 @@
                     </div>
                     <div class="flex-between" style="margin-top:1rem;">
                         <button class="action-btn danger" onclick="closeModal()">CANCEL</button>
-                        <button class="action-btn" onclick="submitAddChore()">CREATE</button>
+                        <button class="action-btn" onclick="submitAddChore()">SAVE</button>
                     </div>
                 `);
+
+                // Set Due Day State
+                if (chore && chore.frequency === 'WEEKLY') {
+                    $('#due-day-container').classList.remove('hidden');
+                    if (chore.due_day !== null) {
+                        $('#chore-day').value = chore.due_day;
+                    }
+                }
             });
+        }
+
+        function editChore(chore) {
+            showAddChoreModal(chore);
         }
 
         async function submitAddChore() {
@@ -702,18 +722,29 @@
             if (!name || isNaN(val) || !kidId) return showToast("Invalid Data", 'error');
             if (val < 1 || val > 10) return showToast("Available limit: 1-10", 'error');
 
-            const res = await api('/management/chores', 'POST', {
+            const payload = {
                 kid_id: parseInt(kidId),
                 name: name,
                 description: desc,
                 reward: val,
                 frequency: freq,
                 due_day: dueDay
-            });
+            };
+
+            let res;
+            if (editingChoreId) {
+                // UPDATE
+                res = await api(`/management/chores/${editingChoreId}`, 'PUT', payload);
+            } else {
+                // CREATE
+                res = await api('/management/chores', 'POST', payload);
+            }
+
             if (res) {
-                showToast("Quest Created", 'success');
+                showToast(editingChoreId ? "Quest Updated" : "Quest Created", 'success');
                 closeModal();
                 loadChores();
+                editingChoreId = null; // Reset
             }
         }
 
