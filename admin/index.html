@@ -663,6 +663,7 @@
                     <label>Assignee:</label>
                     <select id="chore-kid">${options}</select>
                     <input id="chore-name" placeholder="Quest Title" />
+                    <input id="chore-desc" placeholder="Briefing (Optional)" />
                     <label>XP Weight (1-10):</label>
                     <input id="chore-val" type="number" placeholder="Weight (1-10)" min="1" max="10" value="1" />
                     <label>Frequency:</label>
@@ -681,6 +682,7 @@
         async function submitAddChore() {
             const kidId = $('#chore-kid').value;
             const name = $('#chore-name').value;
+            const desc = $('#chore-desc').value;
             const val = parseFloat($('#chore-val').value);
             const freq = $('#chore-type').value;
 
@@ -690,6 +692,7 @@
             const res = await api('/management/chores', 'POST', {
                 kid_id: parseInt(kidId),
                 name: name,
+                description: desc,
                 reward: val,
                 frequency: freq
             });
