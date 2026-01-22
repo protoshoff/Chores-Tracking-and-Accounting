@@ -7,7 +7,7 @@ class ApiService:
     @staticmethod
     def get_kids():
         try:
-            resp = requests.get(f"{BASE_URL}/kids", timeout=2)
+            resp = requests.get(f"{BASE_URL}/kids/", timeout=2)
             if resp.status_code == 200:
                 return resp.json()
         except Exception as e:
@@ -16,7 +16,7 @@ class ApiService:
     @staticmethod
     def get_kid(kid_id):
         try:
-            resp = requests.get(f"{BASE_URL}/kids/{kid_id}", timeout=2)
+            resp = requests.get(f"{BASE_URL}/kids/{kid_id}/", timeout=2)
             if resp.status_code == 200:
                 return resp.json()
         except Exception as e:
