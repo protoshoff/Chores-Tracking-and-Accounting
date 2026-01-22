@@ -19,6 +19,12 @@ echo "Deploying branch $BRANCH to $NEW_release_DIR..."
 
 # 1. Ensure directories
 mkdir -p "$RELEASES_DIR"
+if [ ! -d "/var/lib/chores_app" ]; then
+    echo "Creating persistent data directory..."
+    sudo mkdir -p /var/lib/chores_app
+    sudo chown $USER:$USER /var/lib/chores_app
+    sudo chmod 755 /var/lib/chores_app
+fi
 
 # 2. Clone/Copy Code
 git clone -b "$BRANCH" "$REPO_URL" "$NEW_release_DIR"

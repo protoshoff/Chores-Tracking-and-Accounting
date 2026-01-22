@@ -7,7 +7,7 @@ User=pi
 Group=pi
 WorkingDirectory=/home/pi/chores_app/current
 # Environment variables can be added here
-Environment="CHORES_DB_PATH=/var/lib/chores_app/chores.db"
+Environment="CHORES_DATA_DIR=/var/lib/chores_app"
 # Run uvicorn from the venv
 ExecStart=/home/pi/chores_app/current/venv/bin/python -m uvicorn backend.main:app --host 0.0.0.0 --port 8000
 Restart=always
