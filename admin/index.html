@@ -542,7 +542,14 @@
 
             const grid = $('#kids-grid');
             grid.innerHTML = "";
+
+            // Populate Ledger Dropdown too!
+            const ledgerSelect = $('#ledger-kid-select');
+            const currentLedgerVal = ledgerSelect.value;
+            ledgerSelect.innerHTML = '<option value="">Select Crew Member...</option>';
+
             kids.forEach(k => {
+                // Populate Grid
                 grid.innerHTML += `
                 <div class="card">
                     <h3>${k.name}</h3>
@@ -551,8 +558,13 @@
                         <button class="action-btn" onclick="editKid(${k.id}, '${k.name}', ${k.allowance})">EDIT</button>
                     </div>
                 </div>
-            `;
+                `;
+
+                // Populate Ledger Dropdown
+                ledgerSelect.innerHTML += `<option value="${k.id}">${k.name}</option>`;
             });
+
+            if (currentLedgerVal) ledgerSelect.value = currentLedgerVal;
         }
 
         function showAddKidModal() {
@@ -625,10 +637,13 @@
             const tbody = $('#chores-table tbody');
             tbody.innerHTML = "";
             chores.forEach(c => {
+                // Determine CSS class for frequency badge
+                const freqClass = c.frequency === 'DAILY' ? 'badge-daily' : 'badge-weekly'; // You might need to add these classes in CSS or just use 'badge'
+
                 tbody.innerHTML += `
                 <tr>
                     <td>${c.name}</td>
-                    <td>${formatMoney(c.reward)}</td>
+                    <td>XP Lv. ${c.reward}</td>
                     <td><span class="badge">${c.frequency}</span></td>
                     <td>
                         <button class="action-btn danger" onclick="deleteChore(${c.id})">DEL</button>
@@ -648,7 +663,9 @@
                     <label>Assignee:</label>
                     <select id="chore-kid">${options}</select>
                     <input id="chore-name" placeholder="Quest Title" />
-                    <input id="chore-val" type="number" placeholder="Reward ($)" step="0.5" />
+                    <label>XP Weight (1-10):</label>
+                    <input id="chore-val" type="number" placeholder="Weight (1-10)" min="1" max="10" value="1" />
+                    <label>Frequency:</label>
                     <select id="chore-type">
                         <option value="DAILY">Daily</option>
                         <option value="WEEKLY">Weekly</option>
@@ -668,6 +685,7 @@
             const freq = $('#chore-type').value;
 
             if (!name || isNaN(val) || !kidId) return showToast("Invalid Data", 'error');
+            if (val < 1 || val > 10) return showToast("Available limit: 1-10", 'error');
 
             const res = await api('/management/chores', 'POST', {
                 kid_id: parseInt(kidId),
@@ -742,6 +760,29 @@
             showToast("Ledger Updated", 'success');
             closeModal();
             loadLedgerHistory();
+        }
+
+        async function doPayout() {
+            const id = $('#ledger-kid-select').value;
+            if (!id) return;
+
+            if (!confirm("Confirm Payout? This will reset the balance to $0.00.")) return;
+
+            const res = await api(`/ledger/${id}/payout`, 'POST');
+            if (res) {
+                showToast("Payout Successful", 'success');
+                loadLedgerHistory();
+            }
+        }
+
+        async function deleteTx(txId) {
+            if (!confirm("Are you sure you want to delete this transaction?")) return;
+
+            const res = await api(`/ledger/transaction/${txId}`, 'DELETE');
+            if (res) {
+                showToast("Transaction Deleted", 'success');
+                loadLedgerHistory();
+            }
         }
 
         // SETTINGS
