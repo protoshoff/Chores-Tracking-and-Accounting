@@ -663,10 +663,22 @@
                     <label>XP Weight (1-10):</label>
                     <input id="chore-val" type="number" placeholder="Weight (1-10)" min="1" max="10" value="1" />
                     <label>Frequency:</label>
-                    <select id="chore-type">
+                    <select id="chore-type" onchange="toggleDueDay()">
                         <option value="DAILY">Daily</option>
                         <option value="WEEKLY">Weekly</option>
                     </select>
+                    <div id="due-day-container" class="hidden" style="margin-top:0.5rem">
+                        <label>Due Day:</label>
+                        <select id="chore-day">
+                            <option value="0">Monday</option>
+                            <option value="1">Tuesday</option>
+                            <option value="2">Wednesday</option>
+                            <option value="3">Thursday</option>
+                            <option value="4">Friday</option>
+                            <option value="5">Saturday</option>
+                            <option value="6">Sunday</option>
+                        </select>
+                    </div>
                     <div class="flex-between" style="margin-top:1rem;">
                         <button class="action-btn danger" onclick="closeModal()">CANCEL</button>
                         <button class="action-btn" onclick="submitAddChore()">CREATE</button>
@@ -682,6 +694,11 @@
             const val = parseFloat($('#chore-val').value);
             const freq = $('#chore-type').value;
 
+            let dueDay = null;
+            if (freq === 'WEEKLY') {
+                dueDay = parseInt($('#chore-day').value);
+            }
+
             if (!name || isNaN(val) || !kidId) return showToast("Invalid Data", 'error');
             if (val < 1 || val > 10) return showToast("Available limit: 1-10", 'error');
 
@@ -690,7 +707,8 @@
                 name: name,
                 description: desc,
                 reward: val,
-                frequency: freq
+                frequency: freq,
+                due_day: dueDay
             });
             if (res) {
                 showToast("Quest Created", 'success');
