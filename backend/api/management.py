@@ -24,14 +24,12 @@ class ChoreCreate(BaseModel):
     name: str
     description: Optional[str] = None
     reward: float = 1.0
-    reward: float = 1.0
     frequency: Frequency
     due_day: Optional[int] = None # 0-6
 
 class ChoreUpdate(BaseModel):
     name: Optional[str] = None
     description: Optional[str] = None
-    reward: Optional[float] = None
     reward: Optional[float] = None
     frequency: Optional[Frequency] = None
     due_day: Optional[int] = None
@@ -88,7 +86,6 @@ def create_chore(chore: ChoreCreate, session: Session = Depends(get_session)):
         kid_id=chore.kid_id,
         name=chore.name,
         description=chore.description,
-        reward=chore.reward,
         reward=chore.reward,
         frequency=chore.frequency,
         due_day=chore.due_day,
