@@ -4,7 +4,6 @@ from sqlmodel import Session, select
 from pydantic import BaseModel
 from ..db import get_session
 from ..models import User, Chore, Frequency, ChoreLog, ChoreStatus
-from datetime import datetime, ChoreLog, ChoreStatus
 from datetime import datetime
 
 router = APIRouter(prefix="/api/management", tags=["Management"])
