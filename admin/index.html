@@ -488,25 +488,21 @@
             const totalBalance = kids.reduce((sum, k) => sum + (k.balance || 0), 0);
 
             // Update overview stats if elements exist
-            const statsContainer = $('#view-overview');
-            if (statsContainer) {
-                const statsHTML = `
-                    <h2>Mission Control</h2>
-                    <div class="grid">
-                        <div class="card">
-                            <h3>Active Crew</h3>
-                            <p style="font-size:2rem;color:var(--primary);">${totalKids}</p>
+            // Update overview stats
+            const statsElement = $('#dashboard-stats');
+            if (statsElement) {
+                statsElement.innerHTML = `
+                    <div class="grid" style="grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem;">
+                        <div style="text-align:center">
+                            <div style="font-size:0.9rem; color:var(--text-dim)">ACTIVE CREW</div>
+                            <div style="font-size:2rem; color:var(--primary)">${totalKids}</div>
                         </div>
-                        <div class="card">
-                            <h3>Total Balance</h3>
-                            <p style="font-size:2rem;color:var(--success);">${formatMoney(totalBalance)}</p>
+                        <div style="text-align:center">
+                            <div style="font-size:0.9rem; color:var(--text-dim)">TOTAL BALANCE</div>
+                            <div style="font-size:2rem; color:var(--success)">${formatMoney(totalBalance)}</div>
                         </div>
                     </div>
                 `;
-                // Only update if there's no existing content
-                if (!statsContainer.querySelector('.card')) {
-                    statsContainer.innerHTML = statsHTML;
-                }
             }
         }
         function formatMoney(amount) {
