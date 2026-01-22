@@ -50,6 +50,7 @@ class Chore(SQLModel, table=True):
     icon_name: str = Field(default="star") # Default icon
     reward: float = Field(default=1.0)
     frequency: Frequency
+    due_day: Optional[int] = Field(default=None) # 0=Monday, 6=Sunday
     due_time: Optional[time] = Field(default=None)
     archived: bool = Field(default=False)
     

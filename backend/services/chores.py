@@ -106,9 +106,16 @@ class ChoreService:
         today_logs = [l for l in logs if l.date == today]
         today_done = len([l for l in today_logs if l.status != ChoreStatus.INCOMPLETE])
         
-        # Today Total is active daily chores + any weekly chores due today (simplification: just dailies + logs that exist for weeklies)
-        # Actually, let's just count daily chores count.
-        daily_chores_count = len([c for c in chores if c.frequency == "DAILY"])
+        # Today Total is active daily chores + any weekly chores due today
+        daily_chores_count = 0
+        weekday = today.weekday()
+        
+        for c in chores:
+            if c.frequency == "DAILY":
+                daily_chores_count += 1
+            elif c.frequency == "WEEKLY" and c.due_day is not None:
+                if c.due_day == weekday:
+                    daily_chores_count += 1
         
         return {
             "total_reward": round(total_possible, 2),
