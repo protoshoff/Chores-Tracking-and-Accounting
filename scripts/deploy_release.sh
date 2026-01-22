@@ -99,10 +99,19 @@ echo "exec venv/bin/python3 -u -m kiosk.main --fullscreen > /tmp/kiosk.log 2>&1"
 chmod +x /home/$USER/.xinitrc
 chown $USER:$USER /home/$USER/.xinitrc
 
+
 # 9. Restart Services
 echo "Restarting Services..."
 # Enable and start/restart
 sudo systemctl enable chores-backend chores-kiosk
 sudo systemctl restart chores-backend chores-kiosk
+
+# 10. Cleanup Old Releases
+echo "Cleaning up old releases..."
+if [ -f "$NEW_release_DIR/scripts/cleanup_old_releases.sh" ]; then
+    bash "$NEW_release_DIR/scripts/cleanup_old_releases.sh"
+else
+    echo "Warning: Cleanup script not found."
+fi
 
 echo "Deployment Complete: $TIMESTAMP"
