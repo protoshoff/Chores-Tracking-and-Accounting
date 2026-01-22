@@ -90,7 +90,7 @@ class ManageUsersView(QWidget):
         self.inp_allowance = HoloLineEdit()
         self.inp_allowance.setPlaceholderText("0")
         # self.style_input(self.inp_allowance)
-        self.form_layout.addRow(self.make_label("ALLOWANCE (¢):"), self.inp_allowance)
+        self.form_layout.addRow(self.make_label("ALLOWANCE ($):"), self.inp_allowance)
         
         rl.addLayout(self.form_layout)
         rl.addStretch()
@@ -186,9 +186,9 @@ class ManageUsersView(QWidget):
         if not name: return # TODO: Validation msg
         
         try:
-            allowance = int(self.inp_allowance.text().strip() or "0")
+            allowance = float(self.inp_allowance.text().strip() or "0")
         except ValueError:
-            allowance = 0
+            allowance = 0.0
             
         if self.selected_user:
             # Update
