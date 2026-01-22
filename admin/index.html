@@ -678,50 +678,7 @@
             }
         }
 
-        // --- APPROVALS ---
-        async function initApprovals() {
-            switchView('approvals');
-            loadApprovals();
-        }
 
-        async function loadApprovals() {
-            const list = await api('/management/approvals');
-            const container = $('#approvals-container');
-            if (!container) return;
-            
-            if (!list || list.length === 0) {
-                container.innerHTML = '<div style="color:var(--text-dim); text-align:center; padding:2rem;">All clear! No pending missions.</div>';
-                return;
-            }
-
-            container.innerHTML = "";
-            list.forEach(item => {
-                const dateStr = new Date(item.completed_at || item.date).toLocaleString();
-                container.innerHTML += `
-                < div class= "card flex-between" style = "border-left: 4px solid var(--accent)" >
-                    <div>
-                        <h3 style="margin-bottom:0.2rem">${item.chore_name}</h3>
-                        <div style="color:var(--primary); font-weight:bold;">${item.kid_name}</div>
-                        <div style="font-size:0.8rem; color:var(--text-dim)">Submitted: ${dateStr}</div>
-                        <div style="margin-top:0.5rem; font-size:0.9rem">XP Reward: ${item.reward}</div>
-                    </div>
-                    <div style="display:flex; gap:1rem; align-items:center;">
-                        <button class="action-btn danger" onclick="processApproval(${item.id}, 'reject')">REJECT</button>
-                        <button class="action-btn" onclick="processApproval(${item.id}, 'approve')">APPROVE</button>
-                    </div>
-                </div >
-                `;
-            });
-        }
-
-        async function processApproval(id, action) {
-             const res = await api(\`/management/approvals/\${id}/\${action}\`, 'POST');
-             if (res) {
-                 showToast(action === 'approve' ? 'Approved!' : 'Rejected', action === 'approve' ? 'success' : 'info');
-                 loadApprovals();
-                 loadStats(); 
-             }
-        }
 
         // --- CHORES ---
         async function loadChores() {

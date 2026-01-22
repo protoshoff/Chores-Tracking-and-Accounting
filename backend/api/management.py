@@ -124,8 +124,6 @@ def delete_chore(chore_id: int, session: Session = Depends(get_session)):
         
     db_chore.archived = True
     session.add(db_chore)
-    db_chore.archived = True
-    session.add(db_chore)
     session.commit()
     return {"status": "archived", "id": chore_id}
 
