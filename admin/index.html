@@ -226,7 +226,6 @@
             right: 0;
             bottom: 0;
             background: rgba(0, 0, 0, 0.85);
-            /* Darker backdrop */
             backdrop-filter: blur(4px);
             display: flex;
             justify-content: center;
@@ -243,7 +242,6 @@
             width: 90%;
             max-width: 500px;
             border-radius: 4px;
-            /* Angled tech look */
             position: relative;
         }
 
@@ -268,7 +266,6 @@
 
             .action-btn {
                 width: 100%;
-                /* Full width buttons on mobile */
                 margin-bottom: 0.5rem;
             }
 
@@ -276,7 +273,6 @@
                 font-size: 1.5rem;
             }
 
-            /* Adjust ledger layout */
             #ledger-table th,
             #ledger-table td {
                 padding: 0.5rem;
@@ -319,12 +315,10 @@
             </div>
         </section>
 
-        <!-- APPROVALS (NEW) -->
+        <!-- APPROVALS -->
         <section id="view-approvals" class="view-section">
             <h2>Mission Command (Approvals)</h2>
-            <div id="approvals-container">
-                <!-- Injected ordered by date -->
-            </div>
+            <div id="approvals-container"></div>
         </section>
 
         <!-- KIDS MANAGE -->
@@ -333,9 +327,7 @@
                 <h2>Crew Roster</h2>
                 <button class="action-btn" onclick="showAddKidModal()">+ RECRUIT</button>
             </div>
-            <div id="kids-grid" class="grid">
-                <!-- Kids cards injected here -->
-            </div>
+            <div id="kids-grid" class="grid"></div>
         </section>
 
         <!-- CHORES MANAGE -->
@@ -353,9 +345,7 @@
                         <th>ACTIONS</th>
                     </tr>
                 </thead>
-                <tbody>
-                    <!-- Rows -->
-                </tbody>
+                <tbody></tbody>
             </table>
         </section>
 
@@ -410,9 +400,7 @@
     </main>
 
     <!-- MODALS -->
-    <div id="modal-container" class="modal-overlay hidden">
-        <!-- Dynamic Content -->
-    </div>
+    <div id="modal-container" class="modal-overlay hidden"></div>
 
     <!-- TOASTS -->
     <div id="toast-container" style="position:fixed; bottom:20px; right:20px; z-index:2000;"></div>
@@ -457,25 +445,22 @@
             }
 
             // Load initial data
-            loadKids();
+            await loadKids();
             loadChores();
             loadStats();
-            loadApprovals(); // Check for pending items
+            loadApprovals();
         }
 
         // Navigation
         function switchView(viewName) {
-            // Hide all sections
             $all('.view-section').forEach(s => s.classList.remove('active'));
-            // Show target section
             const target = $(`#view-${viewName}`);
             if (target) target.classList.add('active');
 
-            // Update nav buttons
             $all('.nav-btn').forEach(btn => btn.classList.remove('active'));
             const activeBtn = Array.from($all('.nav-btn')).find(btn =>
                 btn.textContent.toLowerCase().includes(viewName) ||
-                btn.onclick?.toString().includes(`'${viewName}'`)
+                btn.onclick?.toString().toLowerCase().includes(`'${viewName}'`)
             );
             if (activeBtn) activeBtn.classList.add('active');
         }
@@ -488,8 +473,6 @@
             const totalKids = kids.length;
             const totalBalance = kids.reduce((sum, k) => sum + (k.balance || 0), 0);
 
-            // Update overview stats if elements exist
-            // Update overview stats
             const statsElement = $('#dashboard-stats');
             if (statsElement) {
                 statsElement.innerHTML = `
@@ -507,7 +490,6 @@
             }
         }
         function formatMoney(amount) {
-            // Amount is already in dollars float
             return "$" + parseFloat(amount).toFixed(2);
         }
 
@@ -538,30 +520,30 @@
             if (!kids) return;
 
             const grid = $('#kids-grid');
-            grid.innerHTML = "";
+            if (grid) grid.innerHTML = "";
 
             // Populate Ledger Dropdown too!
             const ledgerSelect = $('#ledger-kid-select');
-            const currentLedgerVal = ledgerSelect.value;
-            ledgerSelect.innerHTML = '<option value="">Select Crew Member...</option>';
+            const currentLedgerVal = ledgerSelect ? ledgerSelect.value : "";
+            if (ledgerSelect) ledgerSelect.innerHTML = '<option value="">Select Crew Member...</option>';
 
             kids.forEach(k => {
-                // Populate Grid
-                grid.innerHTML += `
-                <div class="card">
-                    <h3>${k.name}</h3>
-                    <div class="balance-display">${formatMoney(k.balance)}</div>
-                    <div style="margin-top:1rem;">
-                        <button class="action-btn" onclick="editKid(${k.id}, '${k.name}', ${k.allowance})">EDIT</button>
+                if (grid) {
+                    grid.innerHTML += `
+                    <div class="card">
+                        <h3>${k.name}</h3>
+                        <div class="balance-display">${formatMoney(k.balance)}</div>
+                        <div style="margin-top:1rem;">
+                            <button class="action-btn" onclick="editKid(${k.id}, '${k.name}', ${k.allowance})">EDIT</button>
+                        </div>
                     </div>
-                </div>
-                `;
+                    `;
+                }
 
-                // Populate Ledger Dropdown
-                ledgerSelect.innerHTML += `<option value="${k.id}">${k.name}</option>`;
+                if (ledgerSelect) ledgerSelect.innerHTML += `<option value="${k.id}">${k.name}</option>`;
             });
 
-            if (currentLedgerVal) ledgerSelect.value = currentLedgerVal;
+            if (currentLedgerVal && ledgerSelect) ledgerSelect.value = currentLedgerVal;
         }
 
         function showAddKidModal() {
@@ -576,19 +558,15 @@
                 <button class="action-btn danger" onclick="closeModal()">CANCEL</button>
                 <button class="action-btn" onclick="submitAddKid()">CONFIRM</button>
             </div>
-        `);
+            `);
         }
 
         async function submitAddKid() {
             const name = $('#kid-name').value;
             const allowanceVal = $('#kid-allowance').value;
             const allowance = allowanceVal ? parseFloat(allowanceVal) : 0.0;
-
             if (!name) return showToast("Name required", 'error');
-            const res = await api('/management/kids', 'POST', {
-                name: name,
-                allowance: allowance
-            });
+            const res = await api('/management/kids', 'POST', { name, allowance });
             if (res) {
                 showToast("Crew Member Recruited", 'success');
                 closeModal();
@@ -614,20 +592,14 @@
             const name = $('#edit-kid-name').value;
             const allowanceVal = $('#edit-kid-allowance').value;
             const allowance = allowanceVal ? parseFloat(allowanceVal) : 0.0;
-
             if (!name) return showToast("Name required", 'error');
-            const res = await api(`/management/kids/${id}`, 'PUT', {
-                name: name,
-                allowance: allowance
-            });
+            const res = await api(`/management/kids/${id}`, 'PUT', { name, allowance });
             if (res) {
                 showToast("Profile Updated", 'success');
                 closeModal();
                 loadKids();
             }
         }
-
-
 
         // --- APPROVALS ---
         async function initApprovals() {
@@ -666,17 +638,13 @@
         }
 
         async function processApproval(id, action) {
-            const res = await api(\`/management/approvals/\${id}/\${action}\`, 'POST');
-             if (res) {
-                 showToast(action === 'approve' ? 'Approved!' : 'Rejected', action === 'approve' ? 'success' : 'info');
-                 loadApprovals();
-                 loadStats(); // Balance might change (conceptually)
-             }
+            const res = await api(`/management/approvals/${id}/${action}`, 'POST');
+            if (res) {
+                showToast(action === 'approve' ? 'Approved!' : 'Rejected', action === 'approve' ? 'success' : 'info');
+                loadApprovals();
+                loadStats();
+            }
         }
-
-
-
-
 
         // --- CHORES ---
         async function loadChores() {
@@ -685,37 +653,39 @@
             const tbody = $('#chores-table tbody');
             tbody.innerHTML = "";
             chores.forEach(c => {
-                // Determine CSS class for frequency badge
-                const freqClass = c.frequency === 'DAILY' ? 'badge-daily' : 'badge-weekly'; // You might need to add these classes in CSS or just use 'badge'
-
                 tbody.innerHTML += `
-                < tr >
+                <tr>
                     <td>${c.name}</td>
                     <td>XP Lv. ${c.reward}</td>
                     <td><span class="badge">${c.frequency}</span></td>
                     <td>
                         <button class="action-btn" onclick='editChore(${JSON.stringify(c).replace(/'/g, "&apos;")})'>EDIT</button>
                         <button class="action-btn danger" onclick="deleteChore(${c.id})">DEL</button>
-                    </td >
-                </tr >
+                    </td>
+                </tr>
                 `;
             });
+        }
+
+        async function deleteChore(id) {
+            if (!confirm("Are you sure?")) return;
+            await api(`/management/chores/${id}`, 'DELETE');
+            loadChores();
         }
 
         let editingChoreId = null;
 
         function showAddChoreModal(chore = null) {
             editingChoreId = chore ? chore.id : null;
-
             api('/kids').then(kids => {
                 let options = "";
                 kids.forEach(k => {
                     const selected = (chore && chore.kid_id === k.id) ? "selected" : "";
-                    options += `< option value = "${k.id}" ${ selected }> ${ k.name }</option > `;
+                    options += `<option value="${k.id}" ${selected}> ${k.name}</option>`;
                 });
 
                 showModal(`
-                < h3 > ${ chore ? 'Edit Quest' : 'New Quest' }</h3 >
+                <h3>${chore ? 'Edit Quest' : 'New Quest'}</h3>
                     <label>Assignee:</label>
                     <select id="chore-kid">${options}</select>
                     <input id="chore-name" placeholder="Quest Title" value="${chore ? chore.name : ''}" />
@@ -743,16 +713,21 @@
                         <button class="action-btn danger" onclick="closeModal()">CANCEL</button>
                         <button class="action-btn" onclick="submitAddChore()">SAVE</button>
                     </div>
-            `);
+                `);
 
-                // Set Due Day State
                 if (chore && chore.frequency === 'WEEKLY') {
-                    $('#due-day-container').classList.remove('hidden');
-                    if (chore.due_day !== null) {
-                        $('#chore-day').value = chore.due_day;
-                    }
+                    const container = $('#due-day-container');
+                    if (container) container.classList.remove('hidden');
+                    if (chore.due_day !== null) $('#chore-day').value = chore.due_day;
                 }
             });
+        }
+
+        function toggleDueDay() {
+            const freq = $('#chore-type').value;
+            const container = $('#due-day-container');
+            if (freq === 'WEEKLY') container.classList.remove('hidden');
+            else container.classList.add('hidden');
         }
 
         function editChore(chore) {
@@ -786,7 +761,7 @@
             let res;
             if (editingChoreId) {
                 // UPDATE
-                res = await api(`/ management / chores / ${ editingChoreId } `, 'PUT', payload);
+                res = await api(`/management/chores/${editingChoreId}`, 'PUT', payload);
             } else {
                 // CREATE
                 res = await api('/management/chores', 'POST', payload);
@@ -796,7 +771,6 @@
                 showToast(editingChoreId ? "Quest Updated" : "Quest Created", 'success');
                 closeModal();
                 loadChores();
-                editingChoreId = null; // Reset
             }
         }
 
@@ -808,10 +782,11 @@
             if (!id) { panel.classList.add('hidden'); return; }
             panel.classList.remove('hidden');
 
-            const k = (await api('/kids')).find(x => x.id == id);
-            $('#ledger-balance').textContent = formatMoney(k.balance);
+            const kids = await api('/kids');
+            const k = kids.find(x => x.id == id);
+            if (k) $('#ledger-balance').textContent = formatMoney(k.balance);
 
-            const history = await api(`/ ledger / ${ id }/history`);
+            const history = await api(`/ledger/${id}/history`);
             const tbody = $('#ledger-table tbody');
             tbody.innerHTML = "";
             history.forEach(h => {
@@ -865,9 +840,7 @@
         async function doPayout() {
             const id = $('#ledger-kid-select').value;
             if (!id) return;
-
             if (!confirm("Confirm Payout? This will reset the balance to $0.00.")) return;
-
             const res = await api(`/ledger/${id}/payout`, 'POST');
             if (res) {
                 showToast("Payout Successful", 'success');
@@ -877,7 +850,6 @@
 
         async function deleteTx(txId) {
             if (!confirm("Are you sure you want to delete this transaction?")) return;
-
             const res = await api(`/ledger/transaction/${txId}`, 'DELETE');
             if (res) {
                 showToast("Transaction Deleted", 'success');
@@ -886,14 +858,11 @@
         }
 
         // SETTINGS
-        // SETTINGS
         async function showSettingsModal() {
-            // Load current config
             const config = await api('/system/config') || { payout_threshold: 80 };
 
             showModal(`
                 <h3>System Configuration</h3>
-                
                 <label>Payout Threshold (%):</label>
                 <input id="cfg-threshold" type="number" value="${config.payout_threshold}" placeholder="80" min="0" max="100" />
                 <small style="color:#666; display:block; margin-bottom:1rem">
@@ -920,10 +889,7 @@
                 return showToast("Invalid Threshold (0-100)", 'error');
             }
 
-            // Update Threshold
             await api('/system/config', 'PUT', { payout_threshold: threshold });
-
-            // Update PIN if provided
             if (pin && pin.length >= 4) {
                 await api('/system/pin', 'PUT', { pin: pin });
             }
@@ -932,7 +898,6 @@
             closeModal();
         }
 
-        // MODAL SYSTEM
         function showModal(html) {
             const c = $('#modal-container');
             c.innerHTML = `<div class="modal fade-in">${html}</div>`;
@@ -945,7 +910,6 @@
         // BOOT
         init();
     </script>
-
 </body>
 
 </html>
