@@ -107,13 +107,14 @@ class ApiService:
         return None
 
     @staticmethod
-    def update_chore(chore_id, name=None, description=None, reward=None, frequency=None, archived=None):
+    def update_chore(chore_id, name=None, description=None, reward=None, frequency=None, due_day=None, archived=None):
         try:
             payload = {}
             if name is not None: payload["name"] = name
             if description is not None: payload["description"] = description
             if reward is not None: payload["reward"] = reward
             if frequency is not None: payload["frequency"] = frequency
+            if due_day is not None: payload["due_day"] = due_day
             if archived is not None: payload["archived"] = archived
             
             resp = requests.put(f"{BASE_URL}/management/chores/{chore_id}", json=payload, timeout=2)

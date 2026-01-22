@@ -100,7 +100,17 @@ class ManageChoresView(QWidget):
         self.combo_freq = QComboBox()
         self.style_combo(self.combo_freq)
         self.combo_freq.addItems(["DAILY", "WEEKLY"])
+        self.combo_freq.currentIndexChanged.connect(self.on_freq_changed)
         self.form_layout.addRow(self.make_label("FREQUENCY:"), self.combo_freq)
+        
+        # Due Day (Hidden unless Weekly)
+        self.lbl_day = self.make_label("DUE DAY:")
+        self.combo_day = QComboBox()
+        self.style_combo(self.combo_day)
+        self.combo_day.addItems(["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY", "SUNDAY"])
+        self.form_layout.addRow(self.lbl_day, self.combo_day)
+        self.combo_day.hide()
+        self.lbl_day.hide()
         
         # Weight
         self.spin_weight = QSpinBox()
@@ -280,10 +290,17 @@ class ManageChoresView(QWidget):
         self.inp_desc.setText(data.get("description", ""))
         self.spin_weight.setValue(data.get("weight", 1))
         
-        # Set Frequency
-        freq = data.get("frequency", "DAILY")
         idx = self.combo_freq.findText(freq)
         if idx >= 0: self.combo_freq.setCurrentIndex(idx)
+        
+        # Set Due Day
+        due_day = data.get("due_day")
+        if due_day is not None:
+            self.combo_day.setCurrentIndex(due_day)
+        else:
+            self.combo_day.setCurrentIndex(0)
+            
+        self.on_freq_changed() # Update visibility
         
         target_kid_name = data.get("kid_name")
         for i in range(self.combo_kid.count()):
@@ -301,6 +318,8 @@ class ManageChoresView(QWidget):
         self.inp_desc.clear()
         self.spin_weight.setValue(1)
         self.combo_freq.setCurrentIndex(0)
+        self.combo_day.setCurrentIndex(0)
+        self.on_freq_changed()
         
         self.btn_save.setText("CREATE QUEST")
         self.btn_delete.hide()
@@ -315,17 +334,30 @@ class ManageChoresView(QWidget):
         freq = self.combo_freq.currentText()
         kid_id = self.combo_kid.currentData()
         
+        due_day = None
+        if freq == "WEEKLY":
+            due_day = self.combo_day.currentIndex()
+        
         if self.selected_chore:
             # Update
             cid = self.selected_chore["id"]
-            ApiService.update_chore(cid, name=name, description=desc, weight=weight, frequency=freq)
+            ApiService.update_chore(cid, name=name, description=desc, weight=weight, frequency=freq, due_day=due_day)
         else:
             # Create
             if kid_id is not None:
-                ApiService.create_chore(kid_id, name, description=desc, weight=weight, frequency=freq)
+                ApiService.create_chore(kid_id, name, description=desc, weight=weight, frequency=freq, due_day=due_day)
             
         self.refresh_data()
         self.on_add_clicked()
+
+    def on_freq_changed(self):
+        freq = self.combo_freq.currentText()
+        if freq == "WEEKLY":
+            self.lbl_day.show()
+            self.combo_day.show()
+        else:
+            self.lbl_day.hide()
+            self.combo_day.hide() 
 
     def archive_chore(self):
         if self.selected_chore:
