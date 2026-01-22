@@ -449,9 +449,65 @@
 
         // Initialize Dashboard
         async function init() {
+            // Update status to ONLINE
+            const statusEl = $('#status-indicator');
+            if (statusEl) {
+                statusEl.textContent = 'ONLINE';
+                statusEl.classList.add('online');
+            }
+
             // Load initial data
             loadKids();
             loadChores();
+            loadStats();
+        }
+
+        // Navigation
+        function switchView(viewName) {
+            // Hide all sections
+            $all('.view-section').forEach(s => s.classList.remove('active'));
+            // Show target section
+            const target = $(`#view-${viewName}`);
+            if (target) target.classList.add('active');
+
+            // Update nav buttons
+            $all('.nav-btn').forEach(btn => btn.classList.remove('active'));
+            const activeBtn = Array.from($all('.nav-btn')).find(btn =>
+                btn.textContent.toLowerCase().includes(viewName) ||
+                btn.onclick?.toString().includes(`'${viewName}'`)
+            );
+            if (activeBtn) activeBtn.classList.add('active');
+        }
+
+        // Load Stats for Overview
+        async function loadStats() {
+            const kids = await api('/kids/');
+            if (!kids) return;
+
+            const totalKids = kids.length;
+            const totalBalance = kids.reduce((sum, k) => sum + (k.balance || 0), 0);
+
+            // Update overview stats if elements exist
+            const statsContainer = $('#view-overview');
+            if (statsContainer) {
+                const statsHTML = `
+                    <h2>Mission Control</h2>
+                    <div class="grid">
+                        <div class="card">
+                            <h3>Active Crew</h3>
+                            <p style="font-size:2rem;color:var(--primary);">${totalKids}</p>
+                        </div>
+                        <div class="card">
+                            <h3>Total Balance</h3>
+                            <p style="font-size:2rem;color:var(--success);">${formatMoney(totalBalance)}</p>
+                        </div>
+                    </div>
+                `;
+                // Only update if there's no existing content
+                if (!statsContainer.querySelector('.card')) {
+                    statsContainer.innerHTML = statsHTML;
+                }
+            }
         }
         function formatMoney(amount) {
             // Amount is already in dollars float
