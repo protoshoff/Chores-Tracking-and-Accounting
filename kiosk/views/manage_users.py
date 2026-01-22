@@ -3,6 +3,7 @@ from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel,
 from PySide6.QtCore import Signal, Qt
 from ..components.holo_widgets import HoloButton, HoloFrame
 from ..components.holo_keyboard import HoloLineEdit
+from ..components.holo_alert import HoloAlert
 from ..services.api import ApiService
 
 class ManageUsersView(QWidget):
@@ -183,20 +184,31 @@ class ManageUsersView(QWidget):
 
     def save_user(self):
         name = self.inp_name.text().strip()
-        if not name: return # TODO: Validation msg
+        if not name:
+            HoloAlert("VALIDATION ERROR", "Name cannot be empty.", self.window(), is_error=True).exec()
+            return
         
         try:
             allowance = float(self.inp_allowance.text().strip() or "0")
         except ValueError:
-            allowance = 0.0
+            HoloAlert("VALIDATION ERROR", "Allowance must be a valid number.", self.window(), is_error=True).exec()
+            return
             
         if self.selected_user:
             # Update
             kid_id = self.selected_user["id"]
-            ApiService.update_kid(kid_id, name, allowance)
+            result = ApiService.update_kid(kid_id, name, allowance)
+            if result:
+                HoloAlert("SUCCESS", f"Updated {name}", self.window()).exec()
+            else:
+                HoloAlert("ERROR", "Failed to update crew member.", self.window(), is_error=True).exec()
         else:
             # Create
-            ApiService.create_kid(name, allowance)
+            result = ApiService.create_kid(name, allowance)
+            if result:
+                HoloAlert("SUCCESS", f"Recruited {name}!", self.window()).exec()
+            else:
+                HoloAlert("ERROR", "Failed to create crew member. Check backend logs.", self.window(), is_error=True).exec()
             
         self.refresh_list()
         self.on_add_clicked() # Reset form
