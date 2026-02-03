@@ -21,59 +21,67 @@ class PayoutService:
         if not kid:
             raise ValueError("Kid not found")
             
-        # 3. Calculate Weights
+        # 3. Count Instances (Instance-Based Calculation)
         # Get all chore logs for this week
         stmt = select(ChoreLog).where(ChoreLog.kid_id == kid_id, ChoreLog.week_id == week_id)
         logs = self.session.exec(stmt).all()
         
-        # We need also the 'Possible' weight. This is tricky because chores might change.
-        # For v0.1: We sum the weight of all logs. If log exists, it was expected?
-        # WAIT: Logs are created on demand. We need to know what was EXPECTED.
-        # Simplified Logic (v0.1): 
-        # - Iterate all ACTIVE chores assigned to kid. 
-        # - Check frequency. If DAILY, expect 7 instances. If WEEKLY, expect 1.
-        # - Sum up total expected reward.
-        # - Sum up total APPROVED reward from logs.
+        # Calculate total expected instances and completed instances
+        # - DAILY chores: 7 instances per week
+        # - WEEKLY chores: 1 instance per week
         
-        total_possible = 0.0
-        total_completed = 0.0
+        total_expected_instances = 0
+        completed_instances = 0
         
-        # Get Active Chores
+        # Get Active Chores to calculate expected instances
         chores = self.session.exec(select(Chore).where(Chore.kid_id == kid_id, Chore.archived == False)).all()
         
         for chore in chores:
             instances = 7 if chore.frequency == "DAILY" else 1
-            chore_total = chore.reward * instances
-            total_possible += chore_total
+            total_expected_instances += instances
             
-        # Get Approved Logs
-        approved_reward = 0.0
+        # Count approved logs (completed instances)
         for log in logs:
             if log.status == ChoreStatus.APPROVED:
-                # We need the chore reward. 
-                # Ideally ChoreLog snapshots reward, but for now we join or lazy load
-                # Assuming reward hasn't changed drastically mid-week.
-                if log.chore:
-                    approved_reward += log.chore.reward
+                completed_instances += 1
 
-        total_completed = approved_reward
+        # Calculate legacy reward values for rollup record
+        total_possible = 0.0
+        total_completed = 0.0
+        for chore in chores:
+            instances = 7 if chore.frequency == "DAILY" else 1
+            total_possible += chore.reward * instances
+        for log in logs:
+            if log.status == ChoreStatus.APPROVED and log.chore:
+                total_completed += log.chore.reward
         
-        # 4. Calculate Payout (Binary Threshold Model)
-        # Fetch Threshold
-        from ..models import Settings
-        t_set = self.session.get(Settings, "payout_threshold")
-        threshold_pct = int(t_set.value) if t_set else 80 # Default 80%
+        # 4. Calculate Payout (Mode-Based)
+        from ..models import Settings, PayoutMode
+        
+        # Fetch payout mode (default: ALL_OR_NOTHING)
+        mode_setting = self.session.get(Settings, "payout_mode")
+        payout_mode = mode_setting.value if mode_setting else PayoutMode.ALL_OR_NOTHING
+        
+        # Fetch threshold (default: 80%)
+        threshold_setting = self.session.get(Settings, "payout_threshold")
+        threshold_pct = int(threshold_setting.value) if threshold_setting else 80
 
         payout = 0.0
-        if total_possible > 0:
-            # Calculate completion percent
-            pct = (total_completed / total_possible) * 100
+        if total_expected_instances > 0:
+            # Calculate completion percentage based on instance count
+            completion_pct = (completed_instances / total_expected_instances) * 100
             
-            # Binary Rule: If >= Threshold, get 100% Allowance. Else 0.
-            if pct >= threshold_pct:
-                payout = round(kid.allowance, 2)
-            else:
-                payout = 0.0
+            if payout_mode == PayoutMode.ALL_OR_NOTHING:
+                # All-or-Nothing: Full allowance if >= threshold, else $0
+                if completion_pct >= threshold_pct:
+                    payout = round(kid.allowance, 2)
+                else:
+                    payout = 0.0
+            else:  # PayoutMode.PRORATED
+                # Proportional: Pay based on completion percentage
+                payout = round((completed_instances / total_expected_instances) * kid.allowance, 2)
+                # Safety check: don't exceed allowance
+                payout = min(payout, kid.allowance)
             
         # 5. Execute Payout
         if payout > 0:

@@ -859,15 +859,28 @@
 
         // SETTINGS
         async function showSettingsModal() {
-            const config = await api('/system/config') || { payout_threshold: 80 };
+            const config = await api('/system/config') || { payout_mode: 'ALL_OR_NOTHING', payout_threshold: 80 };
 
             showModal(`
-                <h3>System Configuration</h3>
-                <label>Payout Threshold (%):</label>
-                <input id="cfg-threshold" type="number" value="${config.payout_threshold}" placeholder="80" min="0" max="100" />
-                <small style="color:#666; display:block; margin-bottom:1rem">
-                    Percentage of chores required to earn FULL allowance. Below this, allowance is 0.
+                <h3>Payout Configuration</h3>
+                
+                <label>Payout Mode:</label>
+                <select id="cfg-payout-mode" style="width:100%; padding:0.5rem; margin-bottom:0.5rem; background:#222; color:#fff; border:1px solid #444; border-radius:4px;">
+                    <option value="ALL_OR_NOTHING" ${config.payout_mode === 'ALL_OR_NOTHING' ? 'selected' : ''}>All-or-Nothing</option>
+                    <option value="PRORATED" ${config.payout_mode === 'PRORATED' ? 'selected' : ''}>Proportional</option>
+                </select>
+                <small style="color:#888; display:block; margin-bottom:1rem">
+                    <strong>All-or-Nothing:</strong> Pay full allowance if threshold is met, otherwise $0.<br>
+                    <strong>Proportional:</strong> Pay based on percentage of chores completed.
                 </small>
+
+                <div id="threshold-container" style="display:${config.payout_mode === 'ALL_OR_NOTHING' ? 'block' : 'none'}">
+                    <label>Payout Threshold (%):</label>
+                    <input id="cfg-threshold" type="number" value="${config.payout_threshold}" placeholder="80" min="0" max="100" />
+                    <small style="color:#888; display:block; margin-bottom:1rem">
+                        Percentage of chores required to earn FULL allowance in All-or-Nothing mode.
+                    </small>
+                </div>
 
                 <hr style="border:1px solid #333; margin: 1rem 0;" />
 
@@ -879,17 +892,32 @@
                     <button class="action-btn" onclick="submitSettings()">SAVE SETTINGS</button>
                 </div>
             `);
+
+            // Add event listener for mode toggle
+            const modeSelect = $('#cfg-payout-mode');
+            const thresholdContainer = $('#threshold-container');
+            modeSelect.addEventListener('change', () => {
+                thresholdContainer.style.display = modeSelect.value === 'ALL_OR_NOTHING' ? 'block' : 'none';
+            });
         }
 
         async function submitSettings() {
+            const payoutMode = $('#cfg-payout-mode').value;
             const threshold = parseInt($('#cfg-threshold').value);
             const pin = $('#cfg-pin').value;
 
-            if (isNaN(threshold) || threshold < 0 || threshold > 100) {
-                return showToast("Invalid Threshold (0-100)", 'error');
+            // Validate threshold only if in ALL_OR_NOTHING mode
+            if (payoutMode === 'ALL_OR_NOTHING') {
+                if (isNaN(threshold) || threshold < 0 || threshold > 100) {
+                    return showToast("Invalid Threshold (0-100)", 'error');
+                }
             }
 
-            await api('/system/config', 'PUT', { payout_threshold: threshold });
+            await api('/system/config', 'PUT', {
+                payout_mode: payoutMode,
+                payout_threshold: threshold || 80
+            });
+
             if (pin && pin.length >= 4) {
                 await api('/system/pin', 'PUT', { pin: pin });
             }

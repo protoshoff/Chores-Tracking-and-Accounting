@@ -73,17 +73,22 @@ def update_pin(payload: dict = Body(...), session: Session = Depends(get_session
 # --- General Config ---
 @router.get("/config")
 def get_config(session: Session = Depends(get_session)):
-    """Get system config (Threshold, etc)."""
+    """Get system config (payout_mode, payout_threshold, etc)."""
     # Defaults
     config = {
+        "payout_mode": "ALL_OR_NOTHING",
         "payout_threshold": 80
     }
     
     # Load overrides
-    t_set = session.get(Settings, "payout_threshold")
-    if t_set:
+    mode_setting = session.get(Settings, "payout_mode")
+    if mode_setting:
+        config["payout_mode"] = mode_setting.value
+    
+    threshold_setting = session.get(Settings, "payout_threshold")
+    if threshold_setting:
         try:
-            config["payout_threshold"] = int(t_set.value)
+            config["payout_threshold"] = int(threshold_setting.value)
         except:
             pass
             
@@ -92,7 +97,20 @@ def get_config(session: Session = Depends(get_session)):
 @router.put("/config")
 def update_config(payload: dict = Body(...), session: Session = Depends(get_session)):
     """Update system config."""
-    # Threshold
+    # Payout Mode
+    if "payout_mode" in payload:
+        mode = payload["payout_mode"]
+        if mode not in ["PRORATED", "ALL_OR_NOTHING"]:
+            raise HTTPException(status_code=400, detail="Invalid payout mode. Must be PRORATED or ALL_OR_NOTHING")
+        
+        setting = session.get(Settings, "payout_mode")
+        if not setting:
+            setting = Settings(key="payout_mode", value=mode)
+        else:
+            setting.value = mode
+        session.add(setting)
+    
+    # Payout Threshold
     if "payout_threshold" in payload:
         val = payload["payout_threshold"]
         try:
