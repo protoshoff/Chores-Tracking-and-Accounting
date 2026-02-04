@@ -57,6 +57,16 @@ app.include_router(management.router)
 
 # Old health check moved to system.router /api/system/status
 
+@app.get("/favicon.ico")
+async def favicon():
+    """Serve favicon to eliminate browser 404 errors"""
+    from fastapi.responses import FileResponse
+    import os
+    favicon_path = os.path.join("backend", "static", "favicon.ico")
+    if os.path.exists(favicon_path):
+        return FileResponse(favicon_path)
+    return {"message": "Favicon not found"}
+
 @app.get("/")
 def root():
     return {"message": "Chores Kiosk API is running. Go to /docs for Swagger UI."}
