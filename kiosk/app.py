@@ -138,6 +138,10 @@ class KioskApp(QMainWindow):
         print("DEBUG: Init ScreensaverView...")
         self.view_saver = ScreensaverView()
         
+        print("DEBUG: Init SettingsView...")
+        from .views.settings import SettingsView
+        self.view_settings = SettingsView()
+        
         print("DEBUG: Adding widgets to stack...")
         self.stack.addWidget(self.view_home)      # 0
         self.stack.addWidget(self.view_dash)      # 1
@@ -150,6 +154,7 @@ class KioskApp(QMainWindow):
         self.stack.addWidget(self.view_reports)   # 8 
         self.stack.addWidget(self.view_saver)     # 9
         self.stack.addWidget(self.view_ledger)    # 10
+        self.stack.addWidget(self.view_settings)  # 11 (NEW)
         
         # Signals
         print("DEBUG: Widgets added.")
@@ -170,12 +175,14 @@ class KioskApp(QMainWindow):
         self.view_admin.chores_clicked.connect(lambda: self.stack.setCurrentIndex(6))
         self.view_admin.reports_clicked.connect(lambda: self.stack.setCurrentIndex(8)) 
         self.view_admin.ledger_clicked.connect(self.prompt_ledger_kid)
+        self.view_admin.settings_clicked.connect(lambda: self.stack.setCurrentIndex(11))
         
         self.view_wifi.back_clicked.connect(self.go_to_admin_menu)
         self.view_users.back_clicked.connect(self.go_to_admin_menu)
         self.view_chores.back_clicked.connect(self.go_to_admin_menu)
         self.view_reports.back_clicked.connect(self.go_to_admin_menu)
         self.view_ledger.back_clicked.connect(self.go_to_admin_menu)
+        self.view_settings.back_clicked.connect(self.go_to_admin_menu)
         
         self.view_quest.close_clicked.connect(self.go_to_home)
         self.view_saver.wake_up.connect(self.wake_up)

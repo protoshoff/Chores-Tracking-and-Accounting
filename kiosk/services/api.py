@@ -189,3 +189,29 @@ class ApiService:
         except Exception as e:
             print(f"API Error delete_transaction: {e}")
         return False
+
+    # --- System Configuration ---
+    @staticmethod
+    def get_system_config():
+        """Get system configuration (payout mode, threshold, etc.)"""
+        try:
+            resp = requests.get(f"{BASE_URL}/system/config", timeout=2)
+            if resp.status_code == 200:
+                return resp.json()
+        except Exception as e:
+            print(f"API Error get_system_config: {e}")
+        return None
+
+    @staticmethod
+    def update_system_config(payout_mode, payout_threshold):
+        """Update system configuration"""
+        try:
+            payload = {
+                "payout_mode": payout_mode,
+                "payout_threshold": payout_threshold
+            }
+            resp = requests.put(f"{BASE_URL}/system/config", json=payload, timeout=2)
+            return resp.status_code == 200
+        except Exception as e:
+            print(f"API Error update_system_config: {e}")
+        return False

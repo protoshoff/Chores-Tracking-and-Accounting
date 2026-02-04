@@ -51,9 +51,10 @@ class ManageUsersView(QWidget):
                 outline: none;
             }
             QListWidget::item {
-                padding: 15px;
+                padding: 20px 15px;
                 border-bottom: 1px solid rgba(0, 229, 255, 0.3);
                 margin-bottom: 5px;
+                min-height: 60px;
             }
             QListWidget::item:selected {
                 background: rgba(0, 229, 255, 0.2);
@@ -161,7 +162,10 @@ class ManageUsersView(QWidget):
         self.users = ApiService.get_kids()
         
         for u in self.users:
-            item = QListWidgetItem(u.get("name", "Unknown"))
+            name = u.get("name", "Unknown")
+            balance = u.get("balance", 0.0)
+            # Display name and balance on separate lines
+            item = QListWidgetItem(f"{name}\n${balance:.2f}")
             item.setData(Qt.ItemDataRole.UserRole, u)
             self.list_widget.addItem(item)
             
