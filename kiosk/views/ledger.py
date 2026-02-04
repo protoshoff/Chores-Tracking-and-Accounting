@@ -26,6 +26,13 @@ class LedgerView(QWidget):
         self.lbl_title.setObjectName("HoloHeader")
         top.addWidget(self.lbl_title)
         top.addStretch()
+        
+        # Add Refresh Button
+        btn_refresh = HoloButton("↻ REFRESH", is_primary=False)
+        btn_refresh.setFixedSize(120, 50)
+        btn_refresh.clicked.connect(self.refresh)
+        top.addWidget(btn_refresh)
+        
         main.addLayout(top)
         
         # --- Content ---
@@ -92,6 +99,12 @@ class LedgerView(QWidget):
         """)
         right_layout.addWidget(self.table)
         
+        # Add status label for loading/error messages
+        self.lbl_status = QLabel()
+        self.lbl_status.setStyleSheet("color: #888; font-size: 14px; padding: 5px;")
+        self.lbl_status.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        right_layout.addWidget(self.lbl_status)
+        
         btn_del = HoloButton("DELETE SELECTED ENTRY", is_primary=False)
         btn_del.clicked.connect(self.delete_selected)
         right_layout.addWidget(btn_del)
@@ -104,60 +117,106 @@ class LedgerView(QWidget):
         self.refresh()
         
     def refresh(self):
-        if not self.kid_id: return
+        """Refresh ledger data from API with error handling"""
+        if not self.kid_id:
+            return
         
-        # Update Balance (Get kid details first ideally, but history has it?)
-        # Let's verify kid specifically or just rely on API for history
-        
-        # Get History
-        history = ApiService.get_ledger_history(self.kid_id)
-        
-        # Update Table
-        self.table.setRowCount(len(history))
-        # Get current balance from kid data
-        # Actually, let's just refetch 'get_kids' to find this kid's balance? 
-        # Or better: Add 'get_kid(id)' to API. For now, let's loop kids.
-        
-        kids = ApiService.get_kids()
-        for k in kids:
-            if k["id"] == self.kid_id:
-                self.lbl_title.setText(f"LEDGER: {k['name'].upper()}")
-                self.lbl_balance.setText(f"${k['balance']:.2f}")
-                break
-        
-        for r, entry in enumerate(history):
-            dt = entry["timestamp"].split("T")[0]
-            amt = entry["amount"]
-            desc = entry["description"]
+        try:
+            # Show loading status
+            self.lbl_status.setText("Loading...")
+            self.lbl_status.setStyleSheet("color: #00E5FF; font-size: 14px; padding: 5px;")
             
-            # Format Amount
-            amt_str = f"${amt:.2f}"
-            if amt > 0: amt_str = f"+{amt_str}"
+            # Get History
+            history = ApiService.get_ledger_history(self.kid_id)
             
-            item_date = QTableWidgetItem(dt)
-            item_desc = QTableWidgetItem(desc)
-            item_amt = QTableWidgetItem(amt_str)
-            item_id = QTableWidgetItem(str(entry["id"]))
+            if history is None:
+                # API returned None (error condition)
+                self.lbl_status.setText("⚠ Error loading transactions")
+                self.lbl_status.setStyleSheet("color: #FF5555; font-size: 14px; padding: 5px;")
+                return
             
-            # Colors
-            if amt < 0:
-                item_amt.setForeground(Qt.GlobalColor.red)
-            else:
-                item_amt.setForeground(Qt.GlobalColor.green)
-                
-            self.table.setItem(r, 0, item_date)
-            self.table.setItem(r, 1, item_desc)
-            self.table.setItem(r, 2, item_amt)
-            self.table.setItem(r, 3, item_id)
+            # Update Table
+            self.table.setRowCount(len(history))
+            
+            # Get current balance from kid data
+            kids = ApiService.get_kids()
+            kid_found = False
+            for k in kids:
+                if k["id"] == self.kid_id:
+                    self.lbl_title.setText(f"LEDGER: {k['name'].upper()}")
+                    self.lbl_balance.setText(f"${k['balance']:.2f}")
+                    kid_found = True
+                    break
+            
+            if not kid_found:
+                self.lbl_status.setText("⚠ Kid not found")
+                self.lbl_status.setStyleSheet("color: #FF5555; font-size: 14px; padding: 5px;")
+                return
+            
+            # Populate table
+            for r, entry in enumerate(history):
+                try:
+                    dt = entry.get("timestamp", "").split("T")[0]
+                    amt = entry.get("amount", 0)
+                    desc = entry.get("description", "N/A")
+                    
+                    # Format Amount
+                    amt_str = f"${amt:.2f}"
+                    if amt > 0:
+                        amt_str = f"+{amt_str}"
+                    
+                    item_date = QTableWidgetItem(dt)
+                    item_desc = QTableWidgetItem(desc)
+                    item_amt = QTableWidgetItem(amt_str)
+                    item_id = QTableWidgetItem(str(entry.get("id", "")))
+                    
+                    # Colors
+                    if amt < 0:
+                        item_amt.setForeground(Qt.GlobalColor.red)
+                    else:
+                        item_amt.setForeground(Qt.GlobalColor.green)
+                        
+                    self.table.setItem(r, 0, item_date)
+                    self.table.setItem(r, 1, item_desc)
+                    self.table.setItem(r, 2, item_amt)
+                    self.table.setItem(r, 3, item_id)
+                except Exception as e:
+                    print(f"Error processing ledger entry: {e}")
+                    continue
+            
+            # Update status with success
+            from datetime import datetime
+            now = datetime.now().strftime("%I:%M %p")
+            self.lbl_status.setText(f"✓ Updated {now}")
+            self.lbl_status.setStyleSheet("color: #00FF00; font-size: 14px; padding: 5px;")
+            
+        except Exception as e:
+            print(f"Error in ledger refresh: {e}")
+            self.lbl_status.setText(f"⚠ Error: {str(e)[:50]}")
+            self.lbl_status.setStyleSheet("color: #FF5555; font-size: 14px; padding: 5px;")
             
     def adjust_funds(self, sign):
+        """Add or deduct funds with improved validation"""
         # 1. Ask Amount
         dlg = HoloKeyboard(self.window(), "", title="ENTER AMOUNT ($)")
         if dlg.exec():
-            txt = dlg.get_text()
+            txt = dlg.get_text().strip()
+            if not txt:
+                return
+            
             try:
                 val = float(txt)
-                if val <= 0: raise ValueError
+                
+                # Validation
+                if val <= 0:
+                    HoloAlert("INVALID", "Amount must be greater than zero.", 
+                             self.window(), is_error=True).exec()
+                    return
+                
+                if val > 10000:
+                    HoloAlert("INVALID", "Amount too large (max $10,000).", 
+                             self.window(), is_error=True).exec()
+                    return
                 
                 # 2. Ask Description
                 dlg_desc = HoloKeyboard(self.window(), "", title="ENTER REASON")
@@ -168,13 +227,18 @@ class LedgerView(QWidget):
                 # 3. Send
                 t_type = "BONUS" if sign > 0 else "SPEND"
                 success = ApiService.add_transaction(self.kid_id, val * sign, t_type, desc)
+                
                 if success:
+                    HoloAlert("SUCCESS", f"Transaction added: ${val * sign:.2f}", 
+                             self.window()).exec()
                     self.refresh()
                 else:
-                    HoloAlert("ERROR", "Failed to add transaction.", self.window(), is_error=True).exec()
+                    HoloAlert("ERROR", "Failed to add transaction. Check backend connection.", 
+                             self.window(), is_error=True).exec()
                     
             except ValueError:
-                HoloAlert("INVALID", "Please enter a valid number.", self.window(), is_error=True).exec()
+                HoloAlert("INVALID", "Please enter a valid number.", 
+                         self.window(), is_error=True).exec()
 
     def do_payout(self):
         # Confirm
