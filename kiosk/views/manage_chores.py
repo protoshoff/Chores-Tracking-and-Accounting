@@ -144,7 +144,7 @@ class ManageChoresView(QWidget):
         actions.addStretch()
         
         self.btn_save = HoloButton("SAVE QUEST")
-        self.btn_save.setFixedSize(200, 60)
+        self.btn_save.setFixedSize(220, 60)  # FIX: Was 200, increased to 220 for full text
         self.btn_save.clicked.connect(self.save_chore)
         actions.addWidget(self.btn_save)
         
