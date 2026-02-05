@@ -167,7 +167,7 @@ class KidDashboardView(QWidget):
 
         if status == 'INCOMPLETE':
             btn = HoloButton("COMPLETE", is_primary=True)
-            btn.setFixedSize(145, 40)  # FIX: Was 120, increased to 145 for full text
+            btn.setFixedSize(155, 40)  # FIX: Was 145, increased to 155 for full "COMPLETE" text
             btn.clicked.connect(lambda _, cid=c['id']: self.mark_done(cid))
             layout.addWidget(btn)
         elif status == 'REJECTED':

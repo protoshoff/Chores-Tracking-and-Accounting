@@ -132,7 +132,7 @@ class ApprovalQueueView(QWidget):
                 color: #000;
             }
         """)
-        btn_approve.setFixedSize(140, 50)
+        btn_approve.setFixedSize(155, 50)  # FIX: Was 140, increased to 155 for full "APPROVE" text
         btn_approve.clicked.connect(lambda: self.review_action(item['id'], "APPROVE"))
         layout.addWidget(btn_approve)
         
