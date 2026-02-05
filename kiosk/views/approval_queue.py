@@ -128,9 +128,19 @@ class ApprovalQueueView(QWidget):
         
         layout.addSpacing(10)
         
-        # Reject (Red - uses theme styling)
+        # Reject (Red - RESTORED original perfect styling)
         btn_reject = HoloButton("REJECT", is_primary=False)
-        btn_reject.setObjectName("RejectButton")  # FIX: Use theme styling instead of inline
+        btn_reject.setStyleSheet("""
+            QPushButton {
+                border: 1px solid #FF5555;
+                color: #FF5555;
+                background-color: rgba(255, 50, 50, 0.2);
+            }
+            QPushButton:hover {
+                background-color: #FF5555;
+                color: #000;
+            }
+        """)
         btn_reject.setFixedSize(140, 50)
         btn_reject.clicked.connect(lambda: self.review_action(item['id'], "REJECT"))
         layout.addWidget(btn_reject)

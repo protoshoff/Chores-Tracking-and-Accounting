@@ -14,6 +14,11 @@ connect_args = {"check_same_thread": False}
 engine = create_engine(DATABASE_URL, echo=True, connect_args=connect_args)
 
 def create_db_and_tables():
+    # Import models so they're registered in SQLModel.metadata
+    from backend.models import (
+        User, Chore, ChoreLog, LedgerEntry, 
+        WeeklyRollup, Streak, Settings
+    )
     SQLModel.metadata.create_all(engine)
 
 def get_session():

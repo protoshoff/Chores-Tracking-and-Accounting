@@ -50,20 +50,22 @@ if [ -f "$DB_PATH" ]; then
     cp "$DB_PATH" "$DB_PATH.bak.$TIMESTAMP"
 fi
 
-# 6. Migrate DB
-echo "Running Migrations..."
-# We need to set CHORES_DATA_DIR env if DB is there
+# 6. Initialize Database (Create Base Tables)
+echo "Initializing Database..."
 export CHORES_DATA_DIR="/var/lib/chores_app"
 cd "$NEW_release_DIR"
+# Create base tables using SQLModel (if DB is new, this creates everything)
+venv/bin/python3 -c "from backend.db import create_db_and_tables; create_db_and_tables()"
+
+# 7. Run Migrations (Apply Schema Changes)
+echo "Running Migrations..."
 alembic upgrade head
 
-# 7. Switch Symlink
+# 8. Switch Symlink
 echo "Switching Symlink..."
 ln -sfn "$NEW_release_DIR" "$APP_ROOT/current"
 
-# 8. Restart Services
-# 8. Restart Services
-# 8. Update Service Definitions (Ensure we use repo version)
+# 9. Update Service Definitions (Ensure we use repo version)
 echo "Updating Systemd Services..."
 sudo cp "$NEW_release_DIR/ops/chores-kiosk.service" /etc/systemd/system/
 sudo cp "$NEW_release_DIR/ops/chores-backend.service" /etc/systemd/system/
@@ -73,12 +75,12 @@ sudo cp "$NEW_release_DIR/ops/50-chores-wifi.rules" /etc/polkit-1/rules.d/
 
 
 echo "Patching Service Files with correct User/Path..."
-# 8a. Permissions: Ensure user can manage WiFi (netdev) and USB (plugdev)
+# 9a. Permissions: Ensure user can manage WiFi (netdev) and USB (plugdev)
 echo "Ensuring user permission groups..."
 sudo usermod -aG netdev $USER || echo "netdev group not found, skipping"
 sudo usermod -aG plugdev $USER || echo "plugdev group not found, skipping"
 
-# 8b. Patch Service Files (Replace 'pi' with current user)
+# 9b. Patch Service Files (Replace 'pi' with current user)
 sudo sed -i "s/User=pi/User=$USER/g" /etc/systemd/system/chores-backend.service
 sudo sed -i "s/User=pi/User=$USER/g" /etc/systemd/system/chores-kiosk.service
 sudo sed -i "s/Group=pi/Group=$USER/g" /etc/systemd/system/chores-backend.service
@@ -88,7 +90,7 @@ sudo sed -i "s|/home/pi|/home/$USER|g" /etc/systemd/system/chores-kiosk.service
 
 sudo systemctl daemon-reload
 
-# 8b. Update .xinitrc (Ensure it points to 'current' and logs properly)
+# 9c. Update .xinitrc (Ensure it points to 'current' and logs properly)
 echo "Updating .xinitrc..."
 echo '#!/bin/bash' > /home/$USER/.xinitrc
 echo "xset s off" >> /home/$USER/.xinitrc
@@ -100,13 +102,13 @@ chmod +x /home/$USER/.xinitrc
 chown $USER:$USER /home/$USER/.xinitrc
 
 
-# 9. Restart Services
+# 10. Restart Services
 echo "Restarting Services..."
 # Enable and start/restart
 sudo systemctl enable chores-backend chores-kiosk
 sudo systemctl restart chores-backend chores-kiosk
 
-# 10. Cleanup Old Releases
+# 11. Cleanup Old Releases
 echo "Cleaning up old releases..."
 if [ -f "$NEW_release_DIR/scripts/cleanup_old_releases.sh" ]; then
     bash "$NEW_release_DIR/scripts/cleanup_old_releases.sh"

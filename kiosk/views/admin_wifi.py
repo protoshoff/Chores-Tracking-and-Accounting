@@ -101,7 +101,7 @@ class SimpleKeyboard(QDialog):
             # Add Backspace to first row
             if i == 0:
                 btn_bs = QPushButton("⌫")
-                btn_bs.setFixedSize(55, 50)
+                btn_bs.setFixedSize(70, 50)  # FIX: Was 55, increased to 70 for full symbol
                 btn_bs.setStyleSheet("background: #442222; border: 1px solid #F55; font-size: 18px;")
                 btn_bs.clicked.connect(self.backspace)
                 row_layout.addWidget(btn_bs)
@@ -137,7 +137,7 @@ class SimpleKeyboard(QDialog):
 
         # OK / Cancel
         btn_cancel = QPushButton("CANCEL")
-        btn_cancel.setFixedSize(120, 50)  # FIX: Was 90, increased to 120
+        btn_cancel.setFixedSize(130, 50)  # FIX: Was 90→120, now 130 for full text
         btn_cancel.setStyleSheet("background: #552222; color: white;")
         btn_cancel.clicked.connect(self.reject)
         ctrl_layout.addWidget(btn_cancel)
@@ -279,7 +279,7 @@ class AdminWifiView(QWidget):
         layout.addStretch()
         
         btn_connect = HoloButton("CONNECT")
-        btn_connect.setFixedSize(120, 40)
+        btn_connect.setFixedSize(140, 50)
         btn_connect.clicked.connect(lambda: self.prompt_connect(net['ssid']))
         layout.addWidget(btn_connect)
         
