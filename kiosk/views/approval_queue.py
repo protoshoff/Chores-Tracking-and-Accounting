@@ -119,9 +119,19 @@ class ApprovalQueueView(QWidget):
         
         # -- Actions --
         
-        # Approve (Green - uses theme styling)
+        # Approve (Green - matching Reject button's perfect style)
         btn_approve = HoloButton("APPROVE")
-        btn_approve.setObjectName("ApproveButton")  # FIX: Use theme styling
+        btn_approve.setStyleSheet("""
+            QPushButton {
+                border: 1px solid #00FF66;
+                color: #00FF66;
+                background-color: rgba(0, 255, 100, 0.2);
+            }
+            QPushButton:hover {
+                background-color: #00FF66;
+                color: #000;
+            }
+        """)
         btn_approve.setFixedSize(140, 50)
         btn_approve.clicked.connect(lambda: self.review_action(item['id'], "APPROVE"))
         layout.addWidget(btn_approve)
