@@ -345,7 +345,7 @@ class ManageChoresView(QWidget):
         else:
             # Create
             if kid_id is not None:
-                ApiService.create_chore(kid_id, name, description=desc, weight=weight, frequency=freq, due_day=due_day)
+                ApiService.create_chore(kid_id, name, description=desc, reward=weight, frequency=freq, due_day=due_day)
             
         self.refresh_data()
         self.on_add_clicked()

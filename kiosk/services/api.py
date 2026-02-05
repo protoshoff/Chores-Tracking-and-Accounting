@@ -88,15 +88,23 @@ class ApiService:
 
     # --- Chore Management ---
     @staticmethod
-    def create_chore(kid_id, name, description="", reward=1.0, frequency="DAILY"):
+    def create_chore(kid_id, name, description="", reward=1.0, frequency="DAILY", due_day=None, weight=None):
         try:
             payload = {
                 "kid_id": kid_id,
                 "name": name,
                 "description": description,
-                "reward": reward,
                 "frequency": frequency
             }
+            # Use weight if provided, otherwise use reward (backward compat)
+            if weight is not None:
+                payload["weight"] = weight
+            else:
+                payload["reward"] = reward
+                
+            if due_day is not None:
+                payload["due_day"] = due_day
+                
             resp = requests.post(f"{BASE_URL}/management/chores", json=payload, timeout=2)
             if resp.status_code in (200, 201):
                 return resp.json()
