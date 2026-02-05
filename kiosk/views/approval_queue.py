@@ -119,27 +119,18 @@ class ApprovalQueueView(QWidget):
         
         # -- Actions --
         
-        # Approve (Cyan/Green)
+        # Approve (Green - uses theme styling)
         btn_approve = HoloButton("APPROVE")
+        btn_approve.setObjectName("ApproveButton")  # FIX: Use theme styling
         btn_approve.setFixedSize(140, 50)
-        # Custom style tweak for green tint if desired, but default cyan is fine
         btn_approve.clicked.connect(lambda: self.review_action(item['id'], "APPROVE"))
         layout.addWidget(btn_approve)
         
         layout.addSpacing(10)
         
-        # Reject (Red-ish)
-        btn_reject = HoloButton("REJECT", is_primary=False) # Grey/Glass
-        # We can force a red border style on this instance if we want, or keep it subtle
-        btn_reject.setStyleSheet("""
-            QPushButton {
-                border: 1px solid #FF5555;
-                color: #FF5555;
-            }
-            QPushButton:hover {
-                background-color: rgba(255, 85, 85, 0.2);
-            }
-        """)
+        # Reject (Red - uses theme styling)
+        btn_reject = HoloButton("REJECT", is_primary=False)
+        btn_reject.setObjectName("RejectButton")  # FIX: Use theme styling instead of inline
         btn_reject.setFixedSize(140, 50)
         btn_reject.clicked.connect(lambda: self.review_action(item['id'], "REJECT"))
         layout.addWidget(btn_reject)

@@ -71,9 +71,13 @@ class HoloKeyboard(QDialog):
         btn_clear.clicked.connect(self.clear)
         bottom.addWidget(btn_clear, 0, 0)
         
+        btn_cancel = HoloButton("CANCEL", is_primary=False)  # FIX: Added CANCEL button
+        btn_cancel.clicked.connect(self.reject)
+        bottom.addWidget(btn_cancel, 0, 7)
+        
         btn_enter = HoloButton("ENTER")
         btn_enter.clicked.connect(self.accept)
-        bottom.addWidget(btn_enter, 0, 7)
+        bottom.addWidget(btn_enter, 0, 8)  # FIX: Shifted to column 8
         
         layout.addLayout(bottom)
         

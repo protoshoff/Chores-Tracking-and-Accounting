@@ -137,13 +137,13 @@ class SimpleKeyboard(QDialog):
 
         # OK / Cancel
         btn_cancel = QPushButton("CANCEL")
-        btn_cancel.setFixedSize(90, 50)
+        btn_cancel.setFixedSize(120, 50)  # FIX: Was 90, increased to 120
         btn_cancel.setStyleSheet("background: #552222; color: white;")
         btn_cancel.clicked.connect(self.reject)
         ctrl_layout.addWidget(btn_cancel)
 
         btn_ok = QPushButton("CONNECT")
-        btn_ok.setFixedSize(110, 50)
+        btn_ok.setFixedSize(140, 50)  # FIX: Was 110, increased to 140
         btn_ok.setStyleSheet("background: #007BFF; color: white; font-weight: bold;")
         btn_ok.clicked.connect(self.accept)
         ctrl_layout.addWidget(btn_ok)
