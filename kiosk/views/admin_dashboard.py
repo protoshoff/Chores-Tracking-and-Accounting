@@ -77,6 +77,12 @@ class AdminDashboardView(QWidget):
         btn_pin.setFixedSize(300, 150)
         btn_pin.clicked.connect(self.change_pin_flow)
         grid.addWidget(btn_pin, 3, 0)
+        
+        # 8. System Update
+        btn_update = HoloButton("🔄 CHECK FOR UPDATES", is_primary=False)
+        btn_update.setFixedSize(300, 150)
+        btn_update.clicked.connect(self.check_for_updates)
+        grid.addWidget(btn_update, 3, 1)
 
     def change_pin_flow(self):
         from ..components.holo_keyboard import HoloKeyboard
@@ -110,10 +116,46 @@ class AdminDashboardView(QWidget):
                     HoloAlert("SUCCESS", "System access code updated successfully.", self.window()).exec()
                 else:
                     HoloAlert("ERROR", "Failed to update PIN. Check logs.", self.window(), is_error=True).exec()
-
+    
     def _center_dialog(self, dlg):
-        rect = self.window().geometry()
-        dlg.move(
-            rect.center().x() - dlg.width() // 2,
-            rect.center().y() - dlg.height() // 2
+        if self.window():
+            parent_geometry = self.window().geometry()
+            dialog_size = dlg.size()
+            x = parent_geometry.x() + (parent_geometry.width() - dialog_size.width()) // 2
+            y = parent_geometry.y() + (parent_geometry.height() - dialog_size.height()) // 2
+            dlg.move(x, y)
+    
+    def check_for_updates(self):
+        """Trigger system update"""
+        from ..components.holo_alert import HoloAlert
+        from ..services.api import ApiService
+        
+        # Confirm with user
+        confirm = HoloAlert(
+            "CONFIRM UPDATE",
+            "This will check GitHub for updates and restart the system.\n\n"
+            "Continue?",
+            self.window()
         )
+        
+        if not confirm.exec():
+            return
+        
+        # Trigger update
+        result = ApiService.trigger_update()
+        
+        if result:
+            HoloAlert(
+                "UPDATE STARTED",
+                "System update in progress.\n"
+                "Kiosk will restart in ~60 seconds.\n\n"
+                "Please wait...",
+                self.window()
+            ).exec()
+        else:
+            HoloAlert(
+                "ERROR",
+                "Failed to start update. Check backend logs.",
+                self.window(),
+                is_error=True
+            ).exec()
