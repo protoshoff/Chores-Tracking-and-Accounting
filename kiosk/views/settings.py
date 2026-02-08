@@ -42,12 +42,13 @@ class SettingsView(QWidget):
         self.combo_mode.addItems(["All-or-Nothing", "Proportional"])
         self.combo_mode.setStyleSheet("""
             QComboBox {
-                background: rgba(0, 0, 0, 0.5);
-                border: 1px solid #00E5FF;
+                background: rgba(0, 20, 40, 0.8);
+                border: 2px solid #00E5FF;
                 color: #00E5FF;
-                padding: 12px;
-                font-size: 18px;
-                border-radius: 4px;
+                padding: 10px;
+                font-size: 16px;
+                font-weight: bold;
+                border-radius: 6px;
                 min-width: 250px;
             }
             QComboBox::drop-down {
@@ -56,17 +57,17 @@ class SettingsView(QWidget):
             }
             QComboBox::down-arrow {
                 image: none;
-                border-left: 5px solid transparent;
-                border-right: 5px solid transparent;
-                border-top: 5px solid #00E5FF;
-                width: 0;
-                height: 0;
+                border-left: 6px solid transparent;
+                border-right: 6px solid transparent;
+                border-top: 8px solid #00E5FF;
             }
             QComboBox QAbstractItemView {
-                background: #001122;
-                border: 1px solid #00E5FF;
+                background: #001a33;
+                border: 2px solid #00E5FF;
                 color: #00E5FF;
-                selection-background-color: rgba(0, 229, 255, 0.3);
+                selection-background-color: rgba(0, 229, 255, 0.4);
+                font-size: 16px;
+                padding: 5px;
             }
         """)
         self.combo_mode.currentIndexChanged.connect(self.on_mode_changed)
@@ -86,23 +87,24 @@ class SettingsView(QWidget):
         self.spin_threshold.setRange(0, 100)
         self.spin_threshold.setSuffix("%")
         self.spin_threshold.setValue(80)
+        self.spin_threshold.setFixedWidth(120)
         self.spin_threshold.setStyleSheet("""
             QSpinBox {
-                background: rgba(0, 0, 0, 0.5);
-                border: 1px solid #00E5FF;
+                background: rgba(0, 20, 40, 0.8);
+                border: 2px solid #00E5FF;
                 color: #00E5FF;
-                padding: 12px;
-                font-size: 18px;
-                border-radius: 4px;
-                min-width: 150px;
+                padding: 8px;
+                font-size: 16px;
+                font-weight: bold;
+                border-radius: 6px;
             }
             QSpinBox::up-button, QSpinBox::down-button {
-                background: rgba(0, 229, 255, 0.2);
+                background: rgba(0, 229, 255, 0.3);
                 border: 1px solid #00E5FF;
-                width: 25px;
+                width: 20px;
             }
             QSpinBox::up-button:hover, QSpinBox::down-button:hover {
-                background: rgba(0, 229, 255, 0.4);
+                background: rgba(0, 229, 255, 0.5);
             }
         """)
         
@@ -132,7 +134,7 @@ class SettingsView(QWidget):
         actions.addWidget(btn_cancel)
         
         btn_save = HoloButton("SAVE SETTINGS")
-        btn_save.setFixedSize(200, 60)
+        btn_save.setFixedSize(220, 60)
         btn_save.clicked.connect(self.save_settings)
         actions.addWidget(btn_save)
         

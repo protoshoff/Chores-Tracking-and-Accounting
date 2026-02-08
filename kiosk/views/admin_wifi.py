@@ -223,7 +223,7 @@ class AdminWifiView(QWidget):
                 data = resp.json()
                 wifi = data.get("wifi", {})
                 if wifi.get("connected"):
-                    self.lbl_status.setText(f"✅ CONNECTED TO: {wifi['ssid']} ({wifi['ip']})")
+                    self.lbl_status.setText(f"CONNECTED TO: {wifi['ssid']} ({wifi['ip']})")
                     self.lbl_status.setStyleSheet("color: #00E5FF; font-size: 18px; font-weight: bold;")
                 else:
                     self.lbl_status.setText("❌ DISCONNECTED")
