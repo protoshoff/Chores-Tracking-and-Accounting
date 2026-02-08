@@ -42,32 +42,35 @@ class SettingsView(QWidget):
         self.combo_mode.addItems(["All-or-Nothing", "Proportional"])
         self.combo_mode.setStyleSheet("""
             QComboBox {
-                background: rgba(0, 20, 40, 0.8);
-                border: 2px solid #00E5FF;
+                background: rgba(0, 0, 0, 0.5);
+                border: 1px solid #007BFF;
                 color: #00E5FF;
                 padding: 10px;
-                font-size: 16px;
-                font-weight: bold;
-                border-radius: 6px;
-                min-width: 250px;
+                font-size: 18px;
+                border-radius: 4px;
             }
             QComboBox::drop-down {
-                border: none;
-                width: 30px;
+                subcontrol-origin: padding;
+                subcontrol-position: top right;
+                width: 40px;
+                border-left-width: 1px;
+                border-left-color: #007BFF;
+                border-left-style: solid;
+                background: #001133;
+                border-top-right-radius: 4px;
+                border-bottom-right-radius: 4px;
             }
             QComboBox::down-arrow {
-                image: none;
-                border-left: 6px solid transparent;
-                border-right: 6px solid transparent;
-                border-top: 8px solid #00E5FF;
+                image: url(kiosk/assets/arrow_down.svg);
+                width: 24px; 
+                height: 24px;
+                subcontrol-position: center;
             }
             QComboBox QAbstractItemView {
-                background: #001a33;
-                border: 2px solid #00E5FF;
+                background: #000;
                 color: #00E5FF;
-                selection-background-color: rgba(0, 229, 255, 0.4);
-                font-size: 16px;
-                padding: 5px;
+                selection-background-color: #007BFF;
+                border: 1px solid #007BFF;
             }
         """)
         self.combo_mode.currentIndexChanged.connect(self.on_mode_changed)
@@ -88,23 +91,45 @@ class SettingsView(QWidget):
         self.spin_threshold.setSuffix("%")
         self.spin_threshold.setValue(80)
         self.spin_threshold.setFixedWidth(120)
+        self.spin_threshold.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.spin_threshold.setStyleSheet("""
             QSpinBox {
-                background: rgba(0, 20, 40, 0.8);
-                border: 2px solid #00E5FF;
+                qproperty-alignment: AlignCenter;
+                background: rgba(0, 0, 0, 0.5);
+                border: 1px solid #007BFF;
                 color: #00E5FF;
-                padding: 8px;
-                font-size: 16px;
-                font-weight: bold;
-                border-radius: 6px;
+                padding-top: 5px;
+                padding-bottom: 5px;
+                padding-left: 0px; 
+                padding-right: 30px; /* Exact width of buttons */
+                font-size: 20px;
+                border-radius: 4px;
             }
             QSpinBox::up-button, QSpinBox::down-button {
-                background: rgba(0, 229, 255, 0.3);
-                border: 1px solid #00E5FF;
-                width: 20px;
+                width: 30px;
+                background: #001133;
+                border-left: 1px solid #007BFF;
             }
-            QSpinBox::up-button:hover, QSpinBox::down-button:hover {
-                background: rgba(0, 229, 255, 0.5);
+            QSpinBox::up-button {
+                subcontrol-origin: border;
+                subcontrol-position: top right;
+                border-bottom: 1px solid #007BFF;
+                border-top-right-radius: 4px;
+            }
+            QSpinBox::down-button {
+                subcontrol-origin: border;
+                subcontrol-position: bottom right;
+                border-bottom-right-radius: 4px;
+            }
+            QSpinBox::up-arrow {
+                image: url(kiosk/assets/arrow_up.svg);
+                width: 24px; height: 24px;
+                subcontrol-position: center;
+            }
+            QSpinBox::down-arrow {
+                image: url(kiosk/assets/arrow_down.svg);
+                width: 24px; height: 24px;
+                subcontrol-position: center;
             }
         """)
         
