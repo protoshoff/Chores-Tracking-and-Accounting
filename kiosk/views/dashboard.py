@@ -47,12 +47,14 @@ class KidDashboardView(QWidget):
         # Progress Bars with Labels
         sl.addWidget(QLabel("OFFICIAL PROGRESS:"))
         self.prog_official = QProgressBar()
-        self.prog_official.setTextVisible(False)
+        self.prog_official.setTextVisible(True)
+        self.prog_official.setFormat("%p%")  # Show percentage
         sl.addWidget(self.prog_official)
         
         sl.addWidget(QLabel("YOUR PROGRESS:"))
         self.prog_kid = QProgressBar()
-        self.prog_kid.setTextVisible(False)
+        self.prog_kid.setTextVisible(True)
+        self.prog_kid.setFormat("%p%")  # Show percentage
         sl.addWidget(self.prog_kid)
         
         sl.addStretch()
