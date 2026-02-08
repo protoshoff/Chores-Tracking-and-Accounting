@@ -145,10 +145,10 @@ class AdminDashboardView(QWidget):
         result = ApiService.trigger_update()
         
         if result:
-            # Show fullscreen overlay that stays visible until restart
+            # Show fullscreen overlay - non-blocking so systemd can restart kiosk
             from ..components.update_overlay import UpdateOverlay
-            overlay = UpdateOverlay(self.window())
-            overlay.exec()  # Blocks until kiosk restarts
+            self.overlay = UpdateOverlay(self.window())
+            self.overlay.show()  # Non-blocking - kiosk will exit when systemd restarts it
         else:
             HoloAlert(
                 "ERROR",
