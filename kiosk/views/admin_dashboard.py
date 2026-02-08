@@ -145,18 +145,10 @@ class AdminDashboardView(QWidget):
         result = ApiService.trigger_update()
         
         if result:
-            # Show progress message with clearer wording and button
-            info = HoloAlert(
-                "UPDATE IN PROGRESS",
-                "Downloading latest version from GitHub...\n\n"
-                "The kiosk will restart automatically in ~60 seconds.\n"
-                "Please do not power off.",
-                self.window()
-            )
-            info.btn_ok.setText("OK - WAITING...")
-            info.exec()
-            # Return to home screen after acknowledgement
-            self.back_clicked.emit()
+            # Show fullscreen overlay that stays visible until restart
+            from ..components.update_overlay import UpdateOverlay
+            overlay = UpdateOverlay(self.window())
+            overlay.exec()  # Blocks until kiosk restarts
         else:
             HoloAlert(
                 "ERROR",
