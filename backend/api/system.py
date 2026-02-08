@@ -146,7 +146,7 @@ async def trigger_system_update():
     try:
         # Run deploy script in background (detached from parent process)
         subprocess.Popen(
-            ["/home/chores/current/scripts/deploy_release.sh"],
+            ["/home/chores/chores_app/current/scripts/deploy_release.sh"],
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL,
             start_new_session=True
