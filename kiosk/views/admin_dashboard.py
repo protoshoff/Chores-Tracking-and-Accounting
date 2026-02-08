@@ -79,7 +79,7 @@ class AdminDashboardView(QWidget):
         grid.addWidget(btn_pin, 3, 0)
         
         # 8. System Update
-        btn_update = HoloButton("🔄 CHECK FOR UPDATES", is_primary=False)
+        btn_update = HoloButton("CHECK FOR UPDATES", is_primary=False)
         btn_update.setFixedSize(300, 150)
         btn_update.clicked.connect(self.check_for_updates)
         grid.addWidget(btn_update, 3, 1)
