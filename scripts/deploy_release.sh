@@ -106,8 +106,8 @@ chown $USER:$USER /home/$USER/.xinitrc
 echo "Rebooting system to load new code..."
 # Enable services first
 sudo systemctl enable chores-backend chores-kiosk
-# Reboot after 5 seconds to allow script to finish logging
-sudo shutdown -r +0.05 "Chores app updated - rebooting..." &
+# Reboot immediately - use nohup to detach from this script
+nohup sudo shutdown -r now "Chores app updated - rebooting..." &>/dev/null &
 
 # 11. Cleanup Old Releases
 echo "Cleaning up old releases..."
