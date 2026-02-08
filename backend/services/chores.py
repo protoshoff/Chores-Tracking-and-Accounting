@@ -117,6 +117,25 @@ class ChoreService:
                 if c.due_day == weekday:
                     daily_chores_count += 1
         
+        # Calculate week_pct based on payout mode
+        from ..models import Settings, PayoutMode
+        
+        mode_setting = self.session.get(Settings, "payout_mode")
+        payout_mode = mode_setting.value if mode_setting else PayoutMode.ALL_OR_NOTHING
+        
+        # Calculate raw completion percentage
+        raw_week_pct = int((approved_reward / total_possible) * 100)
+        
+        # Apply payout mode logic
+        if payout_mode == PayoutMode.ALL_OR_NOTHING:
+            # All-or-Nothing: Show 100% if >= threshold, else show actual % (but pay 0% at week end)
+            threshold_setting = self.session.get(Settings, "payout_threshold")
+            threshold_pct = int(threshold_setting.value) if threshold_setting else 80
+            week_pct = 100 if raw_week_pct >= threshold_pct else raw_week_pct
+        else:
+            # Prorated: Show actual percentage
+            week_pct = raw_week_pct
+        
         return {
             "total_reward": round(total_possible, 2),
             "completed_reward": round(completed_reward, 2),
@@ -124,5 +143,5 @@ class ChoreService:
             "pending_count": pending_count,
             "today_done": today_done,
             "today_total": daily_chores_count,
-            "week_pct": int((approved_reward / total_possible) * 100)
+            "week_pct": week_pct
         }
