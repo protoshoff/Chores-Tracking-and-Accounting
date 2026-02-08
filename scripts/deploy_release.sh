@@ -102,11 +102,12 @@ chmod +x /home/$USER/.xinitrc
 chown $USER:$USER /home/$USER/.xinitrc
 
 
-# 10. Restart Services
-echo "Restarting Services..."
-# Enable and start/restart
+# 10. Reboot System
+echo "Rebooting system to load new code..."
+# Enable services first
 sudo systemctl enable chores-backend chores-kiosk
-sudo systemctl restart chores-backend chores-kiosk
+# Reboot after 5 seconds to allow script to finish logging
+sudo shutdown -r +0.05 "Chores app updated - rebooting..." &
 
 # 11. Cleanup Old Releases
 echo "Cleaning up old releases..."
