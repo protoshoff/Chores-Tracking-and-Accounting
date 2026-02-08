@@ -140,13 +140,18 @@ async def trigger_system_update():
     import os
     
     # Security: Only allow on Pi, not dev machines
-    if not os.path.exists("/home/chores"):
+    # Check if chores_app deployment directory exists in user's home
+    home_dir = os.path.expanduser("~")
+    if not os.path.exists(f"{home_dir}/chores_app"):
         raise HTTPException(status_code=403, detail="Updates only allowed on Pi")
     
     try:
+        # Get home directory of running user (supports any username)
+        script_path = f"{home_dir}/chores_app/current/scripts/deploy_release.sh"
+        
         # Run deploy script in background (detached from parent process)
         subprocess.Popen(
-            ["/home/chores/chores_app/current/scripts/deploy_release.sh"],
+            [script_path],
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL,
             start_new_session=True
