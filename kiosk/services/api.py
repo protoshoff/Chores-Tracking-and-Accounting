@@ -228,7 +228,7 @@ class ApiService:
     def trigger_update():
         """Trigger system update"""
         try:
-            resp = requests.post(f"{BASE_URL}/api/system/update", timeout=5)
+            resp = requests.post(f"{BASE_URL}/system/update", timeout=5)
             if resp.status_code == 200:
                 return resp.json()
             else:
