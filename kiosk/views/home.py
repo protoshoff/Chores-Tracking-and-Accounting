@@ -63,7 +63,8 @@ class HoloKidCard(HoloFrame):
         self.prog = QProgressBar()
         week_pct = summary.get("week_pct", 0)
         self.prog.setValue(week_pct)
-        self.prog.setTextVisible(False)
+        self.prog.setTextVisible(True)
+        self.prog.setFormat("%p%")  # Show percentage
         wl.addWidget(self.prog)
         
         stats_layout.addWidget(wrapper, 1, 0, 1, 2)
