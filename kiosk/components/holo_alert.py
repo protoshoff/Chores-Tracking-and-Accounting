@@ -31,9 +31,9 @@ class HoloAlert(QDialog):
         layout.addStretch()
         
         # Button
-        btn_ok = HoloButton("ACKNOWLEDGE")
-        btn_ok.clicked.connect(self.accept)
-        layout.addWidget(btn_ok)
+        self.btn_ok = HoloButton("ACKNOWLEDGE")
+        self.btn_ok.clicked.connect(self.accept)
+        layout.addWidget(self.btn_ok)
         
         # Styling
         border = "#FF0000" if is_error else "#00F0FF"

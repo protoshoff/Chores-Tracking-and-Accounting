@@ -145,13 +145,18 @@ class AdminDashboardView(QWidget):
         result = ApiService.trigger_update()
         
         if result:
-            HoloAlert(
-                "UPDATE STARTED",
-                "System update in progress.\n"
-                "Kiosk will restart in ~60 seconds.\n\n"
-                "Please wait...",
+            # Show progress message with clearer wording and button
+            info = HoloAlert(
+                "UPDATE IN PROGRESS",
+                "Downloading latest version from GitHub...\n\n"
+                "The kiosk will restart automatically in ~60 seconds.\n"
+                "Please do not power off.",
                 self.window()
-            ).exec()
+            )
+            info.btn_ok.setText("OK - WAITING...")
+            info.exec()
+            # Return to home screen after acknowledgement
+            self.back_clicked.emit()
         else:
             HoloAlert(
                 "ERROR",
@@ -159,3 +164,4 @@ class AdminDashboardView(QWidget):
                 self.window(),
                 is_error=True
             ).exec()
+
