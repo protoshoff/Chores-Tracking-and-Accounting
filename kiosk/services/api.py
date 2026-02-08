@@ -223,3 +223,16 @@ class ApiService:
         except Exception as e:
             print(f"API Error update_system_config: {e}")
         return False
+
+    @staticmethod
+    def trigger_update():
+        """Trigger system update"""
+        try:
+            resp = requests.post(f"{BASE_URL}/system/update", timeout=5)
+            if resp.status_code == 200:
+                return resp.json()
+            else:
+                print(f"Update trigger failed: {resp.text}")
+        except Exception as e:
+            print(f"API Error trigger_update: {e}")
+        return None

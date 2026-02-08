@@ -140,6 +140,27 @@ class SettingsView(QWidget):
         
         main.addWidget(content_frame)
         
+        # --- System Update Section ---
+        update_frame = HoloFrame("SYSTEM UPDATES")
+        uf_layout = QVBoxLayout(update_frame)
+        uf_layout.setContentsMargins(40, 100, 40, 40)
+        
+        lbl_update_info = QLabel(
+            "Check for and install latest system updates from GitHub.\n"
+            "Kiosk will restart automatically after update."
+        )
+        lbl_update_info.setWordWrap(True)
+        lbl_update_info.setStyleSheet("color: #888; font-size: 16px; margin-bottom: 20px;")
+        uf_layout.addWidget(lbl_update_info)
+        
+        btn_update = HoloButton("🔄 CHECK FOR UPDATES")
+        btn_update.setFixedSize(320, 70)
+        btn_update.clicked.connect(self.check_for_updates)
+        uf_layout.addWidget(btn_update)
+        
+        uf_layout.addStretch()
+        main.addWidget(update_frame)
+        
     def showEvent(self, event):
         self.load_settings()
         super().showEvent(event)
@@ -199,3 +220,35 @@ class SettingsView(QWidget):
         else:
             HoloAlert("ERROR", "Failed to update settings. Check backend logs.", 
                      self.window(), is_error=True).exec()
+    
+    def check_for_updates(self):
+        """Trigger system update"""
+        # Confirm with user
+        confirm = HoloAlert(
+            "CONFIRM UPDATE",
+            "This will check GitHub for updates and restart the system.\n\n"
+            "Continue?",
+            self.window()
+        )
+        
+        if not confirm.exec():
+            return
+        
+        # Trigger update
+        result = ApiService.trigger_update()
+        
+        if result:
+            HoloAlert(
+                "UPDATE STARTED",
+                "System update in progress.\n"
+                "Kiosk will restart in ~60 seconds.\n\n"
+                "Please wait...",
+                self.window()
+            ).exec()
+        else:
+            HoloAlert(
+                "ERROR",
+                "Failed to start update. Check backend logs.",
+                self.window(),
+                is_error=True
+            ).exec()

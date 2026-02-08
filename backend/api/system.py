@@ -128,4 +128,29 @@ def update_config(payload: dict = Body(...), session: Session = Depends(get_sess
             raise HTTPException(status_code=400, detail="Threshold must be 0-100")
             
     session.commit()
-    return {"status": "updated"}
+    return {"status": "success"}
+
+@router.post("/update")
+async def trigger_system_update():
+    """
+    Trigger system update by running deploy_release.sh script.
+    Runs in background to avoid blocking. Pi-only for safety.
+    """
+    import subprocess
+    import os
+    
+    # Security: Only allow on Pi, not dev machines
+    if not os.path.exists("/home/chores"):
+        raise HTTPException(status_code=403, detail="Updates only allowed on Pi")
+    
+    try:
+        # Run deploy script in background (detached from parent process)
+        subprocess.Popen(
+            ["/home/chores/current/scripts/deploy_release.sh"],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            start_new_session=True
+        )
+        return {"status": "update_started", "message": "System update initiated. Kiosk will restart in ~60 seconds."}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Update failed: {str(e)}")
