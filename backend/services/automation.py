@@ -14,6 +14,9 @@ class AutomationService:
         self.scheduler = AsyncIOScheduler()
         
     def start(self):
+        # Check for missed weekly payouts on startup
+        self.check_missed_payouts()
+        
         # Daily Maintenance at 00:01
         self.scheduler.add_job(
             self.daily_maintenance, 
@@ -33,6 +36,37 @@ class AutomationService:
         
         self.scheduler.start()
         logger.info("Automation Scheduler Started")
+    
+    async def check_missed_payouts(self):
+        """On startup, check if any recent weeks are missing payouts and process them"""
+        logger.info("Checking for missed weekly payouts...")
+        with Session(engine) as session:
+            from ..models import WeeklyRollup
+            payout_svc = PayoutService(session)
+            
+            # Check last 4 weeks for missing rollups
+            kids = session.exec(select(User).where(User.is_active == True)).all()
+            
+            for weeks_ago in range(1, 5):  # Check weeks 1-4 weeks back
+                target_date = date.today() - timedelta(weeks=weeks_ago)
+                week_id = target_date.strftime("%Y-W%W")
+                
+                for kid in kids:
+                    # Check if rollup exists for this kid + week
+                    stmt = select(WeeklyRollup).where(
+                        WeeklyRollup.kid_id == kid.id,
+                        WeeklyRollup.week_id == week_id
+                    )
+                    existing = session.exec(stmt).first()
+                    
+                    if not existing and weeks_ago <= 2:  # Only auto-process last 2 weeks
+                        try:
+                            logger.info(f"Processing missed payout: {kid.name} for {week_id}")
+                            payout_svc.calculate_and_payout(kid.id, week_id)
+                        except Exception as e:
+                            logger.error(f"Error processing missed payout for {kid.name} ({week_id}): {e}")
+        
+        logger.info("Missed payout check complete.")
 
     async def daily_maintenance(self):
         """Mark yesterday's uncompleted daily chores as INCOMPLETE/MISSED"""
