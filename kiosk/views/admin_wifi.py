@@ -49,12 +49,23 @@ class SimpleKeyboard(QDialog):
         self.render_keys()
         
     def render_keys(self):
-        # Clear existing keys
-        if self.keys_layout.count():
+        # Clear existing keys - PROPERLY clear both widgets and layouts
+        while self.keys_layout.count():
             child = self.keys_layout.takeAt(0)
-            while child:
-                if child.widget(): child.widget().deleteLater()
-                child = self.keys_layout.takeAt(0)
+            if child.widget():
+                child.widget().deleteLater()
+            elif child.layout():
+                # Recursively clear and delete nested layout
+                self._clear_layout(child.layout())
+    
+    def _clear_layout(self, layout):
+        """Recursively clear a layout and all its children."""
+        while layout.count():
+            child = layout.takeAt(0)
+            if child.widget():
+                child.widget().deleteLater()
+            elif child.layout():
+                self._clear_layout(child.layout())
 
         # Define Layouts
         # Normal (Lower)
@@ -93,7 +104,7 @@ class SimpleKeyboard(QDialog):
             row_layout = QHBoxLayout()
             for char in row_str:
                 btn = QPushButton(char)
-                btn.setFixedSize(55, 50)
+                btn.setFixedSize(60, 50)  # Slightly wider for better text fit
                 btn.setStyleSheet("background: #222; border: 1px solid #555; font-size: 20px; border-radius: 4px;")
                 btn.clicked.connect(lambda _, c=char: self.display.setText(self.display.text() + c))
                 row_layout.addWidget(btn)
