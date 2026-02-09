@@ -103,7 +103,7 @@ class SimpleKeyboard(QDialog):
             # Add Backspace to first row
             if i == 0:
                 btn_bs = QPushButton("⌫")
-                btn_bs.setFixedSize(70, 50)  # FIX: Was 55, increased to 70 for full symbol
+                btn_bs.setFixedSize(80, 50)  # Increased to 80 to prevent clipping
                 btn_bs.setStyleSheet("background: #442222; border: 1px solid #F55; font-size: 18px;")
                 btn_bs.clicked.connect(self.backspace)
                 row_layout.addWidget(btn_bs)
@@ -117,7 +117,7 @@ class SimpleKeyboard(QDialog):
         lbl_shift = "⇧ SHIFT" if not self.is_shifted else "⬆ SHIFT"
         style_shift = "background: #222;" if not self.is_shifted else "background: #004488; color: white;"
         btn_shift = QPushButton(lbl_shift)
-        btn_shift.setFixedSize(100, 50)
+        btn_shift.setFixedSize(120, 50)  # Increased to 120 to prevent clipping
         btn_shift.setStyleSheet(style_shift + " border: 1px solid #555;")
         btn_shift.clicked.connect(self.toggle_shift)
         ctrl_layout.addWidget(btn_shift)
@@ -125,7 +125,7 @@ class SimpleKeyboard(QDialog):
         # Symbols
         lbl_sym = "?123" if not self.is_symbols else "ABC"
         btn_sym = QPushButton(lbl_sym)
-        btn_sym.setFixedSize(80, 50)
+        btn_sym.setFixedSize(90, 50)  # Increased to 90 to prevent clipping
         btn_sym.setStyleSheet("background: #222; border: 1px solid #555;")
         btn_sym.clicked.connect(self.toggle_symbols)
         ctrl_layout.addWidget(btn_sym)
