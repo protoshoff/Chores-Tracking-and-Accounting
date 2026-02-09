@@ -3,7 +3,7 @@ from PySide6.QtCore import Qt
 from .holo_widgets import HoloButton
 
 class HoloAlert(QDialog):
-    def __init__(self, title="ALERT", message="", parent=None, is_error=False):
+    def __init__(self, title="ALERT", message="", parent=None, is_error=False, show_cancel=False):
         super().__init__(parent)
         self.setWindowFlags(Qt.WindowType.FramelessWindowHint | Qt.WindowType.Dialog)
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
@@ -30,10 +30,26 @@ class HoloAlert(QDialog):
         
         layout.addStretch()
         
-        # Button
-        self.btn_ok = HoloButton("ACKNOWLEDGE")
-        self.btn_ok.clicked.connect(self.accept)
-        layout.addWidget(self.btn_ok)
+        # Buttons
+        if show_cancel:
+            # Show both OK and CANCEL buttons
+            from PySide6.QtWidgets import QHBoxLayout
+            btn_layout = QHBoxLayout()
+            
+            btn_cancel = HoloButton("CANCEL", is_primary=False)
+            btn_cancel.clicked.connect(self.reject)
+            btn_layout.addWidget(btn_cancel)
+            
+            btn_ok = HoloButton("OK")
+            btn_ok.clicked.connect(self.accept)
+            btn_layout.addWidget(btn_ok)
+            
+            layout.addLayout(btn_layout)
+        else:
+            # Single ACKNOWLEDGE button
+            self.btn_ok = HoloButton("ACKNOWLEDGE")
+            self.btn_ok.clicked.connect(self.accept)
+            layout.addWidget(self.btn_ok)
         
         # Styling
         border = "#FF0000" if is_error else "#00F0FF"

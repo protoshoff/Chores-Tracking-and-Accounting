@@ -135,7 +135,8 @@ class AdminDashboardView(QWidget):
             "CONFIRM UPDATE",
             "This will check GitHub for updates and restart the system.\n\n"
             "Continue?",
-            self.window()
+            self.window(),
+            show_cancel=True  # Allow user to cancel
         )
         
         if not confirm.exec():
