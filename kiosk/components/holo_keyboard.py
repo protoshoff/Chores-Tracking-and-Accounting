@@ -59,25 +59,30 @@ class HoloKeyboard(QDialog):
         # Bottom Row
         bottom = QGridLayout()
         
-        btn_space = HoloButton("SPACE")
-        btn_space.clicked.connect(lambda: self.on_key(" "))
-        bottom.addWidget(btn_space, 0, 1, 1, 4)
-        
-        btn_backspace = HoloButton("⌫") # Backspace
-        btn_backspace.clicked.connect(self.backspace)
-        bottom.addWidget(btn_backspace, 0, 5, 1, 2)
-        
         btn_clear = HoloButton("CLR", is_primary=False)
+        btn_clear.setMinimumWidth(70)
         btn_clear.clicked.connect(self.clear)
         bottom.addWidget(btn_clear, 0, 0)
         
-        btn_cancel = HoloButton("CANCEL", is_primary=False)  # FIX: Added CANCEL button
+        btn_space = HoloButton("SPACE")
+        btn_space.setMinimumWidth(200)  # Wide for SPACE
+        btn_space.clicked.connect(lambda: self.on_key(" "))
+        bottom.addWidget(btn_space, 0, 1, 1, 4)
+        
+        btn_backspace = HoloButton("⌫")
+        btn_backspace.setMinimumWidth(90)
+        btn_backspace.clicked.connect(self.backspace)
+        bottom.addWidget(btn_backspace, 0, 5, 1, 2)
+        
+        btn_cancel = HoloButton("CANCEL", is_primary=False)
+        btn_cancel.setMinimumWidth(100)
         btn_cancel.clicked.connect(self.reject)
         bottom.addWidget(btn_cancel, 0, 7)
         
         btn_enter = HoloButton("ENTER")
+        btn_enter.setMinimumWidth(100)
         btn_enter.clicked.connect(self.accept)
-        bottom.addWidget(btn_enter, 0, 8)  # FIX: Shifted to column 8
+        bottom.addWidget(btn_enter, 0, 8)
         
         layout.addLayout(bottom)
         
@@ -91,7 +96,7 @@ class HoloKeyboard(QDialog):
 
     def add_key(self, grid, char, r, c):
         btn = HoloButton(char)
-        btn.setFixedSize(60, 60)
+        btn.setFixedSize(70, 60)  # Slightly wider for better text fit
         btn.clicked.connect(lambda: self.on_key(char))
         grid.addWidget(btn, r, c)
 

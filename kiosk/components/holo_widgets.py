@@ -9,7 +9,7 @@ class HoloButton(QPushButton):
         self.is_primary = is_primary
         self.setCursor(Qt.CursorShape.PointingHandCursor)
         self.setMinimumHeight(50)
-        self.setMinimumWidth(120)
+        # Removed setMinimumWidth(120) - let content + padding determine width
         
         # Glow Effect - Subtle Depth instead of Neon
         self._glow = QGraphicsDropShadowEffect(self)
