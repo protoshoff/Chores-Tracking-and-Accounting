@@ -57,15 +57,6 @@ class SimpleKeyboard(QDialog):
             elif child.layout():
                 # Recursively clear and delete nested layout
                 self._clear_layout(child.layout())
-    
-    def _clear_layout(self, layout):
-        """Recursively clear a layout and all its children."""
-        while layout.count():
-            child = layout.takeAt(0)
-            if child.widget():
-                child.widget().deleteLater()
-            elif child.layout():
-                self._clear_layout(child.layout())
 
         # Define Layouts
         # Normal (Lower)
@@ -88,7 +79,7 @@ class SimpleKeyboard(QDialog):
         chars_sym = [
             "1234567890",
             "-/:;()$&@\"",
-            ".,?!'[]{}*",
+            ".,?!'[]{}",
             "~<>\\|^=+_%" 
         ]
 
@@ -160,6 +151,15 @@ class SimpleKeyboard(QDialog):
         ctrl_layout.addWidget(btn_ok)
         
         self.keys_layout.addLayout(ctrl_layout)
+    
+    def _clear_layout(self, layout):
+        """Recursively clear a layout and all its children."""
+        while layout.count():
+            child = layout.takeAt(0)
+            if child.widget():
+                child.widget().deleteLater()
+            elif child.layout():
+                self._clear_layout(child.layout())
 
     def toggle_shift(self):
         self.is_shifted = not self.is_shifted
