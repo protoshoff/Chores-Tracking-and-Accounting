@@ -211,13 +211,22 @@ class ApiService:
         return None
 
     @staticmethod
-    def update_system_config(payout_mode, payout_threshold):
+    def update_system_config(payout_mode, payout_threshold, payout_day=None, payout_hour=None, payout_minute=None):
         """Update system configuration"""
         try:
             payload = {
                 "payout_mode": payout_mode,
                 "payout_threshold": payout_threshold
             }
+            
+            # Add payout schedule if provided
+            if payout_day is not None:
+                payload["payout_day"] = payout_day
+            if payout_hour is not None:
+                payload["payout_hour"] = payout_hour
+            if payout_minute is not None:
+                payload["payout_minute"] = payout_minute
+            
             resp = requests.put(f"{BASE_URL}/system/config", json=payload, timeout=2)
             return resp.status_code == 200
         except Exception as e:

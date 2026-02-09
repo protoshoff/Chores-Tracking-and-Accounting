@@ -126,6 +126,51 @@ def update_config(payload: dict = Body(...), session: Session = Depends(get_sess
             session.add(setting)
         except ValueError:
             raise HTTPException(status_code=400, detail="Threshold must be 0-100")
+    
+    # Payout Day (0-6, Monday=0, Sunday=6)
+    if "payout_day" in payload:
+        try:
+            val_int = int(payload["payout_day"])
+            if val_int < 0 or val_int > 6:
+                raise ValueError
+            setting = session.get(Settings, "payout_day")
+            if not setting:
+                setting = Settings(key="payout_day", value=str(val_int))
+            else:
+                setting.value = str(val_int)
+            session.add(setting)
+        except ValueError:
+            raise HTTPException(status_code=400, detail="Payout day must be 0-6")
+    
+    # Payout Hour (0-23)
+    if "payout_hour" in payload:
+        try:
+            val_int = int(payload["payout_hour"])
+            if val_int < 0 or val_int > 23:
+                raise ValueError
+            setting = session.get(Settings, "payout_hour")
+            if not setting:
+                setting = Settings(key="payout_hour", value=str(val_int))
+            else:
+                setting.value = str(val_int)
+            session.add(setting)
+        except ValueError:
+            raise HTTPException(status_code=400, detail="Payout hour must be 0-23")
+    
+    # Payout Minute (0-59)
+    if "payout_minute" in payload:
+        try:
+            val_int = int(payload["payout_minute"])
+            if val_int < 0 or val_int > 59:
+                raise ValueError
+            setting = session.get(Settings, "payout_minute")
+            if not setting:
+                setting = Settings(key="payout_minute", value=str(val_int))
+            else:
+                setting.value = str(val_int)
+            session.add(setting)
+        except ValueError:
+            raise HTTPException(status_code=400, detail="Payout minute must be 0-59")
             
     session.commit()
     return {"status": "success"}

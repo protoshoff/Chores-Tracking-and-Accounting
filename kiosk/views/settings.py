@@ -146,6 +146,113 @@ class SettingsView(QWidget):
         self.lbl_threshold_desc.setStyleSheet("color: #888; font-size: 14px; margin-left: 20px;")
         form.addRow("", self.lbl_threshold_desc)
         
+        # Payout Schedule Section
+        lbl_schedule_header = QLabel("PAYOUT SCHEDULE")
+        lbl_schedule_header.setStyleSheet("color: #00E5FF; font-size: 20px; font-weight: bold; margin-top: 20px;")
+        form.addRow(lbl_schedule_header)
+        
+        # Payout Day Dropdown
+        self.combo_payout_day = QComboBox()
+        self.combo_payout_day.addItems(["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"])
+        self.combo_payout_day.setCurrentIndex(6)
+        self.combo_payout_day.setStyleSheet("""
+            QComboBox {
+                background: rgba(0, 0, 0, 0.5);
+                border: 1px solid #007BFF;
+                color: #00E5FF;
+                padding: 10px;
+                font-size: 18px;
+                border-radius: 4px;
+            }
+            QComboBox::drop-down {
+                subcontrol-origin: padding;
+                subcontrol-position: top right;
+                width: 40px;
+                border-left-width: 1px;
+                border-left-color: #007BFF;
+                border-left-style: solid;
+                background: #001133;
+                border-top-right-radius: 4px;
+                border-bottom-right-radius: 4px;
+            }
+            QComboBox::down-arrow {
+                image: url(kiosk/assets/arrow_down.svg);
+                width: 24px; height: 24px;
+                subcontrol-position: center;
+            }
+            QComboBox QAbstractItemView {
+                background: #000;
+                color: #00E5FF;
+                selection-background-color: #007BFF;
+                border: 1px solid #007BFF;
+            }
+        """)
+        
+        lbl_payout_day = QLabel("PAYOUT DAY:")
+        lbl_payout_day.setStyleSheet("color: white; font-size: 18px; font-weight: bold;")
+        form.addRow(lbl_payout_day, self.combo_payout_day)
+        
+        # Payout Time
+        time_layout = QHBoxLayout()
+        
+        self.spin_payout_hour = QSpinBox()
+        self.spin_payout_hour.setRange(0, 23)
+        self.spin_payout_hour.setValue(0)
+        self.spin_payout_hour.setFixedWidth(100)
+        self.spin_payout_hour.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.spin_payout_hour.setStyleSheet("""
+            QSpinBox {
+                background: rgba(0, 0, 0, 0.5);
+                border: 1px solid #007BFF;
+                color: #00E5FF;
+                padding: 5px;
+                font-size: 20px;
+                border-radius: 4px;
+            }
+            QSpinBox::up-button, QSpinBox::down-button {
+                width: 30px;
+                background: #001133;
+                border-left: 1px solid #007BFF;
+            }
+            QSpinBox::up-button {
+                subcontrol-position: top right;
+                border-bottom: 1px solid #007BFF;
+            }
+            QSpinBox::up-arrow {
+                image: url(kiosk/assets/arrow_up.svg);
+                width: 24px; height: 24px;
+            }
+            QSpinBox::down-arrow {
+                image: url(kiosk/assets/arrow_down.svg);
+                width: 24px; height: 24px;
+            }
+        """)
+        
+        lbl_colon = QLabel(":")
+        lbl_colon.setStyleSheet("color: white; font-size: 24px; font-weight: bold;")
+        
+        self.spin_payout_minute = QSpinBox()
+        self.spin_payout_minute.setRange(0, 59)
+        self.spin_payout_minute.setValue(5)
+        self.spin_payout_minute.setFixedWidth(100)
+        self.spin_payout_minute.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.spin_payout_minute.setStyleSheet(self.spin_payout_hour.styleSheet())
+        
+        time_layout.addWidget(self.spin_payout_hour)
+        time_layout.addWidget(lbl_colon)
+        time_layout.addWidget(self.spin_payout_minute)
+        time_layout.addStretch()
+        
+        lbl_payout_time = QLabel("PAYOUT TIME:")
+        lbl_payout_time.setStyleSheet("color: white; font-size: 18px; font-weight: bold;")
+        form.addRow(lbl_payout_time, time_layout)
+        
+        # Schedule description
+        lbl_schedule_desc = QLabel("Weekly allowance will be automatically paid at the specified day and time.")
+        lbl_schedule_desc.setWordWrap(True)
+        lbl_schedule_desc.setStyleSheet("color: #888; font-size: 14px; margin-left: 20px;")
+        form.addRow("", lbl_schedule_desc)
+        
         cf_layout.addLayout(form)
         cf_layout.addStretch()
         
@@ -189,6 +296,16 @@ class SettingsView(QWidget):
             threshold = config.get("payout_threshold", 80)
             self.spin_threshold.setValue(threshold)
             
+            # Set payout schedule
+            payout_day = int(config.get("payout_day", 6))
+            self.combo_payout_day.setCurrentIndex(payout_day)
+            
+            payout_hour = int(config.get("payout_hour", 0))
+            self.spin_payout_hour.setValue(payout_hour)
+            
+            payout_minute = int(config.get("payout_minute", 5))
+            self.spin_payout_minute.setValue(payout_minute)
+            
             # Update UI visibility
             self.on_mode_changed()
             
@@ -219,7 +336,18 @@ class SettingsView(QWidget):
         payout_mode = "PRORATED" if mode_index == 1 else "ALL_OR_NOTHING"
         threshold = self.spin_threshold.value()
         
-        success = ApiService.update_system_config(payout_mode, threshold)
+        # Payout schedule
+        payout_day = self.combo_payout_day.currentIndex()
+        payout_hour = self.spin_payout_hour.value()
+        payout_minute = self.spin_payout_minute.value()
+        
+        success = ApiService.update_system_config(
+            payout_mode, 
+            threshold,
+            payout_day,
+            payout_hour,
+            payout_minute
+        )
         
         if success:
             HoloAlert("SUCCESS", "System settings updated successfully.", self.window()).exec()

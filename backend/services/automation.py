@@ -25,17 +25,38 @@ class AutomationService:
             replace_existing=True
         )
         
-        # Weekly Tally at Sunday 00:05
-        # (Give daily maintenance a moment to finish)
+        # Weekly Tally - Read schedule from settings
+        self.schedule_weekly_tally()
+        
+        self.scheduler.start()
+        logger.info("Automation Scheduler Started")
+    
+    def schedule_weekly_tally(self):
+        """Schedule weekly tally job using settings from database"""
+        from ..models import Settings
+        
+        with Session(engine) as session:
+            # Read schedule from settings
+            day_setting = session.get(Settings, "payout_day")
+            hour_setting = session.get(Settings, "payout_hour")
+            minute_setting = session.get(Settings, "payout_minute")
+            
+            # Defaults: Sunday at 00:05
+            payout_day = int(day_setting.value) if day_setting else 6  # 6 = Sunday
+            payout_hour = int(hour_setting.value) if hour_setting else 0
+            payout_minute = int(minute_setting.value) if minute_setting else 5
+        
+        # APScheduler uses 0=Monday, 6=Sunday (matches our storage)
+        day_name = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'][payout_day]
+        
         self.scheduler.add_job(
             self.weekly_tally,
-            CronTrigger(day_of_week='sun', hour=0, minute=5),
+            CronTrigger(day_of_week=day_name, hour=payout_hour, minute=payout_minute),
             id="weekly_tally",
             replace_existing=True
         )
         
-        self.scheduler.start()
-        logger.info("Automation Scheduler Started")
+        logger.info(f"Weekly payout scheduled for {day_name.capitalize()} at {payout_hour:02d}:{payout_minute:02d}")
     
     async def check_missed_payouts(self):
         """On startup, check if any recent weeks are missing payouts and process them"""

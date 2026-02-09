@@ -20,6 +20,24 @@ def create_db_and_tables():
         WeeklyRollup, Streak, Settings
     )
     SQLModel.metadata.create_all(engine)
+    seed_default_settings()
+
+def seed_default_settings():
+    """Initialize default settings if they don't exist"""
+    from backend.models import Settings
+    
+    defaults = {
+        "payout_day": "6",      # Sunday (0=Mon, 6=Sun)
+        "payout_hour": "0",     # Midnight
+        "payout_minute": "5",   # 00:05
+    }
+    
+    with Session(engine) as session:
+        for key, value in defaults.items():
+            existing = session.get(Settings, key)
+            if not existing:
+                session.add(Settings(key=key, value=value))
+        session.commit()
 
 def get_session():
     with Session(engine) as session:
