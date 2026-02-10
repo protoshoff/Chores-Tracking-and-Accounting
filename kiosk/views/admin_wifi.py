@@ -103,7 +103,7 @@ class SimpleKeyboard(QDialog):
             # Add Backspace to first row
             if i == 0:
                 btn_bs = QPushButton("⌫")
-                btn_bs.setFixedSize(80, 50)  # Increased to 80 to prevent clipping
+                btn_bs.setFixedSize(90, 50)  # Increased to 90 to fully display symbol
                 btn_bs.setStyleSheet("background: #442222; border: 1px solid #F55; font-size: 18px;")
                 btn_bs.clicked.connect(self.backspace)
                 row_layout.addWidget(btn_bs)
