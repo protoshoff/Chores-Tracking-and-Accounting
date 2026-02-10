@@ -29,7 +29,7 @@ class SimpleKeyboard(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setWindowTitle("Enter Password")
-        self.setFixedSize(700, 450)
+        self.setFixedSize(750, 450)  # Increased width to prevent backspace clipping
         self.setStyleSheet("background-color: #0A0A12; color: #E0E0E0;")
         
         layout = QVBoxLayout(self)
@@ -95,8 +95,8 @@ class SimpleKeyboard(QDialog):
             row_layout = QHBoxLayout()
             for char in row_str:
                 btn = QPushButton(char)
-                btn.setFixedSize(60, 50)  # Slightly wider for better text fit
-                btn.setStyleSheet("background: #222; border: 1px solid #555; font-size: 20px; border-radius: 4px;")
+                btn.setFixedSize(60, 50)
+                btn.setStyleSheet("background: #222; border: 1px solid #555; font-size: 20px; border-radius: 4px; text-transform: none;")
                 btn.clicked.connect(lambda _, c=char: self.display.setText(self.display.text() + c))
                 row_layout.addWidget(btn)
             
