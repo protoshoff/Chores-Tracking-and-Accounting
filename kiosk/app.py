@@ -42,20 +42,10 @@ class HeaderWidget(QFrame):
 
     def update_clock(self):
         """Update clock display using system's local timezone."""
-        try:
-            # Try to get timezone from /etc/timezone (Raspberry Pi standard location)
-            try:
-                with open('/etc/timezone', 'r') as f:
-                    tz_name = f.read().strip()
-                    tz = ZoneInfo(tz_name)
-                    now = datetime.now(tz)
-            except (FileNotFoundError, Exception):
-                # Fallback to system local time
-                now = datetime.now()
-        except Exception:
-            # Ultimate fallback  
-            now = datetime.now()
-        
+        # Use time.localtime() which automatically respects system timezone
+        # Works on all Python versions (no zoneinfo dependency)
+        local_time = time.localtime()
+        now = datetime.fromtimestamp(time.mktime(local_time))
         self.lbl_clock.setText(now.strftime("%a %I:%M %p"))
 
 class KioskApp(QMainWindow):
