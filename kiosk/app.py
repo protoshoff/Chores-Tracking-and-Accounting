@@ -20,6 +20,7 @@ class HeaderWidget(QFrame):
     # Re-introducing Header but styling it transparently later if needed
     def __init__(self, parent=None):
         super().__init__(parent)
+        self.configured_timezone = None  # Store configured timezone from API
         self.setObjectName("Header")
         layout = QHBoxLayout(self)
         layout.setContentsMargins(20, 10, 20, 10)
