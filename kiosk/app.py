@@ -1,5 +1,6 @@
 import sys
 from datetime import datetime
+from zoneinfo import ZoneInfo
 from PySide6.QtWidgets import QApplication, QMainWindow, QStackedWidget, QLabel, QHBoxLayout, QVBoxLayout, QWidget, QFrame
 from PySide6.QtCore import Qt, QTimer, QEvent
 
