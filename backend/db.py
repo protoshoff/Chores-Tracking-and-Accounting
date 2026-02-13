@@ -32,6 +32,13 @@ def seed_default_settings():
         "payout_minute": "5",   # 00:05
     }
     
+    # Auto-detect timezone from system
+    try:
+        with open('/etc/timezone', 'r') as f:
+            defaults["timezone"] = f.read().strip()
+    except:
+        defaults["timezone"] = "America/Phoenix"  # Safe fallback
+    
     with Session(engine) as session:
         for key, value in defaults.items():
             existing = session.get(Settings, key)

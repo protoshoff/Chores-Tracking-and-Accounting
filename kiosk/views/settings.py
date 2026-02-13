@@ -253,6 +253,68 @@ class SettingsView(QWidget):
         lbl_schedule_desc.setStyleSheet("color: #888; font-size: 14px; margin-left: 20px;")
         form.addRow("", lbl_schedule_desc)
         
+        # Timezone Section
+        lbl_tz_header = QLabel("TIMEZONE")
+        lbl_tz_header.setStyleSheet("color: #00E5FF; font-size: 20px; font-weight: bold; margin-top: 20px;")
+        form.addRow(lbl_tz_header)
+        
+        # Timezone Dropdown
+        self.combo_timezone = QComboBox()
+        timezones = [
+            ("America/New_York", "Eastern Time (ET)"),
+            ("America/Chicago", "Central Time (CT)"),
+            ("America/Denver", "Mountain Time (MT)"),
+            ("America/Phoenix", "Arizona (MST - no DST)"),
+            ("America/Los_Angeles", "Pacific Time (PT)"),
+            ("America/Anchorage", "Alaska Time (AKT)"),
+            ("Pacific/Honolulu", "Hawaii Time (HST)"),
+        ]
+        for tz_key, tz_label in timezones:
+            self.combo_timezone.addItem(tz_label, tz_key)
+        
+        self.combo_timezone.setStyleSheet("""
+            QComboBox {
+                background: rgba(0, 0, 0, 0.5);
+                border: 1px solid #007BFF;
+                color: #00E5FF;
+                padding: 10px;
+                font-size: 18px;
+                border-radius: 4px;
+            }
+            QComboBox::drop-down {
+                subcontrol-origin: padding;
+                subcontrol-position: top right;
+                width: 40px;
+                border-left-width: 1px;
+                border-left-color: #007BFF;
+                border-left-style: solid;
+                background: #001133;
+                border-top-right-radius: 4px;
+                border-bottom-right-radius: 4px;
+            }
+            QComboBox::down-arrow {
+                image: url(kiosk/assets/arrow_down.svg);
+                width: 24px; height: 24px;
+                subcontrol-position: center;
+            }
+            QComboBox QAbstractItemView {
+                background: #000;
+                color: #00E5FF;
+                selection-background-color: #007BFF;
+                border: 1px solid #007BFF;
+            }
+        """)
+        
+        lbl_timezone = QLabel("LOCAL TIMEZONE:")
+        lbl_timezone.setStyleSheet("color: white; font-size: 18px; font-weight: bold;")
+        form.addRow(lbl_timezone, self.combo_timezone)
+        
+        # Timezone description
+        lbl_tz_desc = QLabel("Timezone affects clock display and payout schedule timing.")
+        lbl_tz_desc.setWordWrap(True)
+        lbl_tz_desc.setStyleSheet("color: #888; font-size: 14px; margin-left: 20px;")
+        form.addRow("", lbl_tz_desc)
+        
         cf_layout.addLayout(form)
         cf_layout.addStretch()
         
@@ -306,6 +368,13 @@ class SettingsView(QWidget):
             payout_minute = int(config.get("payout_minute", 5))
             self.spin_payout_minute.setValue(payout_minute)
             
+            # Set timezone
+            timezone = config.get("timezone", "America/Phoenix")
+            for i in range(self.combo_timezone.count()):
+                if self.combo_timezone.itemData(i) == timezone:
+                    self.combo_timezone.setCurrentIndex(i)
+                    break
+            
             # Update UI visibility
             self.on_mode_changed()
             
@@ -341,16 +410,30 @@ class SettingsView(QWidget):
         payout_hour = self.spin_payout_hour.value()
         payout_minute = self.spin_payout_minute.value()
         
+        # Timezone
+        timezone = self.combo_timezone.currentData()
+        
         success = ApiService.update_system_config(
             payout_mode, 
             threshold,
             payout_day,
             payout_hour,
-            payout_minute
+            payout_minute,
+            timezone=timezone
         )
         
         if success:
-            HoloAlert("SUCCESS", "System settings updated successfully.", self.window()).exec()
+            # Notify main app to reload timezone for clock
+            try:
+                from PySide6.QtWidgets import QApplication
+                app = QApplication.instance()
+                for widget in app.topLevelWidgets():
+                    if hasattr(widget, 'load_timezone'):
+                        widget.load_timezone()
+            except:
+                pass
+            
+            HoloAlert("SUCCESS", "System settings updated successfully.\nClock will update within seconds.", self.window()).exec()
             self.back_clicked.emit()
         else:
             HoloAlert("ERROR", "Failed to update settings. Check backend logs.", 

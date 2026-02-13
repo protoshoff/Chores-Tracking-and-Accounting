@@ -9,11 +9,21 @@ import logging
 
 logger = logging.getLogger("chores.automation")
 
+# Global instance for accessing from API
+_automation_instance = None
+
+def get_automation_service():
+    """Get the global automation service instance"""
+    return _automation_instance
+
 class AutomationService:
     def __init__(self):
         self.scheduler = AsyncIOScheduler()
         
     def start(self):
+        global _automation_instance
+        _automation_instance = self  # Store instance for API access
+        
         # Check for missed weekly payouts on startup
         self.check_missed_payouts()
         
@@ -32,11 +42,17 @@ class AutomationService:
         logger.info("Automation Scheduler Started")
     
     def schedule_weekly_tally(self):
-        """Schedule weekly tally job using settings from database"""
+        """Schedule weekly tally job using settings from database (timezone-aware)"""
         from ..models import Settings
+        import os
+        import time as time_module
         
         with Session(engine) as session:
-            # Read schedule from settings
+            # Read timezone from settings
+            tz_setting = session.get(Settings, "timezone")
+            configured_tz = tz_setting.value if tz_setting else None
+            
+            # Read schedule from settings  
             day_setting = session.get(Settings, "payout_day")
             hour_setting = session.get(Settings, "payout_hour")
             minute_setting = session.get(Settings, "payout_minute")
@@ -45,6 +61,15 @@ class AutomationService:
             payout_day = int(day_setting.value) if day_setting else 6  # 6 = Sunday
             payout_hour = int(hour_setting.value) if hour_setting else 0
             payout_minute = int(minute_setting.value) if minute_setting else 5
+        
+        # Apply timezone if configured
+        if configured_tz:
+            try:
+                os.environ['TZ'] = configured_tz
+                time_module.tzset()
+                logger.info(f"Applied timezone: {configured_tz}")
+            except Exception as e:
+                logger.warning(f"Could not set timezone {configured_tz}: {e}")
         
         # APScheduler uses 0=Monday, 6=Sunday (matches our storage)
         day_name = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'][payout_day]
@@ -56,7 +81,8 @@ class AutomationService:
             replace_existing=True
         )
         
-        logger.info(f"Weekly payout scheduled for {day_name.capitalize()} at {payout_hour:02d}:{payout_minute:02d}")
+        tz_display = configured_tz or "system default"
+        logger.info(f"Weekly payout scheduled for {day_name.capitalize()} at {payout_hour:02d}:{payout_minute:02d} ({tz_display})")
     
     async def check_missed_payouts(self):
         """On startup, check if any recent weeks are missing payouts and process them"""

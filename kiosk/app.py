@@ -40,8 +40,28 @@ class HeaderWidget(QFrame):
         self.timer.start(1000)
         self.update_clock()
 
+    def load_timezone(self):
+        """Load configured timezone from API"""
+        try:
+            from .services.api import ApiService
+            config = ApiService.get_system_config()
+            if config:
+                self.configured_timezone = config.get("timezone")
+        except:
+            pass
+
     def update_clock(self):
-        """Update clock display using system's local timezone."""
+        """Update clock display using configured or system timezone."""
+        import os
+        
+        # Apply configured timezone if set
+        if self.configured_timezone:
+            try:
+                os.environ['TZ'] = self.configured_timezone
+                time.tzset()
+            except:
+                pass
+        
         # Use time.localtime() which automatically respects system timezone
         # Works on all Python versions (no zoneinfo dependency)
         local_time = time.localtime()

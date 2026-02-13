@@ -211,7 +211,7 @@ class ApiService:
         return None
 
     @staticmethod
-    def update_system_config(payout_mode, payout_threshold, payout_day=None, payout_hour=None, payout_minute=None):
+    def update_system_config(payout_mode, payout_threshold, payout_day=None, payout_hour=None, payout_minute=None, timezone=None):
         """Update system configuration"""
         try:
             payload = {
@@ -226,6 +226,8 @@ class ApiService:
                 payload["payout_hour"] = payout_hour
             if payout_minute is not None:
                 payload["payout_minute"] = payout_minute
+            if timezone is not None:
+                payload["timezone"] = timezone
             
             resp = requests.put(f"{BASE_URL}/system/config", json=payload, timeout=2)
             return resp.status_code == 200

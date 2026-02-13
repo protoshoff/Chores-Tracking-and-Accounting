@@ -73,11 +73,12 @@ def update_pin(payload: dict = Body(...), session: Session = Depends(get_session
 # --- General Config ---
 @router.get("/config")
 def get_config(session: Session = Depends(get_session)):
-    """Get system config (payout_mode, payout_threshold, etc)."""
+    """Get system config (payout_mode, payout_threshold, timezone, etc)."""
     # Defaults
     config = {
         "payout_mode": "ALL_OR_NOTHING",
-        "payout_threshold": 80
+        "payout_threshold": 80,
+        "timezone": "America/Phoenix"
     }
     
     # Load overrides
@@ -91,6 +92,23 @@ def get_config(session: Session = Depends(get_session)):
             config["payout_threshold"] = int(threshold_setting.value)
         except:
             pass
+    
+    # Load timezone
+    tz_setting = session.get(Settings, "timezone")
+    if tz_setting:
+        config["timezone"] = tz_setting.value
+    
+    # Load payout schedule
+    day_setting = session.get(Settings, "payout_day")
+    hour_setting = session.get(Settings, "payout_hour")
+    minute_setting = session.get(Settings, "payout_minute")
+    
+    if day_setting:
+        config["payout_day"] = int(day_setting.value)
+    if hour_setting:
+        config["payout_hour"] = int(hour_setting.value)
+    if minute_setting:
+        config["payout_minute"] = int(minute_setting.value)
             
     return config
 
@@ -171,8 +189,33 @@ def update_config(payload: dict = Body(...), session: Session = Depends(get_sess
             session.add(setting)
         except ValueError:
             raise HTTPException(status_code=400, detail="Payout minute must be 0-59")
+    
+    # Timezone
+    if "timezone" in payload:
+        tz = payload["timezone"]
+        # Basic validation - just check it's not empty
+        if not tz or not isinstance(tz, str):
+            raise HTTPException(status_code=400, detail="Timezone must be a valid string")
+        
+        setting = session.get(Settings, "timezone")
+        if not setting:
+            setting = Settings(key="timezone", value=tz)
+        else:
+            setting.value = tz
+        session.add(setting)
             
     session.commit()
+    
+    # If timezone changed, trigger automation restart
+    if "timezone" in payload:
+        try:
+            from ..services.automation import get_automation_service
+            automation = get_automation_service()
+            if automation:
+                automation.schedule_weekly_tally()  # Re-schedule with new timezone
+        except:
+            pass  # Non-critical if automation restart fails
+    
     return {"status": "success"}
 
 @router.post("/update")
