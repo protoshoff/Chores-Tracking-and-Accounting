@@ -1,5 +1,5 @@
 from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, 
-                               QComboBox, QSpinBox, QFormLayout)
+                               QComboBox, QSpinBox, QFormLayout, QScrollArea)
 from PySide6.QtCore import Signal, Qt
 from ..components.holo_widgets import HoloButton, HoloFrame
 from ..components.holo_alert import HoloAlert
@@ -334,7 +334,13 @@ class SettingsView(QWidget):
         
         cf_layout.addLayout(actions)
         
-        main.addWidget(content_frame)
+        # Wrap in scroll area to handle overflow on scaled displays
+        scroll = QScrollArea()
+        scroll.setWidget(content_frame)
+        scroll.setWidgetResizable(True)
+        scroll.setStyleSheet("QScrollArea { border: none; background: transparent; }")
+        
+        main.addWidget(scroll)
         
         
     def showEvent(self, event):

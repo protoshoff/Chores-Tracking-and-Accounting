@@ -48,21 +48,10 @@ def main():
     print("DEBUG: Init QApplication...")
     qt_app = QApplication(args)
     
-    # Detect screen resolution and apply DPI scaling for high-res displays
+    # Verify detected resolution (scaling already applied above before Qt import)
     screen = qt_app.primaryScreen()
     rect = screen.geometry()
-    print(f"DEBUG: Detected Screen: {rect.width()}x{rect.height()}")
-    
-    if rect.width() >= 1920:
-        import os
-        scale_factor = round(rect.width() / 1024.0, 2)
-        print(f"DEBUG: High-res display detected. Applying scale factor: {scale_factor}")
-        os.environ["QT_SCALE_FACTOR"] = str(scale_factor)
-        # Note: QT_SCALE_FACTOR needs to be set before QApplication init for full effect,
-        # but setAttribute can help with some scaling aspects
-        qt_app.setAttribute(Qt.ApplicationAttribute.AA_EnableHighDpiScaling, True)
-    else:
-        print(f"DEBUG: Standard resolution display. No scaling applied.")
+    print(f"DEBUG: Qt reports screen resolution: {rect.width()}x{rect.height()}")
     
     # Hide Cursor for Touchscreen Kiosk
     qt_app.setOverrideCursor(Qt.CursorShape.BlankCursor)
