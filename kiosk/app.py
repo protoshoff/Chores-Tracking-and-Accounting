@@ -38,6 +38,11 @@ class HeaderWidget(QFrame):
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.update_clock)
         self.timer.start(1000)
+        
+        # Load configured timezone from API
+        self.load_timezone()
+        
+        # Update clock immediately
         self.update_clock()
 
     def load_timezone(self):
