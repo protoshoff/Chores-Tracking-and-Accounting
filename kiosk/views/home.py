@@ -94,17 +94,20 @@ class HomeView(QWidget):
         
         main_layout = QVBoxLayout(self)
         main_layout.setContentsMargins(0,0,0,0)
+        main_layout.setSpacing(0)
         
         # --- Grid Area ---
+        # Constrain grid area to prevent overflow on scaled displays
         grid_wrapper = QWidget()
+        grid_wrapper.setMaximumHeight(490)  # Leave room for footer on 1.3x scaled 600px display
         self.grid = QGridLayout(grid_wrapper)
         self.grid.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        main_layout.addWidget(grid_wrapper, 1) 
+        main_layout.addWidget(grid_wrapper, 1)  # Stretch factor 1
         
         # --- Footer ---
-        # (No QFrame container needed, just layout)
+        # Ensure footer always stays at bottom and visible
         foot_layout = QHBoxLayout()
-        foot_layout.setContentsMargins(40, 20, 40, 20)
+        foot_layout.setContentsMargins(40, 10, 40, 20)  # Reduced top margin
         
         btn_parent = HoloButton("PARENT ZONE", is_primary=False)
         btn_parent.setFixedSize(220, 60)
@@ -117,7 +120,7 @@ class HomeView(QWidget):
         foot_layout.addWidget(btn_parent)
         foot_layout.addStretch()
         foot_layout.addWidget(btn_admin)
-        main_layout.addLayout(foot_layout)
+        main_layout.addLayout(foot_layout, 0)  # Stretch factor 0 to prevent pushing off-screen
         
         # Auto-Retry Timer
         self.retry_timer = QTimer(self)
