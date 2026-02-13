@@ -1,6 +1,6 @@
 import sys
+import time
 from datetime import datetime
-from zoneinfo import ZoneInfo
 from PySide6.QtWidgets import QApplication, QMainWindow, QStackedWidget, QLabel, QHBoxLayout, QVBoxLayout, QWidget, QFrame
 from PySide6.QtCore import Qt, QTimer, QEvent
 
@@ -41,7 +41,21 @@ class HeaderWidget(QFrame):
         self.update_clock()
 
     def update_clock(self):
-        now = datetime.now()
+        """Update clock display using system's local timezone."""
+        try:
+            # Try to get timezone from /etc/timezone (Raspberry Pi standard location)
+            try:
+                with open('/etc/timezone', 'r') as f:
+                    tz_name = f.read().strip()
+                    tz = ZoneInfo(tz_name)
+                    now = datetime.now(tz)
+            except (FileNotFoundError, Exception):
+                # Fallback to system local time
+                now = datetime.now()
+        except Exception:
+            # Ultimate fallback  
+            now = datetime.now()
+        
         self.lbl_clock.setText(now.strftime("%a %I:%M %p"))
 
 class KioskApp(QMainWindow):
