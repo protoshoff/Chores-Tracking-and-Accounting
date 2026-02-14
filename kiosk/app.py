@@ -22,8 +22,9 @@ class HeaderWidget(QFrame):
         super().__init__(parent)
         self.configured_timezone = None  # Store configured timezone from API
         self.setObjectName("Header")
+        self.setFixedHeight(40)  # Constrain header height to prevent layout bloat
         layout = QHBoxLayout(self)
-        layout.setContentsMargins(20, 10, 20, 10)
+        layout.setContentsMargins(10, 5, 10, 5)  # Reduced margins to save vertical space
         
         self.lbl_title = QLabel("QUEST TRACKER")
         self.lbl_title.setObjectName("HoloHeader") # Use new ID

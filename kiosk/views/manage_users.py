@@ -126,6 +126,7 @@ class ManageUsersView(QWidget):
         
         rl.addLayout(actions)
         
+        
         content.addWidget(right_panel)
         main.addLayout(content)
         
