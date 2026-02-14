@@ -1,4 +1,4 @@
-from PySide6.QtWidgets import QWidget, QGridLayout, QLabel, QVBoxLayout, QHBoxLayout, QProgressBar
+from PySide6.QtWidgets import QWidget, QGridLayout, QLabel, QVBoxLayout, QHBoxLayout, QProgressBar, QScrollArea
 from PySide6.QtCore import Qt, Signal, QTimer
 from ..components.holo_widgets import HoloFrame, HoloButton
 from ..services.sound import SoundService
@@ -98,11 +98,18 @@ class HomeView(QWidget):
         main_layout.setSpacing(5)  # Small spacing between grid and footer
         
         # --- Grid Area ---
-        # Use flexible layout that adapts to screen size
+        # Use scroll area to handle many crew members without pushing footer off-screen
         grid_wrapper = QWidget()
         self.grid = QGridLayout(grid_wrapper)
         self.grid.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        main_layout.addWidget(grid_wrapper, 1)  # Stretch factor 1 - takes remaining space
+        
+        grid_scroll = QScrollArea()
+        grid_scroll.setWidget(grid_wrapper)
+        grid_scroll.setWidgetResizable(True)
+        grid_scroll.setStyleSheet("QScrollArea { border: none; background: transparent; }")
+        grid_scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        
+        main_layout.addWidget(grid_scroll, 1)  # Stretch factor 1 - takes remaining space
         
         # --- Footer ---
         # Ensure footer always stays at bottom and visible
