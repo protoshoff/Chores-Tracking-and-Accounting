@@ -32,7 +32,10 @@ if screen_width and screen_width >= 1920:
     os.environ["QT_SCALE_FACTOR"] = str(scale_factor)
     os.environ["QT_AUTO_SCREEN_SCALE_FACTOR"] = "1"
 else:
-    print(f"DEBUG: Standard resolution display. No scaling applied.")
+    # Explicitly disable Qt auto-scaling for standard resolution displays
+    print(f"DEBUG: Standard resolution display. Disabling auto-scaling.")
+    os.environ["QT_SCALE_FACTOR"] = "1"
+    os.environ["QT_AUTO_SCREEN_SCALE_FACTOR"] = "0"
 
 from PySide6.QtWidgets import QApplication
 from PySide6.QtCore import Qt
