@@ -92,12 +92,20 @@ sudo systemctl daemon-reload
 
 # 9c. Update .xinitrc (Ensure it points to 'current' and logs properly)
 echo "Updating .xinitrc..."
-echo '#!/bin/bash' > /home/$USER/.xinitrc
-echo "xset s off" >> /home/$USER/.xinitrc
-echo "xset -dpms" >> /home/$USER/.xinitrc
-echo "xset s noblank" >> /home/$USER/.xinitrc
-echo "cd /home/$USER/chores_app/current" >> /home/$USER/.xinitrc
-echo "exec venv/bin/python3 -u -m kiosk.main --fullscreen > /tmp/kiosk.log 2>&1" >> /home/$USER/.xinitrc
+cat > /home/$USER/.xinitrc << 'XINITRC_EOF'
+#!/bin/bash
+xset s off
+xset -dpms
+xset s noblank
+
+# Force 1600x900 resolution (UI designed for this resolution)
+# Wait for X to be ready
+sleep 1
+xrandr --output HDMI-1 --mode 1600x900 || true
+
+cd ~/chores_app/current
+exec venv/bin/python3 -u -m kiosk.main --fullscreen > /tmp/kiosk.log 2>&1
+XINITRC_EOF
 chmod +x /home/$USER/.xinitrc
 chown $USER:$USER /home/$USER/.xinitrc
 
