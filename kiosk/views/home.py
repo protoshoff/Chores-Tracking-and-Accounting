@@ -101,7 +101,7 @@ class HomeView(QWidget):
         # Use scroll area to handle many crew members without pushing footer off-screen
         grid_wrapper = QWidget()
         self.grid = QGridLayout(grid_wrapper)
-        self.grid.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.grid.setAlignment(Qt.AlignmentFlag.AlignTop)  # Changed from AlignCenter for small displays
         
         grid_scroll = QScrollArea()
         grid_scroll.setWidget(grid_wrapper)
