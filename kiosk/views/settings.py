@@ -429,15 +429,6 @@ class SettingsView(QWidget):
         )
         
         if success:
-            # Notify main app to reload timezone for clock
-            try:
-                from PySide6.QtWidgets import QApplication
-                app = QApplication.instance()
-                for widget in app.topLevelWidgets():
-                    if hasattr(widget, 'load_timezone'):
-                        widget.load_timezone()
-            except:
-                pass
             
             HoloAlert("SUCCESS", "System settings updated successfully.\nClock will update within seconds.", self.window()).exec()
             self.back_clicked.emit()
