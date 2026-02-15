@@ -32,10 +32,7 @@ if screen_width and screen_width >= 1920:
     os.environ["QT_SCALE_FACTOR"] = str(scale_factor)
     os.environ["QT_AUTO_SCREEN_SCALE_FACTOR"] = "1"
 else:
-    # Explicitly disable Qt auto-scaling for standard resolution displays
-    print(f"DEBUG: Standard resolution display. Disabling auto-scaling.")
-    os.environ["QT_SCALE_FACTOR"] = "1"
-    os.environ["QT_AUTO_SCREEN_SCALE_FACTOR"] = "0"
+    print(f"DEBUG: Standard resolution display. No scaling applied.")
 
 from PySide6.QtWidgets import QApplication
 from PySide6.QtCore import Qt
@@ -49,25 +46,12 @@ def main():
     args = list(sys.argv) # Safe copy
     
     print("DEBUG: Init QApplication...")
-    qt_app = QApplication(sys.argv)
-    qt_app.setAttribute(Qt.ApplicationAttribute.AA_EnableHighDpiScaling, False)
+    qt_app = QApplication(args)
     
-    # NUCLEAR OPTION: Force Qt to use 96 DPI regardless of what it detects
+    # Verify detected resolution (scaling already applied above before Qt import)
     screen = qt_app.primaryScreen()
     rect = screen.geometry()
     print(f"DEBUG: Qt reports screen resolution: {rect.width()}x{rect.height()}")
-    
-    # Get detected physical DPI and override it
-    physical_dpi = screen.physicalDotsPerInch()
-    logical_dpi = screen.logicalDotsPerInch()
-    print(f"DEBUG: Qt detected physical DPI: {physical_dpi}, logical DPI: {logical_dpi}")
-    
-    # Force screen to report 96 DPI by setting a custom device pixel ratio
-    if rect.width() < 1920:
-        # For standard res displays, force 1:1 pixel ratio (96 DPI)
-        print(f"DEBUG: Forcing 96 DPI for standard resolution display")
-        # Note: We can't directly set DPI, but we can force devicePixelRatio to 1.0
-        # which should prevent any scaling
     
     # Hide Cursor for Touchscreen Kiosk
     qt_app.setOverrideCursor(Qt.CursorShape.BlankCursor)

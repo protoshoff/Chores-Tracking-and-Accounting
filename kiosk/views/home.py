@@ -101,7 +101,7 @@ class HomeView(QWidget):
         # Use scroll area to handle many crew members without pushing footer off-screen
         grid_wrapper = QWidget()
         self.grid = QGridLayout(grid_wrapper)
-        self.grid.setAlignment(Qt.AlignmentFlag.AlignTop)  # Changed from AlignCenter for small displays
+        self.grid.setAlignment(Qt.AlignmentFlag.AlignCenter)
         
         grid_scroll = QScrollArea()
         grid_scroll.setWidget(grid_wrapper)
@@ -161,21 +161,21 @@ class HomeView(QWidget):
         # Responsive Layout Logic
         if count <= 2:
             # 1 or 2 kids: Big Cards, Wide Spacing
-            card_w, card_h = 400, 320  # Reduced to fit with spacing + footer on 600px screen
+            card_w, card_h = 400, 500
             self.grid.setHorizontalSpacing(150)
-            self.grid.setVerticalSpacing(40)  # Also reduced spacing
+            self.grid.setVerticalSpacing(50)
             MAX_COLS = 2
         elif count == 3:
             # 3 kids: Medium cards, Medium spacing
-            card_w, card_h = 350, 300  # Reduced to fit 600px screen
+            card_w, card_h = 350, 450
             self.grid.setHorizontalSpacing(80)
-            self.grid.setVerticalSpacing(20)  # Reduced spacing
+            self.grid.setVerticalSpacing(30)
             MAX_COLS = 3
         else:
             # 4+ kids: Standard cards, Tight grid
-            card_w, card_h = 280, 280  # Reduced to fit 600px screen
-            self.grid.setHorizontalSpacing(20)
-            self.grid.setVerticalSpacing(20)
+            card_w, card_h = 300, 380
+            self.grid.setHorizontalSpacing(30)
+            self.grid.setVerticalSpacing(30)
             MAX_COLS = 3
 
         row, col = 0, 0

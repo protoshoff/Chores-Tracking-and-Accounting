@@ -15,7 +15,7 @@ class ScreensaverView(QWidget):
         self.lbl = QLabel(self)
         self.lbl.setTextFormat(Qt.TextFormat.RichText) # Force HTML rendering
         self.lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.lbl.setFixedSize(600, 200) # Reduced from 900x300 to fit 600px displays
+        self.lbl.setFixedSize(900, 300) # Increased width to fit wide Orbitron font
         
         # Initial Style
         self.update_style("#00E5FF")

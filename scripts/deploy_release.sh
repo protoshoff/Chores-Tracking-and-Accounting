@@ -59,22 +59,20 @@ venv/bin/python3 -c "from backend.db import create_db_and_tables; create_db_and_
 
 # 7. Run Migrations (Apply Schema Changes)
 echo "Running Migrations..."
-# Try migrations first, if they fail (duplicate column, etc), just stamp as current
-if ! alembic upgrade head 2>&1; then
-    echo "Migration failed (likely fresh DB with all columns present), stamping as current..."
-    alembic stamp head
-fi
+alembic upgrade head
 
 # 8. Switch Symlink
 echo "Switching Symlink..."
 ln -sfn "$NEW_release_DIR" "$APP_ROOT/current"
 
-# 9. Update Backend Service (Only - Kiosk uses .profile method)
-echo "Updating Backend Service..."
+# 9. Update Service Definitions (Ensure we use repo version)
+echo "Updating Systemd Services..."
+sudo cp "$NEW_release_DIR/ops/chores-kiosk.service" /etc/systemd/system/
 sudo cp "$NEW_release_DIR/ops/chores-backend.service" /etc/systemd/system/
 
 echo "Installing PolicyKit Rules (Fix 'Not Authorized' Error)..."
 sudo cp "$NEW_release_DIR/ops/50-chores-wifi.rules" /etc/polkit-1/rules.d/
+
 
 echo "Patching Service Files with correct User/Path..."
 # 9a. Permissions: Ensure user can manage WiFi (netdev) and USB (plugdev)
@@ -82,70 +80,34 @@ echo "Ensuring user permission groups..."
 sudo usermod -aG netdev $USER || echo "netdev group not found, skipping"
 sudo usermod -aG plugdev $USER || echo "plugdev group not found, skipping"
 
-# 9b. Patch Backend Service File (Replace 'pi' with current user)
+# 9b. Patch Service Files (Replace 'pi' with current user)
 sudo sed -i "s/User=pi/User=$USER/g" /etc/systemd/system/chores-backend.service
+sudo sed -i "s/User=pi/User=$USER/g" /etc/systemd/system/chores-kiosk.service
 sudo sed -i "s/Group=pi/Group=$USER/g" /etc/systemd/system/chores-backend.service
+sudo sed -i "s/Group=pi/Group=$USER/g" /etc/systemd/system/chores-kiosk.service
 sudo sed -i "s|/home/pi|/home/$USER|g" /etc/systemd/system/chores-backend.service
+sudo sed -i "s|/home/pi|/home/$USER|g" /etc/systemd/system/chores-kiosk.service
 
 sudo systemctl daemon-reload
-sudo systemctl enable chores-backend
 
-# 9c. Update .xinitrc (Kiosk UI startup)
+# 9c. Update .xinitrc (Ensure it points to 'current' and logs properly)
 echo "Updating .xinitrc..."
-cat > /home/$USER/.xinitrc << 'XINITRC_EOF'
-#!/bin/bash
-xset s off
-xset -dpms
-xset s noblank
-
-# Detect screen resolution using xrandr and set Qt scaling BEFORE Python starts
-# Use sed instead of grep -oP for POSIX compliance
-SCREEN_WIDTH=$(xrandr 2>/dev/null | grep ' connected' | head -1 | sed -n 's/.*\([0-9]\{3,4\}\)x[0-9]\{3,4\}+.*/\1/p')
-
-# Fallback if xrandr fails - assume standard resolution
-if [ -z "$SCREEN_WIDTH" ]; then
-    echo "xrandr detection failed, assuming standard 1024x600 display"
-    SCREEN_WIDTH=1024
-fi
-
-if [ "$SCREEN_WIDTH" -ge 1920 ] 2>/dev/null; then
-    echo "High-res display detected ($SCREEN_WIDTH px). Applying 1.3x scaling."
-    export QT_SCALE_FACTOR=1.3
-    export QT_AUTO_SCREEN_SCALE_FACTOR=1
-    PLATFORM_ARGS=""  # Let Qt use natural DPI for high-res
-else
-    echo "Standard resolution display ($SCREEN_WIDTH px). Disabling Qt auto-scaling."
-    export QT_SCALE_FACTOR=1
-    export QT_AUTO_SCREEN_SCALE_FACTOR=0
-    export QT_FONT_DPI=96
-    export QT_SCREEN_SCALE_FACTORS=1
-    PLATFORM_ARGS="--platform xcb:dpi=96"  # Force 96 DPI to override bad EDID
-fi
-
-cd ~/chores_app/current
-exec venv/bin/python3 -u -m kiosk.main --fullscreen $PLATFORM_ARGS > /tmp/kiosk.log 2>&1
-XINITRC_EOF
+echo '#!/bin/bash' > /home/$USER/.xinitrc
+echo "xset s off" >> /home/$USER/.xinitrc
+echo "xset -dpms" >> /home/$USER/.xinitrc
+echo "xset s noblank" >> /home/$USER/.xinitrc
+echo "cd /home/$USER/chores_app/current" >> /home/$USER/.xinitrc
+echo "exec venv/bin/python3 -u -m kiosk.main --fullscreen > /tmp/kiosk.log 2>&1" >> /home/$USER/.xinitrc
 chmod +x /home/$USER/.xinitrc
 chown $USER:$USER /home/$USER/.xinitrc
 
-# 9d. Setup .profile to auto-start X on console login
-echo "Configuring auto-start X on console login..."
-# Remove old kiosk startup lines if they exist
-sed -i '/# Auto-start X and kiosk/,/fi/d' /home/$USER/.profile 2>/dev/null || true
 
-# Add new startup logic
-cat >> /home/$USER/.profile << 'PROFILE_EOF'
-
-# Auto-start X and kiosk on tty1 (console login)
-if [ -z "$DISPLAY" ] && [ "$(tty)" = "/dev/tty1" ]; then
-    exec startx
-fi
-PROFILE_EOF
-chown $USER:$USER /home/$USER/.profile
-
-# 10. Restart Backend Service
-echo "Restarting backend service..."
-sudo systemctl restart chores-backend
+# 10. Reboot System
+echo "Rebooting system to load new code..."
+# Enable services first
+sudo systemctl enable chores-backend chores-kiosk
+# Reboot immediately - use nohup to detach from this script
+nohup sudo shutdown -r now "Chores app updated - rebooting..." &>/dev/null &
 
 # 11. Cleanup Old Releases
 echo "Cleaning up old releases..."
@@ -154,17 +116,5 @@ if [ -f "$NEW_release_DIR/scripts/cleanup_old_releases.sh" ]; then
 else
     echo "Warning: Cleanup script not found."
 fi
-
-echo ""
-echo "======================================"
-echo "Deployment complete!"
-echo "======================================"
-echo "Release: $TIMESTAMP"
-echo "Active symlink: ~/chores_app/current -> $NEW_release_DIR"
-echo ""
-echo "The system will reboot in 5 seconds to apply changes..."
-echo "Press Ctrl+C to cancel reboot."
-sleep 5
-sudo reboot
 
 echo "Deployment Complete: $TIMESTAMP"
