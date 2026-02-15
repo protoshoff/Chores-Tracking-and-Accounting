@@ -99,7 +99,14 @@ xset -dpms
 xset s noblank
 
 # Detect screen resolution using xrandr and set Qt scaling BEFORE Python starts
-SCREEN_WIDTH=$(xrandr 2>/dev/null | grep ' connected' | grep -oP '\d+x\d+' | head -1 | cut -d'x' -f1)
+# Use sed instead of grep -oP for POSIX compliance
+SCREEN_WIDTH=$(xrandr 2>/dev/null | grep ' connected' | head -1 | sed -n 's/.*\([0-9]\{3,4\}\)x[0-9]\{3,4\}+.*/\1/p')
+
+# Fallback if xrandr fails - assume standard resolution
+if [ -z "$SCREEN_WIDTH" ]; then
+    echo "xrandr detection failed, assuming standard 1024x600 display"
+    SCREEN_WIDTH=1024
+fi
 
 if [ "$SCREEN_WIDTH" -ge 1920 ] 2>/dev/null; then
     echo "High-res display detected ($SCREEN_WIDTH px). Applying 1.3x scaling."
