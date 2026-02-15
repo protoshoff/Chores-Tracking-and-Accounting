@@ -161,21 +161,21 @@ class HomeView(QWidget):
         # Responsive Layout Logic
         if count <= 2:
             # 1 or 2 kids: Big Cards, Wide Spacing
-            card_w, card_h = 400, 380  # Reduced from 500 to fit 600px screen
+            card_w, card_h = 400, 320  # Reduced to fit with spacing + footer on 600px screen
             self.grid.setHorizontalSpacing(150)
-            self.grid.setVerticalSpacing(50)
+            self.grid.setVerticalSpacing(40)  # Also reduced spacing
             MAX_COLS = 2
         elif count == 3:
             # 3 kids: Medium cards, Medium spacing
-            card_w, card_h = 350, 350  # Reduced from 450 to fit 600px screen
+            card_w, card_h = 350, 300  # Reduced to fit 600px screen
             self.grid.setHorizontalSpacing(80)
-            self.grid.setVerticalSpacing(30)
+            self.grid.setVerticalSpacing(20)  # Reduced spacing
             MAX_COLS = 3
         else:
             # 4+ kids: Standard cards, Tight grid
-            card_w, card_h = 300, 300  # Reduced from 380 to fit 600px screen
-            self.grid.setHorizontalSpacing(30)
-            self.grid.setVerticalSpacing(30)
+            card_w, card_h = 280, 280  # Reduced to fit 600px screen
+            self.grid.setHorizontalSpacing(20)
+            self.grid.setVerticalSpacing(20)
             MAX_COLS = 3
 
         row, col = 0, 0
