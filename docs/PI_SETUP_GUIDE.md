@@ -79,6 +79,8 @@ sudo raspi-config nonint do_boot_behaviour B2
 > [!NOTE]
 > If the above command doesn't work, run `sudo raspi-config` manually and navigate to:
 > **System Options → Boot / Auto Login → Console Autologin**
+>
+> **Why this works:** The deployment script configures your `.profile` to automatically start X (and the kiosk UI) when you login to the console. This method is more reliable across different Pi models (3B, 4B, etc.) than using a systemd service.
 
 ### Create Directory Structure
 
@@ -111,8 +113,8 @@ The deployment script automates:
 - Virtual environment creation
 - Dependency installation  
 - Database initialization and migrations
-- Service installation and configuration
-- Kiosk mode setup
+- Backend service installation and configuration
+- Kiosk UI startup configuration (via `.profile` and `.xinitrc`)
 
 ```bash
 chmod +x ~/chores_repo/scripts/*.sh
@@ -127,8 +129,9 @@ chmod +x ~/chores_repo/scripts/*.sh
 - Python virtual environment creation
 - Package installations (lots of output)
 - Database creation (you'll see CREATE TABLE statements)
-- Migration application
+- Migration application (with automatic fallback for fresh installs)
 - Service installation messages
+- **Success message with reboot instructions**
 
 ---
 
@@ -140,8 +143,9 @@ sudo reboot
 
 After reboot (typically 30-60 seconds):
 - ✅ The Pi will auto-login to the console
-- ✅ The backend service will start automatically
-- ✅ The kiosk service will launch X and display the UI
+- ✅ Your `.profile` will automatically start X
+- ✅ The backend service will start automatically  
+- ✅ The kiosk UI will launch via `.xinitrc`
 - ✅ The touchscreen should show the Chores Kiosk interface
 
 ---
@@ -170,21 +174,26 @@ Both services should show **`active (running)`** in green.
 ### Kiosk Not Displaying After Reboot
 
 ```bash
-# Check kiosk service status
-sudo systemctl status chores-kiosk
+# Check if X is running
+ps aux | grep startx
 
-# Check logs
+# Check kiosk logs
 cat /tmp/kiosk.log
+
+# Check X server logs
 cat /var/log/Xorg.0.log | tail -50
 
-# Restart kiosk manually
-sudo systemctl restart chores-kiosk
+# Verify .profile has X startup
+cat ~/.profile | grep startx
+
+# Test manual X start
+startx
 ```
 
 **Common causes:**
-- Service not started: Check if enabled with `sudo systemctl is-enabled chores-kiosk`
-- Wrong user/paths: Verify service file has correct username and paths
-- Missing dependencies: Re-run Qt dependency installation commands
+- Auto-login not configured: Re-run `sudo raspi-config nonint do_boot_behaviour B2`
+- `.profile` missing X startup: The deployment script should have added it
+- X dependencies missing: Re-run Qt dependency installation commands from Section 2
 
 ### Black Screen (X Starts but No UI)
 
