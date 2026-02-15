@@ -112,16 +112,18 @@ if [ "$SCREEN_WIDTH" -ge 1920 ] 2>/dev/null; then
     echo "High-res display detected ($SCREEN_WIDTH px). Applying 1.3x scaling."
     export QT_SCALE_FACTOR=1.3
     export QT_AUTO_SCREEN_SCALE_FACTOR=1
+    PLATFORM_ARGS=""  # Let Qt use natural DPI for high-res
 else
     echo "Standard resolution display ($SCREEN_WIDTH px). Disabling Qt auto-scaling."
     export QT_SCALE_FACTOR=1
     export QT_AUTO_SCREEN_SCALE_FACTOR=0
-    export QT_FONT_DPI=96  # Force standard DPI instead of physical screen DPI
-    export QT_SCREEN_SCALE_FACTORS=1  # Explicitly set scale to 1.0 for all screens
+    export QT_FONT_DPI=96
+    export QT_SCREEN_SCALE_FACTORS=1
+    PLATFORM_ARGS="--platform xcb:dpi=96"  # Force 96 DPI to override bad EDID
 fi
 
 cd ~/chores_app/current
-exec venv/bin/python3 -u -m kiosk.main --fullscreen --platform xcb:dpi=96 > /tmp/kiosk.log 2>&1
+exec venv/bin/python3 -u -m kiosk.main --fullscreen $PLATFORM_ARGS > /tmp/kiosk.log 2>&1
 XINITRC_EOF
 chmod +x /home/$USER/.xinitrc
 chown $USER:$USER /home/$USER/.xinitrc
@@ -152,5 +154,17 @@ if [ -f "$NEW_release_DIR/scripts/cleanup_old_releases.sh" ]; then
 else
     echo "Warning: Cleanup script not found."
 fi
+
+echo ""
+echo "======================================"
+echo "Deployment complete!"
+echo "======================================"
+echo "Release: $TIMESTAMP"
+echo "Active symlink: ~/chores_app/current -> $NEW_release_DIR"
+echo ""
+echo "The system will reboot in 5 seconds to apply changes..."
+echo "Press Ctrl+C to cancel reboot."
+sleep 5
+sudo reboot
 
 echo "Deployment Complete: $TIMESTAMP"
