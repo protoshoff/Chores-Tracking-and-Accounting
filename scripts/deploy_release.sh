@@ -109,6 +109,8 @@ else
     echo "Standard resolution display ($SCREEN_WIDTH px). Disabling Qt auto-scaling."
     export QT_SCALE_FACTOR=1
     export QT_AUTO_SCREEN_SCALE_FACTOR=0
+    export QT_FONT_DPI=96  # Force standard DPI instead of physical screen DPI
+    export QT_SCREEN_SCALE_FACTORS=1  # Explicitly set scale to 1.0 for all screens
 fi
 
 cd ~/chores_app/current
