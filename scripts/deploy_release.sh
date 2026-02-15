@@ -121,7 +121,7 @@ else
 fi
 
 cd ~/chores_app/current
-exec venv/bin/python3 -u -m kiosk.main --fullscreen > /tmp/kiosk.log 2>&1
+exec venv/bin/python3 -u -m kiosk.main --fullscreen --platform xcb:dpi=96 > /tmp/kiosk.log 2>&1
 XINITRC_EOF
 chmod +x /home/$USER/.xinitrc
 chown $USER:$USER /home/$USER/.xinitrc
