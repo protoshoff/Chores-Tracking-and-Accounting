@@ -98,10 +98,35 @@ xset s off
 xset -dpms
 xset s noblank
 
-# Force 1600x900 resolution (UI designed for this resolution)
-# Wait for X to be ready
+# Wait for X to initialize
 sleep 1
-xrandr --output HDMI-1 --mode 1600x900 || true
+
+# Detect primary output (HDMI-1, HDMI-A-1, etc.)
+PRIMARY_OUTPUT=$(xrandr | grep " connected primary" | cut -d' ' -f1)
+
+# Get available resolutions
+AVAILABLE_MODES=$(xrandr | grep -A 20 "^$PRIMARY_OUTPUT" | grep -oP '\d{3,4}x\d{3,4}' | sort -u)
+
+# Adaptive resolution selection with Qt scaling
+if echo "$AVAILABLE_MODES" | grep -q "1920x1200"; then
+    # High-res display (MAGEX) - use native resolution with 1.3x scaling
+    echo "Detected 1920x1200 capable display - using native resolution with 1.3x scaling"
+    xrandr --output $PRIMARY_OUTPUT --mode 1920x1200 || xrandr --output $PRIMARY_OUTPUT --auto
+    export QT_SCALE_FACTOR=1.3
+    export QT_AUTO_SCREEN_SCALE_FACTOR=1
+elif echo "$AVAILABLE_MODES" | grep -q "1600x900"; then
+    # Standard display (Hosyond or similar) - force 1600x900 (UI designed for this)
+    echo "Detected 1600x900 capable display - forcing 1600x900 (UI native resolution)"
+    xrandr --output $PRIMARY_OUTPUT --mode 1600x900 || xrandr --output $PRIMARY_OUTPUT --auto
+    export QT_SCALE_FACTOR=1
+    export QT_AUTO_SCREEN_SCALE_FACTOR=0
+else
+    # Unknown display - use auto-detection
+    echo "Unknown display capabilities - using auto-detection"
+    xrandr --output $PRIMARY_OUTPUT --auto
+    export QT_SCALE_FACTOR=1
+    export QT_AUTO_SCREEN_SCALE_FACTOR=0
+fi
 
 cd ~/chores_app/current
 exec venv/bin/python3 -u -m kiosk.main --fullscreen > /tmp/kiosk.log 2>&1
