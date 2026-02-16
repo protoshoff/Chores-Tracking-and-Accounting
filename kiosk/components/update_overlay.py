@@ -60,11 +60,32 @@ class UpdateOverlay(QDialog):
         
         # Animate dots
         self.dot_count = 0
+        self.elapsed_seconds = 0
         self.timer = QTimer()
         self.timer.timeout.connect(self.animate_dots)
         self.timer.start(500)  # Update every 500ms
+        
+        # Safety timeout: close overlay after 5 minutes
+        # (deploy should reboot well before this; if it doesn't, user gets control back)
+        self.timeout_timer = QTimer()
+        self.timeout_timer.setSingleShot(True)
+        self.timeout_timer.timeout.connect(self.on_timeout)
+        self.timeout_timer.start(300000)  # 5 minutes
     
     def animate_dots(self):
         """Animate the dots to show activity"""
         self.dot_count = (self.dot_count + 1) % 4
         self.lbl_dots.setText("." * (self.dot_count + 1))
+        self.elapsed_seconds += 0.5
+        
+        # Update status message with elapsed time
+        if self.elapsed_seconds > 60:
+            mins = int(self.elapsed_seconds // 60)
+            self.lbl_title.setText(f"SYSTEM UPDATE IN PROGRESS ({mins}m)")
+    
+    def on_timeout(self):
+        """Safety timeout — close overlay so user isn't stuck forever."""
+        self.lbl_title.setText("UPDATE MAY HAVE FAILED")
+        self.lbl_title.setStyleSheet("color: #FF5555; margin-bottom: 40px;")
+        # Close after showing error briefly
+        QTimer.singleShot(3000, self.close)

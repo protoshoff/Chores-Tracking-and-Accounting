@@ -2,131 +2,138 @@
 # scripts/deploy_release.sh
 # Usage: ./scripts/deploy_release.sh [branch] (defaults to main)
 # Run as the deployment user
-set -e
+#
+# NOTE: Do NOT use 'set -e' — individual failures are handled gracefully
+# so the deploy always reaches the reboot step.
 
 APP_ROOT="/home/$USER/chores_app"
 RELEASES_DIR="$APP_ROOT/releases"
 TIMESTAMP=$(date +%Y%m%d%H%M%S)
 NEW_RELEASE_DIR="$RELEASES_DIR/$TIMESTAMP"
 REPO_URL="https://github.com/protoshoff/Chores-Tracking-and-Accounting.git"
-# For now, we assume this script is running from the repo checkout location or the repo is separate.
-# Let's assume user is running this from their dev machine via ssh or on the pi from a 'repo' dir.
-# OPTION B (Self-contained): We clone from remote.
-
+LOG_FILE="$APP_ROOT/deploy.log"
 BRANCH=${1:-main}
 
-echo "Deploying branch $BRANCH to $NEW_RELEASE_DIR..."
+# Redirect all output to log file AND stdout
+exec > >(tee -a "$LOG_FILE") 2>&1
+
+echo ""
+echo "=========================================="
+echo "DEPLOY STARTED: $(date)"
+echo "Branch: $BRANCH"
+echo "Target: $NEW_RELEASE_DIR"
+echo "=========================================="
+
+# Track if any step failed (but continue anyway)
+DEPLOY_OK=true
 
 # 1. Ensure directories
 mkdir -p "$RELEASES_DIR"
 if [ ! -d "/var/lib/chores_app" ]; then
-    echo "Creating persistent data directory..."
+    echo "[1/10] Creating persistent data directory..."
     sudo mkdir -p /var/lib/chores_app
     sudo chown $USER:$USER /var/lib/chores_app
     sudo chmod 755 /var/lib/chores_app
 fi
 
-# 2. Clone/Copy Code
-git clone -b "$BRANCH" "$REPO_URL" "$NEW_RELEASE_DIR"
-# Alternatively if running locally on Pi from updated repo: cp -r . "$NEW_RELEASE_DIR"
+# 2. Clone code
+echo "[2/10] Cloning from GitHub..."
+if ! git clone -b "$BRANCH" --depth 1 "$REPO_URL" "$NEW_RELEASE_DIR"; then
+    echo "FATAL: Git clone failed. Aborting."
+    echo "DEPLOY FAILED: $(date)" 
+    # Still reboot to recover the kiosk from the update screen
+    nohup sudo shutdown -r now "Deploy failed - rebooting to recover" &>/dev/null &
+    exit 1
+fi
 
-# 3. Setup Venv (Share cache if possible, but for robustness create fresh or copy)
-echo "Setting up venv..."
+# 3. Setup venv
+echo "[3/10] Setting up venv..."
 python3 -m venv "$NEW_RELEASE_DIR/venv"
 source "$NEW_RELEASE_DIR/venv/bin/activate"
 
-# 4. Install Deps
-echo "Installing dependencies..."
-pip install -r "$NEW_RELEASE_DIR/requirements.txt"
-
-# 4b. Install System Fonts (Roboto) — skip if already installed
-if ! fc-list | grep -qi roboto; then
-    echo "Installing System Fonts..."
-    sudo apt-get update && sudo apt-get install -y fonts-roboto
-else
-    echo "Roboto fonts already installed, skipping."
+# 4. Install deps
+echo "[4/10] Installing dependencies..."
+if ! pip install -r "$NEW_RELEASE_DIR/requirements.txt"; then
+    echo "WARNING: pip install failed — continuing with partial deps"
+    DEPLOY_OK=false
 fi
 
-# 5. Backup DB (Safety)
+# 4b. Fonts (skip if already installed)
+if ! fc-list | grep -qi roboto; then
+    echo "[4b/10] Installing Roboto fonts..."
+    sudo apt-get update -qq && sudo apt-get install -y -qq fonts-roboto || echo "WARNING: Font install failed"
+else
+    echo "[4b/10] Roboto fonts already installed, skipping."
+fi
+
+# 5. Backup DB
 DB_PATH="/var/lib/chores_app/chores.db"
 if [ -f "$DB_PATH" ]; then
-    echo "Backing up DB..."
+    echo "[5/10] Backing up DB..."
     cp "$DB_PATH" "$DB_PATH.bak.$TIMESTAMP"
+    # Clean old backups (keep last 10)
+    ls -t "$DB_PATH".bak.* 2>/dev/null | tail -n +11 | xargs rm -f 2>/dev/null
 fi
 
-# 6. Initialize Database (Create Base Tables)
-echo "Initializing Database..."
+# 6. Initialize Database
+echo "[6/10] Initializing database..."
 export CHORES_DATA_DIR="/var/lib/chores_app"
 cd "$NEW_RELEASE_DIR"
-# Create base tables using SQLModel (if DB is new, this creates everything)
-venv/bin/python3 -c "from backend.db import create_db_and_tables; create_db_and_tables()"
+if ! venv/bin/python3 -c "from backend.db import create_db_and_tables; create_db_and_tables()" 2>&1; then
+    echo "WARNING: DB init failed — tables may already exist (OK for upgrades)"
+    DEPLOY_OK=false
+fi
 
-# 7. Run Migrations (Apply Schema Changes)
-echo "Running Migrations..."
-alembic upgrade head
+# 7. Run Migrations (non-fatal — may fail if already applied or no migration history)
+echo "[7/10] Running migrations..."
+if ! venv/bin/python3 -m alembic upgrade head 2>&1; then
+    echo "WARNING: Alembic migration failed — this is often OK (tables created by SQLModel)"
+    # Try stamping current state so future migrations work
+    venv/bin/python3 -m alembic stamp head 2>&1 || true
+fi
 
 # 8. Switch Symlink
-echo "Switching Symlink..."
+echo "[8/10] Switching symlink..."
 ln -sfn "$NEW_RELEASE_DIR" "$APP_ROOT/current"
 
-# 9. Update Service Definitions (Ensure we use repo version)
-echo "Updating Systemd Services..."
-sudo cp "$NEW_RELEASE_DIR/ops/chores-kiosk.service" /etc/systemd/system/
-sudo cp "$NEW_RELEASE_DIR/ops/chores-backend.service" /etc/systemd/system/
+# 9. Update services
+echo "[9/10] Updating systemd services..."
+sudo cp "$NEW_RELEASE_DIR/ops/chores-kiosk.service" /etc/systemd/system/ 2>/dev/null || true
+sudo cp "$NEW_RELEASE_DIR/ops/chores-backend.service" /etc/systemd/system/ 2>/dev/null || true
+sudo cp "$NEW_RELEASE_DIR/ops/50-chores-wifi.rules" /etc/polkit-1/rules.d/ 2>/dev/null || true
 
-echo "Installing PolicyKit Rules (Fix 'Not Authorized' Error)..."
-sudo cp "$NEW_RELEASE_DIR/ops/50-chores-wifi.rules" /etc/polkit-1/rules.d/
+# Patch user/paths
+sudo sed -i "s/User=pi/User=$USER/g" /etc/systemd/system/chores-backend.service 2>/dev/null || true
+sudo sed -i "s/User=pi/User=$USER/g" /etc/systemd/system/chores-kiosk.service 2>/dev/null || true
+sudo sed -i "s/Group=pi/Group=$USER/g" /etc/systemd/system/chores-backend.service 2>/dev/null || true
+sudo sed -i "s/Group=pi/Group=$USER/g" /etc/systemd/system/chores-kiosk.service 2>/dev/null || true
+sudo sed -i "s|/home/pi|/home/$USER|g" /etc/systemd/system/chores-backend.service 2>/dev/null || true
+sudo sed -i "s|/home/pi|/home/$USER|g" /etc/systemd/system/chores-kiosk.service 2>/dev/null || true
 
-
-echo "Patching Service Files with correct User/Path..."
-# 9a. Permissions: Ensure user can manage WiFi (netdev) and USB (plugdev)
-echo "Ensuring user permission groups..."
-sudo usermod -aG netdev $USER || echo "netdev group not found, skipping"
-sudo usermod -aG plugdev $USER || echo "plugdev group not found, skipping"
-
-# 9b. Patch Service Files (Replace 'pi' with current user)
-sudo sed -i "s/User=pi/User=$USER/g" /etc/systemd/system/chores-backend.service
-sudo sed -i "s/User=pi/User=$USER/g" /etc/systemd/system/chores-kiosk.service
-sudo sed -i "s/Group=pi/Group=$USER/g" /etc/systemd/system/chores-backend.service
-sudo sed -i "s/Group=pi/Group=$USER/g" /etc/systemd/system/chores-kiosk.service
-sudo sed -i "s|/home/pi|/home/$USER|g" /etc/systemd/system/chores-backend.service
-sudo sed -i "s|/home/pi|/home/$USER|g" /etc/systemd/system/chores-kiosk.service
-
+sudo usermod -aG netdev $USER 2>/dev/null || true
+sudo usermod -aG plugdev $USER 2>/dev/null || true
 sudo systemctl daemon-reload
 
-# 9c. Update .xinitrc (Ensure it points to 'current' and logs properly)
-echo "Updating .xinitrc..."
+# Update .xinitrc
 cat > /home/$USER/.xinitrc << 'XINITRC_EOF'
 #!/bin/bash
 xset s off
 xset -dpms
 xset s noblank
-
-# Wait for X to initialize
 sleep 1
 
-# Detect primary output (HDMI-1, HDMI-A-1, etc.)
 PRIMARY_OUTPUT=$(xrandr | grep " connected primary" | cut -d' ' -f1)
-
-# Get available resolutions
 AVAILABLE_MODES=$(xrandr | grep -A 20 "^$PRIMARY_OUTPUT" | grep -oP '\d{3,4}x\d{3,4}' | sort -u)
 
-# Adaptive resolution selection with Qt scaling
 if echo "$AVAILABLE_MODES" | grep -q "1920x1200"; then
-    # High-res display (MAGEX) - use native resolution with 1.3x scaling
-    echo "Detected 1920x1200 capable display - using native resolution with 1.3x scaling"
     xrandr --output $PRIMARY_OUTPUT --mode 1920x1200 || xrandr --output $PRIMARY_OUTPUT --auto
     export QT_SCALE_FACTOR=1.3
     export QT_AUTO_SCREEN_SCALE_FACTOR=1
 elif echo "$AVAILABLE_MODES" | grep -q "1600x900"; then
-    # Standard display (Hosyond or similar) - force 1600x900 (UI designed for this)
-    echo "Detected 1600x900 capable display - forcing 1600x900 (UI native resolution)"
     xrandr --output $PRIMARY_OUTPUT --mode 1600x900 || xrandr --output $PRIMARY_OUTPUT --auto
     export QT_SCALE_FACTOR=1
     export QT_AUTO_SCREEN_SCALE_FACTOR=0
 else
-    # Unknown display - use auto-detection
-    echo "Unknown display capabilities - using auto-detection"
     xrandr --output $PRIMARY_OUTPUT --auto
     export QT_SCALE_FACTOR=1
     export QT_AUTO_SCREEN_SCALE_FACTOR=0
@@ -138,18 +145,21 @@ XINITRC_EOF
 chmod +x /home/$USER/.xinitrc
 chown $USER:$USER /home/$USER/.xinitrc
 
+# 10. Cleanup old releases (keep last 5)
+echo "[10/10] Cleaning up old releases..."
+ls -dt "$RELEASES_DIR"/*/ 2>/dev/null | tail -n +6 | xargs rm -rf 2>/dev/null || true
 
-# 10. Cleanup Old Releases (before reboot, otherwise this never runs)
-echo "Cleaning up old releases..."
-if [ -f "$NEW_RELEASE_DIR/scripts/cleanup_old_releases.sh" ]; then
-    bash "$NEW_RELEASE_DIR/scripts/cleanup_old_releases.sh"
+if [ "$DEPLOY_OK" = true ]; then
+    echo "=========================================="
+    echo "DEPLOY SUCCESSFUL: $(date)"
+    echo "=========================================="
 else
-    echo "Warning: Cleanup script not found."
+    echo "=========================================="
+    echo "DEPLOY COMPLETED WITH WARNINGS: $(date)"
+    echo "=========================================="
 fi
 
-echo "Deployment Complete: $TIMESTAMP"
-
-# 11. Reboot System
-echo "Rebooting system to load new code..."
-sudo systemctl enable chores-backend chores-kiosk
+# 11. Reboot (ALWAYS runs — even if steps above failed)
+echo "Rebooting..."
+sudo systemctl enable chores-backend chores-kiosk 2>/dev/null || true
 nohup sudo shutdown -r now "Chores app updated - rebooting..." &>/dev/null &

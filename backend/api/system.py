@@ -211,17 +211,24 @@ async def trigger_system_update():
         raise HTTPException(status_code=403, detail="Updates only allowed on Pi")
     
     try:
-        # Get home directory of running user (supports any username)
-        script_path = f"{home_dir}/chores_repo/scripts/deploy_release.sh"
+        repo_dir = f"{home_dir}/chores_repo"
+        script_path = f"{repo_dir}/scripts/deploy_release.sh"
+        
+        # IMPORTANT: Update chores_repo first so we always run the latest deploy script
+        subprocess.run(
+            ["git", "-C", repo_dir, "pull", "--ff-only"],
+            timeout=30,
+            capture_output=True,
+        )
         
         # Run deploy script in background (detached from parent process)
-        log_path = os.path.join(home_dir, "chores_app", "deploy.log")
-        log_file = open(log_path, "a")
+        # The script handles its own logging to ~/chores_app/deploy.log
         subprocess.Popen(
-            [script_path],
-            stdout=log_file,
-            stderr=log_file,
-            start_new_session=True
+            ["bash", script_path],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            start_new_session=True,
+            cwd=repo_dir,
         )
         return {"status": "update_started", "message": "System update initiated. Kiosk will restart in ~60 seconds."}
     except Exception as e:
