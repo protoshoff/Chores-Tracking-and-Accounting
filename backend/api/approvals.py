@@ -1,9 +1,9 @@
 from typing import List, Literal
-from fastapi import APIRouter, Depends, HTTPException, Body
+from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session, select
 from datetime import datetime, timezone
 from ..db import get_session
-from ..models import ChoreLog, ChoreStatus
+from ..models import ChoreLog, ChoreStatus, User, Chore
 
 router = APIRouter(prefix="/api/approvals", tags=["Approvals"])
 
@@ -22,50 +22,47 @@ class PendingChore(BaseModel):
 
 @router.get("/pending", response_model=List[PendingChore])
 def get_pending_approvals(session: Session = Depends(get_session)):
-    stmt = select(ChoreLog).where(ChoreLog.status == ChoreStatus.PENDING)
-    logs = session.exec(stmt).all()
-    
-    # Enrich with names (using eager loading via relationship access or manual join)
-    # Since specific join syntax is tricky in simple sqlmodel, we'll access relationship props 
-    # which triggers lazy load (fine for low volume)
-    
-    result = []
-    for log in logs:
-        # Ensure relationships are loaded
-        # In SQLModel async they need explicit join, but sync (default) does lazy load if session open
-        
-        # Note: If relationship is not loaded, we might need: session.refresh(log, ["kid", "chore"])
-        
-        result.append(PendingChore(
+    # Join upfront to avoid N+1 lazy loads
+    stmt = (
+        select(ChoreLog, User, Chore)
+        .join(User, ChoreLog.kid_id == User.id)
+        .join(Chore, ChoreLog.chore_id == Chore.id)
+        .where(ChoreLog.status == ChoreStatus.PENDING)
+        .order_by(ChoreLog.completed_at)
+    )
+    results = session.exec(stmt).all()
+
+    return [
+        PendingChore(
             id=log.id,
             kid_id=log.kid_id,
-            kid_name=log.kid.name if log.kid else "Unknown",
+            kid_name=kid.name,
             chore_id=log.chore_id,
-            chore_name=log.chore.name if log.chore else "Unknown",
+            chore_name=chore.name,
             date=log.date.isoformat(),
             status=log.status,
             completed_at=log.completed_at,
-            reward=log.chore.reward if log.chore else 0.0
-        ))
-    return result
+            reward=chore.reward,
+        )
+        for log, kid, chore in results
+    ]
 
-class ReviewAction(str):
-    APPROVE = "APPROVE"
-    REJECT = "REJECT"
+class ReviewRequest(BaseModel):
+    action: str  # "APPROVE" or "REJECT"
 
 from ..services.stats import StreakService
 
 @router.post("/{log_id}/review")
 def review_chore(
     log_id: int, 
-    action: dict = Body(...), # {"action": "APPROVE"}
+    action: ReviewRequest,
     session: Session = Depends(get_session)
 ):
     log = session.get(ChoreLog, log_id)
     if not log:
         raise HTTPException(status_code=404, detail="Log not found")
     
-    act = action.get("action")
+    act = action.action
     if act == "APPROVE":
         log.status = ChoreStatus.APPROVED
     elif act == "REJECT":

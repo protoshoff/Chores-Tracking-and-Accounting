@@ -1,5 +1,9 @@
-from fastapi import APIRouter, HTTPException, Body
-from typing import List
+from typing import List, Optional
+from fastapi import APIRouter, Depends, HTTPException
+from pydantic import BaseModel
+from sqlmodel import Session
+from ..db import get_session
+from ..models import Settings
 from ..services.wifi import WifiService
 
 router = APIRouter(prefix="/api/system", tags=["System"])
@@ -19,14 +23,25 @@ def system_status():
 def scan_wifi():
     return wifi_service.scan_networks()
 
+class WifiConnectRequest(BaseModel):
+    ssid: str
+    password: Optional[str] = None
+
+class PinRequest(BaseModel):
+    pin: str
+
+class ConfigUpdate(BaseModel):
+    payout_mode: Optional[str] = None
+    payout_threshold: Optional[int] = None
+    payout_day: Optional[int] = None
+    payout_hour: Optional[int] = None
+    payout_minute: Optional[int] = None
+    timezone: Optional[str] = None
+
 @router.post("/wifi/connect")
-def connect_wifi(payload: dict = Body(...)):
-    """Payload: {ssid: str, password: str}"""
-    ssid = payload.get("ssid")
-    password = payload.get("password")
-    
-    if not ssid:
-        raise HTTPException(status_code=400, detail="SSID required")
+def connect_wifi(payload: WifiConnectRequest):
+    ssid = payload.ssid
+    password = payload.password
         
     success = wifi_service.connect_network(ssid, password)
     if success:
@@ -35,17 +50,13 @@ def connect_wifi(payload: dict = Body(...)):
         raise HTTPException(status_code=500, detail="Connection Failed")
 
 # --- PIN Management ---
-from ..db import get_session
-from ..models import Settings
-from sqlmodel import Session
-from fastapi import Depends
 
 @router.post("/pin/verify")
-def verify_pin_endpoint(payload: dict = Body(...), session: Session = Depends(get_session)):
-    """Verify parent PIN. Payload: {pin: "..."}"""
+def verify_pin_endpoint(payload: PinRequest, session: Session = Depends(get_session)):
+    """Verify parent PIN."""
     from ..services.pin import verify_pin, hash_pin
     
-    input_pin = payload.get("pin")
+    input_pin = payload.pin
     if not input_pin:
         return {"valid": False}
         
@@ -67,11 +78,11 @@ def verify_pin_endpoint(payload: dict = Body(...), session: Session = Depends(ge
     return {"valid": valid}
 
 @router.put("/pin")
-def update_pin(payload: dict = Body(...), session: Session = Depends(get_session)):
-    """Update parent PIN. Payload: {pin: "..."}"""
+def update_pin(payload: PinRequest, session: Session = Depends(get_session)):
+    """Update parent PIN."""
     from ..services.pin import hash_pin
     
-    new_pin = payload.get("pin")
+    new_pin = payload.pin
     if not new_pin or len(new_pin) < 4:
          raise HTTPException(status_code=400, detail="PIN must be at least 4 digits")
          
@@ -128,110 +139,60 @@ def get_config(session: Session = Depends(get_session)):
             
     return config
 
+def _upsert_setting(session: Session, key: str, value: str):
+    """Helper to insert or update a Settings row."""
+    setting = session.get(Settings, key)
+    if not setting:
+        setting = Settings(key=key, value=value)
+    else:
+        setting.value = value
+    session.add(setting)
+
 @router.put("/config")
-def update_config(payload: dict = Body(...), session: Session = Depends(get_session)):
+def update_config(payload: ConfigUpdate, session: Session = Depends(get_session)):
     """Update system config."""
-    # Payout Mode
-    if "payout_mode" in payload:
-        mode = payload["payout_mode"]
-        if mode not in ["PRORATED", "ALL_OR_NOTHING"]:
+    if payload.payout_mode is not None:
+        if payload.payout_mode not in ["PRORATED", "ALL_OR_NOTHING"]:
             raise HTTPException(status_code=400, detail="Invalid payout mode. Must be PRORATED or ALL_OR_NOTHING")
-        
-        setting = session.get(Settings, "payout_mode")
-        if not setting:
-            setting = Settings(key="payout_mode", value=mode)
-        else:
-            setting.value = mode
-        session.add(setting)
-    
-    # Payout Threshold
-    if "payout_threshold" in payload:
-        val = payload["payout_threshold"]
-        try:
-            val_int = int(val)
-            if val_int < 0 or val_int > 100:
-                raise ValueError
-            
-            setting = session.get(Settings, "payout_threshold")
-            if not setting:
-                setting = Settings(key="payout_threshold", value=str(val_int))
-            else:
-                setting.value = str(val_int)
-            session.add(setting)
-        except ValueError:
+        _upsert_setting(session, "payout_mode", payload.payout_mode)
+
+    if payload.payout_threshold is not None:
+        if payload.payout_threshold < 0 or payload.payout_threshold > 100:
             raise HTTPException(status_code=400, detail="Threshold must be 0-100")
-    
-    # Payout Day (0-6, Monday=0, Sunday=6)
-    if "payout_day" in payload:
-        try:
-            val_int = int(payload["payout_day"])
-            if val_int < 0 or val_int > 6:
-                raise ValueError
-            setting = session.get(Settings, "payout_day")
-            if not setting:
-                setting = Settings(key="payout_day", value=str(val_int))
-            else:
-                setting.value = str(val_int)
-            session.add(setting)
-        except ValueError:
+        _upsert_setting(session, "payout_threshold", str(payload.payout_threshold))
+
+    if payload.payout_day is not None:
+        if payload.payout_day < 0 or payload.payout_day > 6:
             raise HTTPException(status_code=400, detail="Payout day must be 0-6")
-    
-    # Payout Hour (0-23)
-    if "payout_hour" in payload:
-        try:
-            val_int = int(payload["payout_hour"])
-            if val_int < 0 or val_int > 23:
-                raise ValueError
-            setting = session.get(Settings, "payout_hour")
-            if not setting:
-                setting = Settings(key="payout_hour", value=str(val_int))
-            else:
-                setting.value = str(val_int)
-            session.add(setting)
-        except ValueError:
+        _upsert_setting(session, "payout_day", str(payload.payout_day))
+
+    if payload.payout_hour is not None:
+        if payload.payout_hour < 0 or payload.payout_hour > 23:
             raise HTTPException(status_code=400, detail="Payout hour must be 0-23")
-    
-    # Payout Minute (0-59)
-    if "payout_minute" in payload:
-        try:
-            val_int = int(payload["payout_minute"])
-            if val_int < 0 or val_int > 59:
-                raise ValueError
-            setting = session.get(Settings, "payout_minute")
-            if not setting:
-                setting = Settings(key="payout_minute", value=str(val_int))
-            else:
-                setting.value = str(val_int)
-            session.add(setting)
-        except ValueError:
+        _upsert_setting(session, "payout_hour", str(payload.payout_hour))
+
+    if payload.payout_minute is not None:
+        if payload.payout_minute < 0 or payload.payout_minute > 59:
             raise HTTPException(status_code=400, detail="Payout minute must be 0-59")
-    
-    # Timezone
-    if "timezone" in payload:
-        tz = payload["timezone"]
-        # Basic validation - just check it's not empty
-        if not tz or not isinstance(tz, str):
+        _upsert_setting(session, "payout_minute", str(payload.payout_minute))
+
+    if payload.timezone is not None:
+        if not payload.timezone:
             raise HTTPException(status_code=400, detail="Timezone must be a valid string")
-        
-        setting = session.get(Settings, "timezone")
-        if not setting:
-            setting = Settings(key="timezone", value=tz)
-        else:
-            setting.value = tz
-        session.add(setting)
-            
+        _upsert_setting(session, "timezone", payload.timezone)
+
     session.commit()
-    
+
     # If timezone changed, trigger automation restart
-    if "timezone" in payload:
+    if payload.timezone is not None:
         try:
             from ..services.automation import get_automation_service
             automation = get_automation_service()
             if automation:
-                automation.schedule_weekly_tally()  # Re-schedule with new timezone
+                automation.schedule_weekly_tally()
         except Exception:
-            pass  # Non-critical if automation restart fails
-    
+            pass
+
     return {"status": "success"}
 
 @router.post("/update")

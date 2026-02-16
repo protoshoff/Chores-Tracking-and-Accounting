@@ -1,5 +1,5 @@
 from typing import List, Optional
-from fastapi import APIRouter, Depends, HTTPException, Body
+from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session, select
 from pydantic import BaseModel
 from ..db import get_session
@@ -131,7 +131,7 @@ def delete_chore(chore_id: int, session: Session = Depends(get_session)):
 # These delegate to the canonical approval logic in api/approvals.py
 # Kept for backward compatibility with the admin web UI
 
-from .approvals import get_pending_approvals as _get_pending, review_chore as _review_chore
+from .approvals import get_pending_approvals as _get_pending, review_chore as _review_chore, ReviewRequest
 
 @router.get("/approvals")
 def list_pending_approvals(session: Session = Depends(get_session)):
@@ -145,5 +145,5 @@ def process_approval(log_id: int, action: str, session: Session = Depends(get_se
     mapped = action_map.get(action.lower())
     if not mapped:
         raise HTTPException(status_code=400, detail="Invalid action")
-    return _review_chore(log_id=log_id, action={"action": mapped}, session=session)
+    return _review_chore(log_id=log_id, action=ReviewRequest(action=mapped), session=session)
 
