@@ -1,5 +1,8 @@
 from typing import Optional, List
-from datetime import datetime, time, date as dt_date # Alias to avoid collision
+from datetime import datetime, time, date as dt_date, timezone # Alias to avoid collision
+
+def _utcnow():
+    return datetime.now(timezone.utc)
 from sqlmodel import Field, SQLModel, Relationship
 from enum import Enum
 
@@ -79,7 +82,7 @@ class LedgerEntry(SQLModel, table=True):
     transaction_type: TransactionType
     amount: float
     description: str
-    timestamp: datetime = Field(default_factory=datetime.utcnow)
+    timestamp: datetime = Field(default_factory=_utcnow)
     week_id: Optional[str] = None
     
     kid: User = Relationship(back_populates="ledger_entries")
@@ -92,7 +95,7 @@ class WeeklyRollup(SQLModel, table=True):
     total_reward_possible: float
     total_reward_completed: float
     payout: float
-    finalized_at: datetime = Field(default_factory=datetime.utcnow)
+    finalized_at: datetime = Field(default_factory=_utcnow)
 
 class Streak(SQLModel, table=True):
     __tablename__ = "streaks"

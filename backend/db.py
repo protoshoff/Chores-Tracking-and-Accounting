@@ -11,7 +11,7 @@ DB_NAME = "chores.db"
 DATABASE_URL = f"sqlite:///{os.path.join(DATA_DIR, DB_NAME)}"
 
 connect_args = {"check_same_thread": False}
-engine = create_engine(DATABASE_URL, echo=True, connect_args=connect_args)
+engine = create_engine(DATABASE_URL, echo=False, connect_args=connect_args)
 
 def create_db_and_tables():
     # Import models so they're registered in SQLModel.metadata
@@ -36,7 +36,7 @@ def seed_default_settings():
     try:
         with open('/etc/timezone', 'r') as f:
             defaults["timezone"] = f.read().strip()
-    except:
+    except Exception:
         defaults["timezone"] = "America/Phoenix"  # Safe fallback
     
     with Session(engine) as session:

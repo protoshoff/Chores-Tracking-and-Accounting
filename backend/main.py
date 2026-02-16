@@ -14,7 +14,7 @@ async def lifespan(app: FastAPI):
     
     # Start Automation
     automation = AutomationService()
-    automation.start()
+    await automation.start()
     
     yield
     # Shutdown: Clean up if needed

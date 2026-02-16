@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional, List
 from sqlmodel import Session, select, desc
 from ..models import LedgerEntry, User, TransactionType
@@ -14,7 +14,7 @@ class LedgerService:
             transaction_type=transaction_type,
             amount=amount,
             description=description,
-            timestamp=datetime.utcnow(),
+            timestamp=datetime.now(timezone.utc),
             week_id=week_id
         )
         self.session.add(entry)
@@ -48,7 +48,7 @@ class LedgerService:
             transaction_type=TransactionType.PAYOUT,
             amount= -amount_to_pay, # Negative to reduce balance
             description="Allowance Payout",
-            timestamp=datetime.utcnow()
+            timestamp=datetime.now(timezone.utc)
         )
         self.session.add(entry)
         

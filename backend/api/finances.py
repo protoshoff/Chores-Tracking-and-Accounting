@@ -32,7 +32,7 @@ def get_rollups(session: Session = Depends(get_session)):
     
     dtos = []
     for r, name in results:
-        dto = RollupDTO(**r.dict())
+        dto = RollupDTO(**r.model_dump())
         dto.kid_name = name
         dtos.append(dto)
     return dtos

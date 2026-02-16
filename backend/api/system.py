@@ -41,8 +41,10 @@ from sqlmodel import Session
 from fastapi import Depends
 
 @router.post("/pin/verify")
-def verify_pin(payload: dict = Body(...), session: Session = Depends(get_session)):
+def verify_pin_endpoint(payload: dict = Body(...), session: Session = Depends(get_session)):
     """Verify parent PIN. Payload: {pin: "..."}"""
+    from ..services.pin import verify_pin, hash_pin
+    
     input_pin = payload.get("pin")
     if not input_pin:
         return {"valid": False}
@@ -51,20 +53,34 @@ def verify_pin(payload: dict = Body(...), session: Session = Depends(get_session
     setting = session.get(Settings, "parent_pin")
     stored_pin = setting.value if setting else "1234"
     
-    return {"valid": input_pin == stored_pin}
+    valid = verify_pin(input_pin, stored_pin)
+    
+    # Auto-migrate plaintext PIN to bcrypt on successful verify
+    if valid and not stored_pin.startswith("$2"):
+        if not setting:
+            setting = Settings(key="parent_pin", value=hash_pin(input_pin))
+        else:
+            setting.value = hash_pin(input_pin)
+        session.add(setting)
+        session.commit()
+    
+    return {"valid": valid}
 
 @router.put("/pin")
 def update_pin(payload: dict = Body(...), session: Session = Depends(get_session)):
     """Update parent PIN. Payload: {pin: "..."}"""
+    from ..services.pin import hash_pin
+    
     new_pin = payload.get("pin")
     if not new_pin or len(new_pin) < 4:
          raise HTTPException(status_code=400, detail="PIN must be at least 4 digits")
          
+    hashed = hash_pin(new_pin)
     setting = session.get(Settings, "parent_pin")
     if not setting:
-        setting = Settings(key="parent_pin", value=new_pin)
+        setting = Settings(key="parent_pin", value=hashed)
     else:
-        setting.value = new_pin
+        setting.value = hashed
         
     session.add(setting)
     session.commit()
@@ -90,7 +106,7 @@ def get_config(session: Session = Depends(get_session)):
     if threshold_setting:
         try:
             config["payout_threshold"] = int(threshold_setting.value)
-        except:
+        except Exception:
             pass
     
     # Load timezone
@@ -213,7 +229,7 @@ def update_config(payload: dict = Body(...), session: Session = Depends(get_sess
             automation = get_automation_service()
             if automation:
                 automation.schedule_weekly_tally()  # Re-schedule with new timezone
-        except:
+        except Exception:
             pass  # Non-critical if automation restart fails
     
     return {"status": "success"}

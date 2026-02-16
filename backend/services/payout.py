@@ -1,5 +1,5 @@
 from typing import List
-from datetime import date, datetime
+from datetime import date, datetime, timezone
 from sqlmodel import Session, select
 from ..models import User, Chore, ChoreLog, ChoreStatus, WeeklyRollup, TransactionType
 from ..services.ledger import LedgerService
@@ -100,7 +100,7 @@ class PayoutService:
             total_reward_possible=total_possible,
             total_reward_completed=total_completed,
             payout=payout,
-            finalized_at=datetime.utcnow()
+            finalized_at=datetime.now(timezone.utc)
         )
         self.session.add(rollup)
         self.session.commit()

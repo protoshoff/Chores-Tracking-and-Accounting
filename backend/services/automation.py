@@ -20,12 +20,12 @@ class AutomationService:
     def __init__(self):
         self.scheduler = AsyncIOScheduler()
         
-    def start(self):
+    async def start(self):
         global _automation_instance
         _automation_instance = self  # Store instance for API access
         
         # Check for missed weekly payouts on startup
-        self.check_missed_payouts()
+        await self.check_missed_payouts()
         
         # Daily Maintenance at 00:01
         self.scheduler.add_job(
@@ -62,21 +62,19 @@ class AutomationService:
             payout_hour = int(hour_setting.value) if hour_setting else 0
             payout_minute = int(minute_setting.value) if minute_setting else 5
         
-        # Apply timezone if configured
-        if configured_tz:
-            try:
-                os.environ['TZ'] = configured_tz
-                time_module.tzset()
-                logger.info(f"Applied timezone: {configured_tz}")
-            except Exception as e:
-                logger.warning(f"Could not set timezone {configured_tz}: {e}")
+        # NOTE: Previously mutated os.environ['TZ'] globally, which is dangerous.
+        # APScheduler CronTrigger supports timezone parameter instead.
         
         # APScheduler uses 0=Monday, 6=Sunday (matches our storage)
         day_name = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'][payout_day]
         
+        trigger_kwargs = dict(day_of_week=day_name, hour=payout_hour, minute=payout_minute)
+        if configured_tz:
+            trigger_kwargs["timezone"] = configured_tz
+        
         self.scheduler.add_job(
             self.weekly_tally,
-            CronTrigger(day_of_week=day_name, hour=payout_hour, minute=payout_minute),
+            CronTrigger(**trigger_kwargs),
             id="weekly_tally",
             replace_existing=True
         )
@@ -96,7 +94,7 @@ class AutomationService:
             
             for weeks_ago in range(1, 5):  # Check weeks 1-4 weeks back
                 target_date = date.today() - timedelta(weeks=weeks_ago)
-                week_id = target_date.strftime("%Y-W%W")
+                week_id = target_date.strftime("%G-W%V")
                 
                 for kid in kids:
                     # Check if rollup exists for this kid + week
@@ -120,7 +118,7 @@ class AutomationService:
         logger.info("Running Daily Maintenance...")
         with Session(engine) as session:
             yesterday = date.today() - timedelta(days=1)
-            week_id = yesterday.strftime("%Y-W%W")
+            week_id = yesterday.strftime("%G-W%V")
             
             # Find all active Daily chores
             chores = session.exec(select(Chore).where(Chore.frequency == "DAILY", Chore.archived == False)).all()
@@ -164,7 +162,7 @@ class AutomationService:
             # Since this runs Sunday morning, "Today" is start of new week.
             # "Yesterday" was end of previous week.
             yesterday = date.today() - timedelta(days=1)
-            week_id = yesterday.strftime("%Y-W%W")
+            week_id = yesterday.strftime("%G-W%V")
             
             kids = session.exec(select(User).where(User.is_active == True)).all()
             

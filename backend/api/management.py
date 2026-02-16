@@ -4,7 +4,7 @@ from sqlmodel import Session, select
 from pydantic import BaseModel
 from ..db import get_session
 from ..models import User, Chore, Frequency, ChoreLog, ChoreStatus
-from datetime import datetime
+from datetime import datetime, timezone
 
 router = APIRouter(prefix="/api/management", tags=["Management"])
 
@@ -58,7 +58,7 @@ def update_kid(kid_id: int, kid: KidUpdate, session: Session = Depends(get_sessi
     if not db_kid:
         raise HTTPException(status_code=404, detail="Kid not found")
     
-    data = kid.dict(exclude_unset=True)
+    data = kid.model_dump(exclude_unset=True)
     for key, value in data.items():
         setattr(db_kid, key, value)
         
@@ -103,7 +103,7 @@ def update_chore(chore_id: int, chore: ChoreUpdate, session: Session = Depends(g
     if not db_chore:
         raise HTTPException(status_code=404, detail="Chore not found")
         
-    data = chore.dict(exclude_unset=True)
+    data = chore.model_dump(exclude_unset=True)
     for key, value in data.items():
         setattr(db_chore, key, value)
         
@@ -161,17 +161,14 @@ def process_approval(log_id: int, action: str, session: Session = Depends(get_se
         
     if action == "approve":
         log.status = ChoreStatus.APPROVED
-        log.reviewed_at = datetime.utcnow()
-        # Explicitly credit the balance immediately as per user expectation for quick feedback
-        kid = session.get(User, log.kid_id)
-        chore = session.get(Chore, log.chore_id)
-        if kid and chore:
-             kid.balance += chore.reward
-             session.add(kid)
+        log.reviewed_at = datetime.now(timezone.utc)
+        # NOTE: Balance is credited by the weekly PayoutService, not here.
+        # Previously this directly added chore.reward to kid.balance,
+        # causing double-credit when weekly tally also ran.
         
     elif action == "reject":
         log.status = ChoreStatus.REJECTED
-        log.reviewed_at = datetime.utcnow()
+        log.reviewed_at = datetime.now(timezone.utc)
     else:
         raise HTTPException(status_code=400, detail="Invalid action")
         

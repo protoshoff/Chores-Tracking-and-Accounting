@@ -1,12 +1,20 @@
-from fastapi import APIRouter, Depends, HTTPException
+import os
+from fastapi import APIRouter, Depends, HTTPException, Body
 from sqlmodel import Session, text
 from ..db import get_session, engine, create_db_and_tables
-from ..models import User
+from ..models import User, Settings
 
 router = APIRouter(prefix="/api/debug", tags=["Debug"])
 
 @router.post("/reset")
-def reset_database(session: Session = Depends(get_session)):
+def reset_database(payload: dict = Body(default={}), session: Session = Depends(get_session)):
+    # Require PIN verification to prevent accidental/malicious resets
+    from ..services.pin import verify_pin
+    input_pin = payload.get("pin", "")
+    setting = session.get(Settings, "parent_pin")
+    stored_pin = setting.value if setting else "1234"
+    if not verify_pin(input_pin, stored_pin):
+        raise HTTPException(status_code=403, detail="PIN required to reset database")
     """
     WARNING: Drops all tables and recreates them. Adds a dummy user.
     """

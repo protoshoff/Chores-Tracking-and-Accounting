@@ -1,7 +1,7 @@
 from typing import List, Literal
 from fastapi import APIRouter, Depends, HTTPException, Body
 from sqlmodel import Session, select
-from datetime import datetime
+from datetime import datetime, timezone
 from ..db import get_session
 from ..models import ChoreLog, ChoreStatus
 
@@ -71,7 +71,7 @@ def review_chore(
     else:
         raise HTTPException(status_code=400, detail="Invalid action")
     
-    log.reviewed_at = datetime.utcnow()
+    log.reviewed_at = datetime.now(timezone.utc)
     session.add(log)
     session.commit()
     session.refresh(log)

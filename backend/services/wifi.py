@@ -42,7 +42,7 @@ class WifiService:
                         continue
                     try:
                         signal = int(parts[1])
-                    except:
+                    except Exception:
                         signal = 0
                     security = parts[2] if len(parts) > 2 else ""
                     networks.append({"ssid": ssid, "signal": signal, "security": security})
@@ -84,7 +84,7 @@ class WifiService:
                 home = os.path.expanduser("~")
                 with open(os.path.join(home, "wifi_connect_error.log"), "w") as f:
                     f.write(f"SSID: {ssid}\nError: {err_msg}\n")
-            except:
+            except Exception:
                 pass
                 
             return False
@@ -131,7 +131,7 @@ class WifiService:
                 if res_ip.returncode == 0 and res_ip.stdout.strip():
                     # Output is like "192.168.1.55/24"
                     ip = res_ip.stdout.strip().split('/')[0]
-            except:
+            except Exception:
                 pass
 
             return {

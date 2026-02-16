@@ -1,4 +1,4 @@
-from datetime import date, datetime
+from datetime import date, datetime, timezone
 from typing import Optional, List
 from sqlmodel import Session, select
 from ..models import Chore, ChoreLog, ChoreStatus, User
@@ -23,12 +23,12 @@ class ChoreService:
         )
         existing = self.session.exec(stmt).first()
         
-        week_id = target_date.strftime("%Y-W%W")
+        week_id = target_date.strftime("%G-W%V")
 
         if existing:
             # Update existing
             existing.status = ChoreStatus.PENDING
-            existing.completed_at = datetime.utcnow()
+            existing.completed_at = datetime.now(timezone.utc)
             self.session.add(existing)
             self.session.commit()
             self.session.refresh(existing)
@@ -41,7 +41,7 @@ class ChoreService:
                 date=target_date,
                 week_id=week_id,
                 status=ChoreStatus.PENDING,
-                completed_at=datetime.utcnow()
+                completed_at=datetime.now(timezone.utc)
             )
             self.session.add(new_log)
             self.session.commit()
@@ -74,7 +74,7 @@ class ChoreService:
 
         # 2. Get Week's Logs
         today = date.today()
-        week_id = today.strftime("%Y-W%W")
+        week_id = today.strftime("%G-W%V")
         
         # Eager load chore to prevent N+1 and potential locks
         from sqlalchemy.orm import selectinload
