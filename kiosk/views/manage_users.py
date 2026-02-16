@@ -104,6 +104,20 @@ class ManageUsersView(QWidget):
         self.selected_avatar = ""
         self.avatar_buttons = []
         
+        # "Initials" button to deselect avatar
+        initials_btn = HoloButton("ABC")
+        initials_btn.setFixedSize(56, 56)
+        initials_btn.setStyleSheet("""
+            QPushButton {
+                font-size: 14px; font-weight: bold;
+                color: #00E5FF; background: rgba(0, 229, 255, 0.1);
+                border: 1px solid #445566; border-radius: 4px;
+            }
+        """)
+        initials_btn.clicked.connect(lambda: self._select_avatar(""))
+        self.avatar_buttons.append(("", initials_btn))
+        self.avatar_layout.addWidget(initials_btn)
+
         for i, name in enumerate(get_avatar_choices()):
             btn = HoloButton("")
             btn.setFixedSize(56, 56)

@@ -20,6 +20,7 @@
             --text-main: #FFFFFF;
             --text-dim: #8899AA;
             --border: 1px solid var(--primary);
+            --rotation-color: #FF6B35;
         }
 
         body {
@@ -33,16 +34,11 @@
             min-height: 100vh;
         }
 
-        h1,
-        h2,
-        h3,
-        button,
-        .sci-fi-font {
+        h1, h2, h3, button, .sci-fi-font {
             font-family: 'Orbitron', sans-serif;
             text-transform: uppercase;
         }
 
-        /* Header */
         header {
             background: rgba(0, 0, 0, 0.5);
             border-bottom: 2px solid var(--primary);
@@ -52,56 +48,34 @@
             align-items: center;
         }
 
-        .brand {
-            font-size: 1.5rem;
-            color: var(--primary);
-            text-shadow: 0 0 10px var(--primary);
-        }
+        .brand { font-size: 1.5rem; color: var(--primary); text-shadow: 0 0 10px var(--primary); }
+        #status-indicator { font-size: 0.9rem; color: var(--text-dim); }
+        #status-indicator.online { color: var(--success); }
+        #status-indicator.offline { color: var(--accent); }
 
-        #status-indicator {
-            font-size: 0.9rem;
-            color: var(--text-dim);
-        }
-
-        #status-indicator.online {
-            color: var(--success);
-        }
-
-        #status-indicator.offline {
-            color: var(--accent);
-        }
-
-        /* Nav */
         nav {
             background: rgba(0, 20, 40, 0.9);
             padding: 0.5rem 2rem;
             display: flex;
-            gap: 1rem;
+            gap: 0.5rem;
             overflow-x: auto;
+            flex-wrap: wrap;
         }
 
         .nav-btn {
             background: transparent;
             border: 1px solid transparent;
             color: var(--text-dim);
-            padding: 0.8rem 1.5rem;
+            padding: 0.8rem 1.2rem;
             cursor: pointer;
             transition: all 0.3s;
             font-weight: bold;
+            font-size: 0.8rem;
         }
 
-        .nav-btn:hover {
-            color: var(--primary);
-            background: rgba(0, 229, 255, 0.1);
-        }
+        .nav-btn:hover { color: var(--primary); background: rgba(0, 229, 255, 0.1); }
+        .nav-btn.active { color: var(--bg-color); background: var(--primary); box-shadow: 0 0 15px var(--primary); }
 
-        .nav-btn.active {
-            color: var(--bg-color);
-            background: var(--primary);
-            box-shadow: 0 0 15px var(--primary);
-        }
-
-        /* Main Content */
         main {
             flex: 1;
             padding: 2rem;
@@ -110,28 +84,14 @@
             width: 100%;
         }
 
-        .view-section {
-            display: none;
-            animation: fadeIn 0.3s;
-        }
-
-        .view-section.active {
-            display: block;
-        }
+        .view-section { display: none; animation: fadeIn 0.3s; }
+        .view-section.active { display: block; }
 
         @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(10px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
-        /* Cards & Lists */
         .card {
             background: var(--panel-bg);
             border: 1px solid rgba(0, 229, 255, 0.3);
@@ -154,7 +114,6 @@
             margin-bottom: 1rem;
         }
 
-        /* Controls */
         button.action-btn {
             background: rgba(0, 229, 255, 0.1);
             border: 1px solid var(--primary);
@@ -162,26 +121,28 @@
             padding: 0.6rem 1.2rem;
             cursor: pointer;
             transition: all 0.2s;
+            font-family: 'Orbitron', sans-serif;
+            text-transform: uppercase;
+            font-size: 0.75rem;
         }
 
-        button.action-btn:hover {
-            background: var(--primary);
-            color: var(--bg-color);
-        }
+        button.action-btn:hover { background: var(--primary); color: var(--bg-color); }
 
         button.danger {
             border-color: var(--accent);
             color: var(--accent);
             background: rgba(255, 0, 85, 0.1);
         }
+        button.danger:hover { background: var(--accent); color: white; }
 
-        button.danger:hover {
-            background: var(--accent);
-            color: white;
+        button.rotation-btn {
+            border-color: var(--rotation-color);
+            color: var(--rotation-color);
+            background: rgba(255, 107, 53, 0.1);
         }
+        button.rotation-btn:hover { background: var(--rotation-color); color: white; }
 
-        input,
-        select {
+        input, select, textarea {
             background: rgba(0, 0, 0, 0.5);
             border: 1px solid #445566;
             color: white;
@@ -189,48 +150,23 @@
             border-radius: 4px;
             width: 100%;
             margin-bottom: 0.5rem;
+            font-family: 'Roboto', sans-serif;
         }
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 1rem;
-        }
+        textarea { resize: vertical; min-height: 60px; }
 
-        th,
-        td {
-            text-align: left;
-            padding: 1rem;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
+        table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+        th, td { text-align: left; padding: 1rem; border-bottom: 1px solid rgba(255, 255, 255, 0.1); }
+        th { color: var(--primary); font-family: 'Orbitron', sans-serif; font-size: 0.8rem; }
 
-        th {
-            color: var(--primary);
-        }
+        .balance-display { font-size: 2rem; color: var(--primary); font-weight: bold; }
+        .hidden { display: none !important; }
 
-        /* Utility */
-        .balance-display {
-            font-size: 2rem;
-            color: var(--primary);
-            font-weight: bold;
-        }
-
-        .hidden {
-            display: none !important;
-        }
-
-        /* Modal */
         .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
             background: rgba(0, 0, 0, 0.85);
             backdrop-filter: blur(4px);
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            display: flex; justify-content: center; align-items: center;
             z-index: 1000;
             animation: fadeIn 0.2s;
         }
@@ -244,6 +180,8 @@
             max-width: 500px;
             border-radius: 4px;
             position: relative;
+            max-height: 90vh;
+            overflow-y: auto;
         }
 
         .modal h3 {
@@ -253,32 +191,71 @@
             margin-top: 0;
         }
 
-        /* Mobile Responsiveness */
+        /* Avatar picker */
+        .avatar-picker {
+            display: flex; flex-wrap: wrap; gap: 8px; margin: 0.5rem 0 1rem;
+        }
+        .avatar-opt {
+            width: 52px; height: 52px;
+            border: 2px solid #445566;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            background: rgba(0, 0, 0, 0.3);
+            transition: all 0.2s;
+            padding: 4px;
+        }
+        .avatar-opt:hover { border-color: var(--primary); background: rgba(0, 229, 255, 0.1); }
+        .avatar-opt.selected { border-color: var(--primary); box-shadow: 0 0 10px var(--primary); background: rgba(0, 229, 255, 0.15); }
+        .avatar-opt svg { width: 36px; height: 36px; }
+        .avatar-opt .initials-label { color: var(--primary); font-weight: bold; font-size: 14px; font-family: 'Orbitron', sans-serif; }
+
+        /* Frequency description */
+        .freq-desc {
+            color: var(--text-dim);
+            font-size: 0.85rem;
+            margin: -0.3rem 0 0.8rem;
+            line-height: 1.4;
+        }
+
+        /* Rotation card */
+        .rotation-card {
+            border-left: 4px solid var(--rotation-color);
+        }
+        .rotation-badge {
+            display: inline-block;
+            background: rgba(255, 107, 53, 0.2);
+            color: var(--rotation-color);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        /* Member checkboxes */
+        .member-check {
+            display: flex; align-items: center; gap: 8px;
+            padding: 6px 0;
+        }
+        .member-check input[type="checkbox"] {
+            width: auto; margin: 0;
+        }
+        .member-check label {
+            color: var(--text-main);
+            cursor: pointer;
+        }
+
+        /* Approval rotation badge */
+        .approval-rotation {
+            border-left-color: var(--rotation-color) !important;
+        }
+
         @media (max-width: 600px) {
-            main {
-                padding: 1rem;
-            }
-
-            .flex-between {
-                flex-direction: column;
-                align-items: stretch;
-                gap: 1rem;
-            }
-
-            .action-btn {
-                width: 100%;
-                margin-bottom: 0.5rem;
-            }
-
-            h2 {
-                font-size: 1.5rem;
-            }
-
-            #ledger-table th,
-            #ledger-table td {
-                padding: 0.5rem;
-                font-size: 0.9rem;
-            }
+            main { padding: 1rem; }
+            .flex-between { flex-direction: column; align-items: stretch; gap: 1rem; }
+            .action-btn { width: 100%; margin-bottom: 0.5rem; }
+            h2 { font-size: 1.5rem; }
+            th, td { padding: 0.5rem; font-size: 0.9rem; }
         }
     </style>
 </head>
@@ -293,6 +270,8 @@
     <nav>
         <button class="nav-btn active" onclick="switchView('overview')">OVERVIEW</button>
         <button class="nav-btn" onclick="switchView('kids')">CREW</button>
+        <button class="nav-btn" onclick="switchView('chores')">QUESTS</button>
+        <button class="nav-btn" onclick="switchView('rotations')">ROTATIONS</button>
         <button class="nav-btn" onclick="switchView('approvals')">APPROVALS</button>
         <button class="nav-btn" onclick="switchView('ledger')">LEDGER</button>
         <button class="nav-btn" onclick="switchView('settings')">SYSTEM</button>
@@ -305,13 +284,13 @@
                 <h2>System Status</h2>
                 <div id="dashboard-stats">Loading stats...</div>
             </div>
-
             <div class="card">
                 <h3>Quick Actions</h3>
                 <div class="flex-between">
-                    <button class="action-btn" onclick="initApprovals()">REVIEW PENDING</button>
+                    <button class="action-btn" onclick="switchView('approvals'); loadApprovals()">REVIEW PENDING</button>
                     <button class="action-btn" onclick="switchView('ledger')">PAYOUT ALLOWANCE</button>
                     <button class="action-btn" onclick="switchView('chores')">MANAGE QUESTS</button>
+                    <button class="action-btn rotation-btn" onclick="switchView('rotations')">ROTATIONS</button>
                 </div>
             </div>
         </section>
@@ -322,7 +301,7 @@
             <div id="approvals-container"></div>
         </section>
 
-        <!-- KIDS MANAGE -->
+        <!-- CREW -->
         <section id="view-kids" class="view-section">
             <div class="flex-between">
                 <h2>Crew Roster</h2>
@@ -331,7 +310,7 @@
             <div id="kids-grid" class="grid"></div>
         </section>
 
-        <!-- CHORES MANAGE -->
+        <!-- QUESTS -->
         <section id="view-chores" class="view-section">
             <div class="flex-between">
                 <h2>Quest Database</h2>
@@ -340,14 +319,23 @@
             <table id="chores-table">
                 <thead>
                     <tr>
+                        <th>ASSIGNEE</th>
                         <th>NAME</th>
-                        <th>REWARD</th>
                         <th>TYPE</th>
                         <th>ACTIONS</th>
                     </tr>
                 </thead>
                 <tbody></tbody>
             </table>
+        </section>
+
+        <!-- ROTATIONS -->
+        <section id="view-rotations" class="view-section">
+            <div class="flex-between">
+                <h2>🔄 Shared Quests (Rotations)</h2>
+                <button class="action-btn rotation-btn" onclick="showAddRotationModal()">+ NEW ROTATION</button>
+            </div>
+            <div id="rotations-container"></div>
         </section>
 
         <!-- LEDGER -->
@@ -358,7 +346,6 @@
                     <option value="">Select Crew Member...</option>
                 </select>
             </div>
-
             <div class="card hidden" id="ledger-panel">
                 <div class="flex-between">
                     <div>
@@ -370,7 +357,6 @@
                         <button class="action-btn" onclick="showAdjustModal()">ADJUST (+/-)</button>
                     </div>
                 </div>
-
                 <h3>Transaction History</h3>
                 <table id="ledger-table">
                     <thead>
@@ -391,13 +377,12 @@
             <h2>System Configuration</h2>
             <div class="card">
                 <h3>Global Settings</h3>
-                <p>Configure Payout Thresholds and Security PIN.</p>
+                <p>Configure payout thresholds, security PIN, and system options.</p>
                 <div style="margin-top:1rem;">
                     <button class="action-btn" onclick="showSettingsModal()">CONFIGURE SYSTEM</button>
                 </div>
             </div>
         </section>
-
     </main>
 
     <!-- MODALS -->
@@ -409,18 +394,123 @@
     <script>
         const API_BASE = "";
 
-        // UTILS
+        // ===== AVATAR DEFINITIONS (mirrors kiosk/services/avatars.py) =====
+        const AVATAR_COLORS = [
+            "#00E5FF", "#FF6B35", "#7B2FBE", "#00C853", "#FF1744",
+            "#FFD600", "#2979FF", "#F50057", "#00BFA5", "#FF9100"
+        ];
+
+        const PRESET_AVATARS = {
+            robot: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                <rect x="20" y="30" width="60" height="50" rx="8" fill="{color}" opacity="0.9"/>
+                <rect x="35" y="10" width="30" height="25" rx="5" fill="{color}" opacity="0.7"/>
+                <circle cx="38" cy="50" r="8" fill="#0a0a2e"/><circle cx="62" cy="50" r="8" fill="#0a0a2e"/>
+                <circle cx="38" cy="50" r="4" fill="#00E5FF"/><circle cx="62" cy="50" r="4" fill="#00E5FF"/>
+                <rect x="40" y="65" width="20" height="5" rx="2" fill="#0a0a2e"/>
+                <rect x="10" y="45" width="12" height="8" rx="3" fill="{color}" opacity="0.6"/>
+                <rect x="78" y="45" width="12" height="8" rx="3" fill="{color}" opacity="0.6"/>
+            </svg>`,
+            rocket: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                <path d="M50 10 L65 55 L50 50 L35 55 Z" fill="{color}" opacity="0.9"/>
+                <path d="M50 50 L65 55 L60 75 L50 70 L40 75 L35 55 Z" fill="{color}" opacity="0.7"/>
+                <circle cx="50" cy="38" r="7" fill="#0a0a2e"/><circle cx="50" cy="38" r="4" fill="#00E5FF"/>
+                <path d="M35 55 L20 70 L35 65 Z" fill="{color}" opacity="0.5"/>
+                <path d="M65 55 L80 70 L65 65 Z" fill="{color}" opacity="0.5"/>
+                <path d="M42 75 L50 90 L58 75 Z" fill="#FF6B35" opacity="0.8"/>
+            </svg>`,
+            star: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                <polygon points="50,10 61,38 92,38 67,56 76,85 50,68 24,85 33,56 8,38 39,38" fill="{color}" opacity="0.9"/>
+                <polygon points="50,25 57,42 75,42 61,52 66,70 50,60 34,70 39,52 25,42 43,42" fill="{color}" opacity="0.5"/>
+            </svg>`,
+            shield: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                <path d="M50 10 L80 25 L80 55 Q80 80 50 95 Q20 80 20 55 L20 25 Z" fill="{color}" opacity="0.9"/>
+                <path d="M50 22 L70 33 L70 53 Q70 72 50 83 Q30 72 30 53 L30 33 Z" fill="#0a0a2e" opacity="0.6"/>
+                <path d="M50 35 L60 42 L57 55 L50 50 L43 55 L40 42 Z" fill="{color}" opacity="0.8"/>
+            </svg>`,
+            helmet: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                <path d="M25 55 Q25 20 50 15 Q75 20 75 55 L75 70 Q75 80 50 85 Q25 80 25 70 Z" fill="{color}" opacity="0.9"/>
+                <path d="M30 50 L70 50 L70 65 Q70 72 50 75 Q30 72 30 65 Z" fill="#0a0a2e" opacity="0.7"/>
+                <rect x="32" y="52" width="36" height="10" rx="3" fill="#00E5FF" opacity="0.6"/>
+            </svg>`,
+            planet: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="50" cy="50" r="30" fill="{color}" opacity="0.9"/>
+                <ellipse cx="50" cy="50" rx="45" ry="12" fill="none" stroke="{color}" stroke-width="3" opacity="0.5" transform="rotate(-20 50 50)"/>
+                <circle cx="40" cy="42" r="5" fill="#0a0a2e" opacity="0.3"/>
+                <circle cx="58" cy="55" r="8" fill="#0a0a2e" opacity="0.2"/>
+            </svg>`,
+            sword: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                <rect x="47" y="10" width="6" height="55" fill="{color}" opacity="0.9"/>
+                <polygon points="50,5 55,15 45,15" fill="{color}"/>
+                <rect x="35" y="62" width="30" height="6" rx="2" fill="{color}" opacity="0.7"/>
+                <rect x="46" y="68" width="8" height="20" rx="2" fill="{color}" opacity="0.6"/>
+                <circle cx="50" cy="91" r="4" fill="{color}" opacity="0.5"/>
+            </svg>`,
+            crystal: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                <polygon points="50,10 70,40 65,85 50,95 35,85 30,40" fill="{color}" opacity="0.9"/>
+                <polygon points="50,10 60,40 50,50 40,40" fill="{color}" opacity="0.5"/>
+                <polygon points="50,50 65,85 50,95 35,85" fill="{color}" opacity="0.7"/>
+                <line x1="50" y1="10" x2="50" y2="95" stroke="#fff" stroke-width="1" opacity="0.3"/>
+            </svg>`,
+        };
+
+        const FREQ_DESCRIPTIONS = {
+            ALTERNATING_DAILY: "Due every day — kids take turns. (A today, B tomorrow, A again…)",
+            EVERY_OTHER_DAY: "Due every other day — kids rotate on active days only. Off days = no one does it.",
+            BIWEEKLY: "Due every 2 weeks on the same day of the week as the start date.",
+        };
+
+        function renderAvatarSvg(name, colorIndex) {
+            const color = AVATAR_COLORS[(colorIndex || 0) % AVATAR_COLORS.length];
+            const template = PRESET_AVATARS[name];
+            if (!template) return '';
+            return template.replace(/\{color\}/g, color);
+        }
+
+        function renderInitialsSvg(name, colorIndex) {
+            const color = AVATAR_COLORS[(colorIndex || 0) % AVATAR_COLORS.length];
+            const parts = (name || "?").split(/\s+/).slice(0, 2);
+            const initials = parts.map(w => w[0]?.toUpperCase() || '').join('');
+            return `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="50" cy="50" r="45" fill="${color}" opacity="0.2"/>
+                <circle cx="50" cy="50" r="45" fill="none" stroke="${color}" stroke-width="3" opacity="0.8"/>
+                <text x="50" y="58" text-anchor="middle" font-size="36" font-weight="bold"
+                      font-family="Arial, sans-serif" fill="${color}">${initials}</text>
+            </svg>`;
+        }
+
+        function buildAvatarPicker(selectedAvatar, kidName) {
+            let html = '<div class="avatar-picker">';
+            // Initials option
+            const initialsSelected = !selectedAvatar || selectedAvatar === '/static/default_avatar.png' ? 'selected' : '';
+            html += `<div class="avatar-opt ${initialsSelected}" onclick="selectAvatar(this, '')" data-avatar="">
+                <span class="initials-label">ABC</span>
+            </div>`;
+            // Preset avatars
+            Object.keys(PRESET_AVATARS).forEach((name, i) => {
+                const sel = selectedAvatar === name ? 'selected' : '';
+                html += `<div class="avatar-opt ${sel}" onclick="selectAvatar(this, '${name}')" data-avatar="${name}">
+                    ${renderAvatarSvg(name, i)}
+                </div>`;
+            });
+            html += '</div>';
+            return html;
+        }
+
+        function selectAvatar(el, name) {
+            el.closest('.avatar-picker').querySelectorAll('.avatar-opt').forEach(o => o.classList.remove('selected'));
+            el.classList.add('selected');
+            // Store selected value
+            const hiddenInput = el.closest('.modal').querySelector('#avatar-value');
+            if (hiddenInput) hiddenInput.value = name;
+        }
+
+        // ===== UTILS =====
         function $(sel) { return document.querySelector(sel); }
         function $all(sel) { return document.querySelectorAll(sel); }
 
-        // API Helper
         async function api(endpoint, method = 'GET', body = null) {
-            const opts = {
-                method: method,
-                headers: { 'Content-Type': 'application/json' }
-            };
+            const opts = { method, headers: { 'Content-Type': 'application/json' } };
             if (body) opts.body = JSON.stringify(body);
-
             try {
                 const res = await fetch(API_BASE + '/api' + endpoint, opts);
                 if (!res.ok) {
@@ -436,48 +526,63 @@
             }
         }
 
-        // Initialize Dashboard
-        async function init() {
-            // Update status to ONLINE
-            const statusEl = $('#status-indicator');
-            if (statusEl) {
-                statusEl.textContent = 'ONLINE';
-                statusEl.classList.add('online');
-            }
+        function formatMoney(amount) { return "$" + parseFloat(amount).toFixed(2); }
 
-            // Load initial data
+        function showToast(msg, type = 'info') {
+            const c = $('#toast-container');
+            const el = document.createElement('div');
+            el.style.cssText = `background:rgba(0,20,40,0.95); border:1px solid ${type === 'error' ? 'var(--accent)' : 'var(--primary)'}; color:white; padding:1rem 2rem; margin-bottom:10px; border-radius:4px; box-shadow:0 0 10px rgba(0,0,0,0.5); font-family:'Orbitron',sans-serif; animation:fadeIn 0.3s;`;
+            el.innerHTML = `<span style="color:${type === 'error' ? 'var(--accent)' : 'var(--primary)'}">&#9679;</span> &nbsp; ${msg}`;
+            c.appendChild(el);
+            setTimeout(() => { el.style.opacity = '0'; setTimeout(() => el.remove(), 300); }, 3000);
+        }
+
+        function showModal(html) {
+            const c = $('#modal-container');
+            c.innerHTML = `<div class="modal">${html}</div>`;
+            c.classList.remove('hidden');
+        }
+        function closeModal() { $('#modal-container').classList.add('hidden'); }
+
+        // ===== INIT =====
+        let cachedKids = [];
+
+        async function init() {
+            const statusEl = $('#status-indicator');
+            if (statusEl) { statusEl.textContent = 'ONLINE'; statusEl.classList.add('online'); }
             await loadKids();
             loadChores();
             loadStats();
             loadApprovals();
+            loadRotations();
         }
 
-        // Navigation
         function switchView(viewName) {
             $all('.view-section').forEach(s => s.classList.remove('active'));
             const target = $(`#view-${viewName}`);
             if (target) target.classList.add('active');
-
             $all('.nav-btn').forEach(btn => btn.classList.remove('active'));
             const activeBtn = Array.from($all('.nav-btn')).find(btn =>
-                btn.textContent.toLowerCase().includes(viewName) ||
-                btn.onclick?.toString().toLowerCase().includes(`'${viewName}'`)
+                btn.onclick?.toString().includes(`'${viewName}'`)
             );
             if (activeBtn) activeBtn.classList.add('active');
         }
 
-        // Load Stats for Overview
+        // ===== OVERVIEW =====
         async function loadStats() {
             const kids = await api('/kids/');
             if (!kids) return;
-
             const totalKids = kids.length;
             const totalBalance = kids.reduce((sum, k) => sum + (k.balance || 0), 0);
+
+            // Also get rotation count
+            const rotations = await api('/rotations/');
+            const rotCount = rotations ? rotations.length : 0;
 
             const statsElement = $('#dashboard-stats');
             if (statsElement) {
                 statsElement.innerHTML = `
-                    <div class="grid" style="grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem;">
+                    <div class="grid" style="grid-template-columns: 1fr 1fr 1fr; gap: 1rem; margin-top: 1rem;">
                         <div style="text-align:center">
                             <div style="font-size:0.9rem; color:var(--text-dim)">ACTIVE CREW</div>
                             <div style="font-size:2rem; color:var(--primary)">${totalKids}</div>
@@ -486,80 +591,67 @@
                             <div style="font-size:0.9rem; color:var(--text-dim)">TOTAL BALANCE</div>
                             <div style="font-size:2rem; color:var(--success)">${formatMoney(totalBalance)}</div>
                         </div>
+                        <div style="text-align:center">
+                            <div style="font-size:0.9rem; color:var(--text-dim)">ROTATIONS</div>
+                            <div style="font-size:2rem; color:var(--rotation-color)">${rotCount}</div>
+                        </div>
                     </div>
                 `;
             }
         }
-        function formatMoney(amount) {
-            return "$" + parseFloat(amount).toFixed(2);
-        }
 
-        function showToast(msg, type = 'info') {
-            const c = $('#toast-container');
-            const el = document.createElement('div');
-            el.style.background = 'rgba(0, 20, 40, 0.95)';
-            el.style.border = type === 'error' ? '1px solid var(--accent)' : '1px solid var(--primary)';
-            el.style.color = 'white';
-            el.style.padding = '1rem 2rem';
-            el.style.marginBottom = '10px';
-            el.style.borderRadius = '4px';
-            el.style.boxShadow = '0 0 10px rgba(0,0,0,0.5)';
-            el.style.fontFamily = "'Orbitron', sans-serif";
-            el.style.animation = 'fadeIn 0.3s';
-            el.innerHTML = `<span style="color:${type === 'error' ? 'var(--accent)' : 'var(--primary)'}">&#9679;</span> &nbsp; ${msg}`;
-
-            c.appendChild(el);
-            setTimeout(() => {
-                el.style.opacity = '0';
-                setTimeout(() => el.remove(), 300);
-            }, 3000);
-        }
-
-        // --- KIDS ---
+        // ===== CREW (KIDS) =====
         async function loadKids() {
             const kids = await api('/kids');
             if (!kids) return;
+            cachedKids = kids;
 
             const grid = $('#kids-grid');
-            if (grid) grid.innerHTML = "";
+            if (grid) {
+                grid.innerHTML = "";
+                kids.forEach((k, idx) => {
+                    const avatarHtml = k.avatar_path && k.avatar_path !== '/static/default_avatar.png' && PRESET_AVATARS[k.avatar_path]
+                        ? `<div style="width:60px;height:60px;margin-bottom:0.5rem">${renderAvatarSvg(k.avatar_path, idx)}</div>`
+                        : `<div style="width:60px;height:60px;margin-bottom:0.5rem">${renderInitialsSvg(k.name, idx)}</div>`;
 
-            // Populate Ledger Dropdown too!
-            const ledgerSelect = $('#ledger-kid-select');
-            const currentLedgerVal = ledgerSelect ? ledgerSelect.value : "";
-            if (ledgerSelect) ledgerSelect.innerHTML = '<option value="">Select Crew Member...</option>';
-
-            kids.forEach(k => {
-                if (grid) {
                     grid.innerHTML += `
                     <div class="card">
+                        ${avatarHtml}
                         <h3>${k.name}</h3>
                         <div class="balance-display">${formatMoney(k.balance)}</div>
+                        <div style="color:var(--text-dim); margin:0.3rem 0">Allowance: ${formatMoney(k.allowance)}/wk</div>
                         <div style="margin-top:1rem; display:flex; gap:0.5rem;">
-                            <button class="action-btn" onclick="editKid(${k.id}, '${k.name}', ${k.allowance})">EDIT</button>
+                            <button class="action-btn" onclick='editKid(${JSON.stringify(k).replace(/'/g,"&apos;")})'>EDIT</button>
                             <button class="action-btn danger" onclick="deleteKid(${k.id}, '${k.name}')">DELETE</button>
                         </div>
-                    </div>
-                    `;
-                }
+                    </div>`;
+                });
+            }
 
-                if (ledgerSelect) ledgerSelect.innerHTML += `<option value="${k.id}">${k.name}</option>`;
-            });
-
-            if (currentLedgerVal && ledgerSelect) ledgerSelect.value = currentLedgerVal;
+            // Populate ledger dropdown
+            const ledgerSelect = $('#ledger-kid-select');
+            const currentVal = ledgerSelect ? ledgerSelect.value : "";
+            if (ledgerSelect) {
+                ledgerSelect.innerHTML = '<option value="">Select Crew Member...</option>';
+                kids.forEach(k => { ledgerSelect.innerHTML += `<option value="${k.id}">${k.name}</option>`; });
+                if (currentVal) ledgerSelect.value = currentVal;
+            }
         }
 
         function showAddKidModal() {
             showModal(`
-            <h3>Recruit Crew Member</h3>
-            <div style="margin-bottom:1rem;color:var(--primary)">NEW PROFILE ENTRY</div>
-            <label>Name:</label>
-            <input id="kid-name" placeholder="Enter Name" autofocus />
-            <label>Weekly Allowance ($):</label>
-            <input id="kid-allowance" type="number" placeholder="0.00" step="0.5" />
-            <div class="flex-between">
-                <button class="action-btn danger" onclick="closeModal()">CANCEL</button>
-                <button class="action-btn" onclick="submitAddKid()">CONFIRM</button>
-            </div>
+                <h3>Recruit Crew Member</h3>
+                <input type="hidden" id="avatar-value" value="" />
+                <label>Name:</label>
+                <input id="kid-name" placeholder="Enter Name" autofocus />
+                <label>Weekly Allowance ($):</label>
+                <input id="kid-allowance" type="number" placeholder="0.00" step="0.5" />
+                <label>Avatar:</label>
+                ${buildAvatarPicker('', '')}
+                <div class="flex-between" style="margin-top:1rem">
+                    <button class="action-btn danger" onclick="closeModal()">CANCEL</button>
+                    <button class="action-btn" onclick="submitAddKid()">CONFIRM</button>
+                </div>
             `);
         }
 
@@ -567,26 +659,27 @@
             const name = $('#kid-name').value;
             const allowanceVal = $('#kid-allowance').value;
             const allowance = allowanceVal ? parseFloat(allowanceVal) : 0.0;
+            const avatar = $('#avatar-value').value;
             if (!name) return showToast("Name required", 'error');
-            const res = await api('/management/kids', 'POST', { name, allowance });
-            if (res) {
-                showToast("Crew Member Recruited", 'success');
-                closeModal();
-                loadKids();
-            }
+            const res = await api('/management/kids', 'POST', { name, allowance, avatar_path: avatar || '/static/default_avatar.png' });
+            if (res) { showToast("Crew Member Recruited"); closeModal(); loadKids(); loadStats(); }
         }
 
-        function editKid(id, currentName, currentAllowance) {
+        function editKid(k) {
+            const currentAvatar = k.avatar_path || '';
             showModal(`
-            <h3>Edit Profile</h3>
-            <label>Name:</label>
-            <input id="edit-kid-name" value="${currentName}" placeholder="Name" />
-            <label>Weekly Allowance ($):</label>
-            <input id="edit-kid-allowance" type="number" value="${currentAllowance}" placeholder="0.00" step="0.5" />
-            <div class="flex-between">
-                <button class="action-btn danger" onclick="closeModal()">CANCEL</button>
-                <button class="action-btn" onclick="submitEditKid(${id})">UPDATE</button>
-            </div>
+                <h3>Edit Profile: ${k.name}</h3>
+                <input type="hidden" id="avatar-value" value="${currentAvatar}" />
+                <label>Name:</label>
+                <input id="edit-kid-name" value="${k.name}" placeholder="Name" />
+                <label>Weekly Allowance ($):</label>
+                <input id="edit-kid-allowance" type="number" value="${k.allowance}" placeholder="0.00" step="0.5" />
+                <label>Avatar:</label>
+                ${buildAvatarPicker(currentAvatar, k.name)}
+                <div class="flex-between" style="margin-top:1rem">
+                    <button class="action-btn danger" onclick="closeModal()">CANCEL</button>
+                    <button class="action-btn" onclick="submitEditKid(${k.id})">UPDATE</button>
+                </div>
             `);
         }
 
@@ -594,31 +687,19 @@
             const name = $('#edit-kid-name').value;
             const allowanceVal = $('#edit-kid-allowance').value;
             const allowance = allowanceVal ? parseFloat(allowanceVal) : 0.0;
+            const avatar = $('#avatar-value').value;
             if (!name) return showToast("Name required", 'error');
-            const res = await api(`/management/kids/${id}`, 'PUT', { name, allowance });
-            if (res) {
-                showToast("Profile Updated", 'success');
-                closeModal();
-                loadKids();
-            }
+            const res = await api(`/management/kids/${id}`, 'PUT', { name, allowance, avatar_path: avatar || '/static/default_avatar.png' });
+            if (res) { showToast("Profile Updated"); closeModal(); loadKids(); loadStats(); }
         }
 
         async function deleteKid(id, name) {
             if (!confirm(`Are you sure you want to delete ${name}? This cannot be undone.`)) return;
             const res = await api(`/management/kids/${id}`, 'DELETE');
-            if (res) {
-                showToast(`${name} deleted`, 'info');
-                loadKids();
-                loadStats();
-            }
+            if (res) { showToast(`${name} deleted`); loadKids(); loadStats(); }
         }
 
-        // --- APPROVALS ---
-        async function initApprovals() {
-            switchView('approvals');
-            loadApprovals();
-        }
-
+        // ===== APPROVALS =====
         async function loadApprovals() {
             const list = await api('/management/approvals');
             const container = $('#approvals-container');
@@ -632,107 +713,105 @@
             container.innerHTML = "";
             list.forEach(item => {
                 const dateStr = new Date(item.completed_at || item.date).toLocaleString();
+                const isRotation = item.is_rotation;
+                const rotBadge = isRotation ? '<span class="rotation-badge">🔄 ROTATION</span>' : '';
+                const cardClass = isRotation ? 'card flex-between approval-rotation' : 'card flex-between';
+
                 container.innerHTML += `
-                <div class="card flex-between" style="border-left: 4px solid var(--accent)">
+                <div class="${cardClass}" style="border-left: 4px solid ${isRotation ? 'var(--rotation-color)' : 'var(--accent)'}">
                     <div>
-                        <h3 style="margin-bottom:0.2rem">${item.chore_name}</h3>
+                        <h3 style="margin-bottom:0.2rem">${item.chore_name} ${rotBadge}</h3>
                         <div style="color:var(--primary); font-weight:bold;">${item.kid_name}</div>
                         <div style="font-size:0.8rem; color:var(--text-dim)">Submitted: ${dateStr}</div>
-                        <div style="margin-top:0.5rem; font-size:0.9rem">XP Reward: ${item.reward}</div>
                     </div>
                     <div style="display:flex; gap:1rem; align-items:center;">
-                        <button class="action-btn danger" onclick="processApproval(${item.id}, 'reject')">REJECT</button>
-                        <button class="action-btn" onclick="processApproval(${item.id}, 'approve')">APPROVE</button>
+                        <button class="action-btn danger" onclick="processApproval(${item.id}, 'reject', ${isRotation})">REJECT</button>
+                        <button class="action-btn" onclick="processApproval(${item.id}, 'approve', ${isRotation})">APPROVE</button>
                     </div>
-                </div>
-                `;
+                </div>`;
             });
         }
 
-        async function processApproval(id, action) {
-            const res = await api(`/management/approvals/${id}/${action}`, 'POST');
+        async function processApproval(id, action, isRotation) {
+            let res;
+            if (isRotation) {
+                res = await api(`/rotations/log/${id}/review`, 'POST', { action: action.toUpperCase() });
+            } else {
+                res = await api(`/management/approvals/${id}/${action}`, 'POST');
+            }
             if (res) {
-                showToast(action === 'approve' ? 'Approved!' : 'Rejected', action === 'approve' ? 'success' : 'info');
+                showToast(action === 'approve' ? 'Approved!' : 'Rejected');
                 loadApprovals();
                 loadStats();
             }
         }
 
-        // --- CHORES ---
+        // ===== QUESTS (CHORES) =====
         async function loadChores() {
             const chores = await api('/management/chores');
             if (!chores) return;
             const tbody = $('#chores-table tbody');
             tbody.innerHTML = "";
             chores.forEach(c => {
+                const kidName = cachedKids.find(k => k.id === c.kid_id)?.name || `Kid #${c.kid_id}`;
                 tbody.innerHTML += `
                 <tr>
+                    <td>${kidName}</td>
                     <td>${c.name}</td>
-                    <td>XP Lv. ${c.reward}</td>
-                    <td><span class="badge">${c.frequency}</span></td>
+                    <td><span style="color:var(--primary)">${c.frequency}</span>${c.due_day !== null && c.due_day !== undefined ? ` (${['Mon','Tue','Wed','Thu','Fri','Sat','Sun'][c.due_day]})` : ''}</td>
                     <td>
-                        <button class="action-btn" onclick='editChore(${JSON.stringify(c).replace(/'/g, "&apos;")})'>EDIT</button>
+                        <button class="action-btn" onclick='editChore(${JSON.stringify(c).replace(/'/g,"&apos;")})'>EDIT</button>
                         <button class="action-btn danger" onclick="deleteChore(${c.id})">DEL</button>
                     </td>
-                </tr>
-                `;
+                </tr>`;
             });
-        }
-
-        async function deleteChore(id) {
-            if (!confirm("Are you sure?")) return;
-            await api(`/management/chores/${id}`, 'DELETE');
-            loadChores();
         }
 
         let editingChoreId = null;
 
         function showAddChoreModal(chore = null) {
             editingChoreId = chore ? chore.id : null;
-            api('/kids').then(kids => {
-                let options = "";
-                kids.forEach(k => {
-                    const selected = (chore && chore.kid_id === k.id) ? "selected" : "";
-                    options += `<option value="${k.id}" ${selected}> ${k.name}</option>`;
-                });
 
-                showModal(`
-                <h3>${chore ? 'Edit Quest' : 'New Quest'}</h3>
-                    <label>Assignee:</label>
-                    <select id="chore-kid">${options}</select>
-                    <input id="chore-name" placeholder="Quest Title" value="${chore ? chore.name : ''}" />
-                    <input id="chore-desc" placeholder="Briefing (Optional)" value="${chore && chore.description ? chore.description : ''}" />
-                    <label>XP Weight (1-10):</label>
-                    <input id="chore-val" type="number" placeholder="Weight (1-10)" min="1" max="10" value="${chore ? chore.reward : 1}" />
-                    <label>Frequency:</label>
-                    <select id="chore-type" onchange="toggleDueDay()">
-                        <option value="DAILY" ${chore && chore.frequency === 'DAILY' ? 'selected' : ''}>Daily</option>
-                        <option value="WEEKLY" ${chore && chore.frequency === 'WEEKLY' ? 'selected' : ''}>Weekly</option>
-                    </select>
-                    <div id="due-day-container" class="hidden" style="margin-top:0.5rem">
-                        <label>Due Day:</label>
-                        <select id="chore-day">
-                            <option value="0">Monday</option>
-                            <option value="1">Tuesday</option>
-                            <option value="2">Wednesday</option>
-                            <option value="3">Thursday</option>
-                            <option value="4">Friday</option>
-                            <option value="5">Saturday</option>
-                            <option value="6">Sunday</option>
-                        </select>
-                    </div>
-                    <div class="flex-between" style="margin-top:1rem;">
-                        <button class="action-btn danger" onclick="closeModal()">CANCEL</button>
-                        <button class="action-btn" onclick="submitAddChore()">SAVE</button>
-                    </div>
-                `);
-
-                if (chore && chore.frequency === 'WEEKLY') {
-                    const container = $('#due-day-container');
-                    if (container) container.classList.remove('hidden');
-                    if (chore.due_day !== null) $('#chore-day').value = chore.due_day;
-                }
+            let kidOptions = "";
+            cachedKids.forEach(k => {
+                const selected = (chore && chore.kid_id === k.id) ? "selected" : "";
+                kidOptions += `<option value="${k.id}" ${selected}>${k.name}</option>`;
             });
+
+            const freq = chore ? chore.frequency : 'DAILY';
+            const dueDayVisible = freq === 'WEEKLY' ? '' : 'class="hidden"';
+
+            showModal(`
+                <h3>${chore ? 'Edit Quest' : 'New Quest'}</h3>
+                <label>Assignee:</label>
+                <select id="chore-kid">${kidOptions}</select>
+                <label>Quest Name:</label>
+                <input id="chore-name" placeholder="Quest Title" value="${chore ? chore.name : ''}" />
+                <label>Description (Optional):</label>
+                <input id="chore-desc" placeholder="Briefing" value="${chore?.description || ''}" />
+                <label>Frequency:</label>
+                <select id="chore-type" onchange="toggleDueDay()">
+                    <option value="DAILY" ${freq === 'DAILY' ? 'selected' : ''}>Daily</option>
+                    <option value="WEEKLY" ${freq === 'WEEKLY' ? 'selected' : ''}>Weekly</option>
+                </select>
+                <div id="due-day-container" ${dueDayVisible} style="margin-top:0.5rem">
+                    <label>Due Day:</label>
+                    <select id="chore-day">
+                        <option value="0">Monday</option><option value="1">Tuesday</option>
+                        <option value="2">Wednesday</option><option value="3">Thursday</option>
+                        <option value="4">Friday</option><option value="5">Saturday</option>
+                        <option value="6">Sunday</option>
+                    </select>
+                </div>
+                <div class="flex-between" style="margin-top:1rem;">
+                    <button class="action-btn danger" onclick="closeModal()">CANCEL</button>
+                    <button class="action-btn" onclick="submitAddChore()">SAVE</button>
+                </div>
+            `);
+
+            if (chore && chore.due_day !== null && chore.due_day !== undefined) {
+                $('#chore-day').value = chore.due_day;
+            }
         }
 
         function toggleDueDay() {
@@ -742,93 +821,215 @@
             else container.classList.add('hidden');
         }
 
-        function editChore(chore) {
-            showAddChoreModal(chore);
-        }
+        function editChore(chore) { showAddChoreModal(chore); }
 
         async function submitAddChore() {
             const kidId = $('#chore-kid').value;
             const name = $('#chore-name').value;
             const desc = $('#chore-desc').value;
-            const val = parseFloat($('#chore-val').value);
             const freq = $('#chore-type').value;
-
             let dueDay = null;
-            if (freq === 'WEEKLY') {
-                dueDay = parseInt($('#chore-day').value);
-            }
+            if (freq === 'WEEKLY') dueDay = parseInt($('#chore-day').value);
+            if (!name || !kidId) return showToast("Invalid Data", 'error');
 
-            if (!name || isNaN(val) || !kidId) return showToast("Invalid Data", 'error');
-            if (val < 1 || val > 10) return showToast("Available limit: 1-10", 'error');
-
-            const payload = {
-                kid_id: parseInt(kidId),
-                name: name,
-                description: desc,
-                reward: val,
-                frequency: freq,
-                due_day: dueDay
-            };
-
+            const payload = { kid_id: parseInt(kidId), name, description: desc, reward: 1, frequency: freq, due_day: dueDay };
             let res;
             if (editingChoreId) {
-                // UPDATE
                 res = await api(`/management/chores/${editingChoreId}`, 'PUT', payload);
             } else {
-                // CREATE
                 res = await api('/management/chores', 'POST', payload);
             }
+            if (res) { showToast(editingChoreId ? "Quest Updated" : "Quest Created"); closeModal(); loadChores(); }
+        }
 
-            if (res) {
-                showToast(editingChoreId ? "Quest Updated" : "Quest Created", 'success');
-                closeModal();
-                loadChores();
+        async function deleteChore(id) {
+            if (!confirm("Are you sure?")) return;
+            await api(`/management/chores/${id}`, 'DELETE');
+            loadChores();
+        }
+
+        // ===== ROTATIONS =====
+        async function loadRotations() {
+            const rotations = await api('/rotations/');
+            const container = $('#rotations-container');
+            if (!container) return;
+
+            if (!rotations || rotations.length === 0) {
+                container.innerHTML = '<div style="color:var(--text-dim); text-align:center; padding:2rem;">No rotation quests yet. Create one to get started!</div>';
+                return;
+            }
+
+            container.innerHTML = "";
+            for (const r of rotations) {
+                const memberNames = r.members.map(m => m.kid_name).join(', ');
+                const freqLabel = r.frequency.replace(/_/g, ' ');
+                const freqDesc = FREQ_DESCRIPTIONS[r.frequency] || '';
+
+                // Get schedule preview
+                let scheduleHtml = '';
+                try {
+                    const sched = await api(`/rotations/${r.id}/schedule?weeks=2`);
+                    if (sched && sched.length > 0) {
+                        scheduleHtml = '<div style="margin-top:0.8rem"><strong style="color:var(--primary);font-size:0.8rem">UPCOMING:</strong>';
+                        scheduleHtml += '<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:4px">';
+                        sched.slice(0, 7).forEach(s => {
+                            const d = new Date(s.date + 'T12:00:00');
+                            const day = d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+                            scheduleHtml += `<span style="background:rgba(255,107,53,0.15);color:var(--rotation-color);padding:2px 8px;border-radius:4px;font-size:0.75rem">${day}: ${s.kid_name}</span>`;
+                        });
+                        scheduleHtml += '</div></div>';
+                    }
+                } catch (e) { /* schedule preview is optional */ }
+
+                container.innerHTML += `
+                <div class="card rotation-card">
+                    <div class="flex-between">
+                        <div>
+                            <h3 style="margin-bottom:0.3rem">🔄 ${r.name}</h3>
+                            ${r.description ? `<div style="color:var(--text-dim);margin-bottom:0.3rem">${r.description}</div>` : ''}
+                            <span class="rotation-badge">${freqLabel}</span>
+                            <div class="freq-desc">${freqDesc}</div>
+                            <div style="color:var(--text-dim);font-size:0.9rem"><strong>Crew:</strong> ${memberNames}</div>
+                            <div style="color:var(--text-dim);font-size:0.85rem">Started: ${r.start_date}</div>
+                            ${scheduleHtml}
+                        </div>
+                        <div style="display:flex;flex-direction:column;gap:0.5rem">
+                            <button class="action-btn rotation-btn" onclick='editRotation(${JSON.stringify(r).replace(/'/g,"&apos;")})'>EDIT</button>
+                            <button class="action-btn danger" onclick="archiveRotation(${r.id}, '${r.name}')">ARCHIVE</button>
+                        </div>
+                    </div>
+                </div>`;
             }
         }
 
-        // --- LEDGER ---
+        function showAddRotationModal(rotation = null) {
+            const isEdit = !!rotation;
+            const freq = rotation ? rotation.frequency : 'ALTERNATING_DAILY';
+            const startDate = rotation ? rotation.start_date : new Date().toISOString().split('T')[0];
+            const memberIds = rotation ? rotation.members.map(m => m.kid_id) : [];
+
+            let memberChecks = '';
+            cachedKids.forEach(k => {
+                const checked = memberIds.includes(k.id) ? 'checked' : '';
+                memberChecks += `<div class="member-check">
+                    <input type="checkbox" id="rot-kid-${k.id}" value="${k.id}" ${checked} />
+                    <label for="rot-kid-${k.id}">${k.name}</label>
+                </div>`;
+            });
+
+            showModal(`
+                <h3>${isEdit ? 'Edit Rotation' : 'New Rotation Quest'}</h3>
+                <label>Name:</label>
+                <input id="rot-name" placeholder="e.g. Take Out Trash" value="${rotation?.name || ''}" />
+                <label>Description (Optional):</label>
+                <textarea id="rot-desc" placeholder="Quest briefing...">${rotation?.description || ''}</textarea>
+                <label>Rotation Type:</label>
+                <select id="rot-freq" onchange="updateFreqDesc()">
+                    <option value="ALTERNATING_DAILY" ${freq === 'ALTERNATING_DAILY' ? 'selected' : ''}>Alternating Daily</option>
+                    <option value="EVERY_OTHER_DAY" ${freq === 'EVERY_OTHER_DAY' ? 'selected' : ''}>Every Other Day</option>
+                    <option value="BIWEEKLY" ${freq === 'BIWEEKLY' ? 'selected' : ''}>Biweekly</option>
+                </select>
+                <div id="rot-freq-desc" class="freq-desc">${FREQ_DESCRIPTIONS[freq]}</div>
+                <label>Start Date:</label>
+                <input id="rot-start" type="date" value="${startDate}" />
+                <label>Crew Members (order = rotation order):</label>
+                <div id="rot-members">${memberChecks}</div>
+                <div class="flex-between" style="margin-top:1rem">
+                    <button class="action-btn danger" onclick="closeModal()">CANCEL</button>
+                    <button class="action-btn rotation-btn" onclick="submitRotation(${isEdit ? rotation.id : 'null'})">${isEdit ? 'UPDATE' : 'CREATE'}</button>
+                </div>
+            `);
+        }
+
+        function updateFreqDesc() {
+            const freq = $('#rot-freq').value;
+            const el = $('#rot-freq-desc');
+            if (el) el.textContent = FREQ_DESCRIPTIONS[freq] || '';
+        }
+
+        function editRotation(r) { showAddRotationModal(r); }
+
+        async function submitRotation(editId) {
+            const name = $('#rot-name').value;
+            const desc = $('#rot-desc').value;
+            const freq = $('#rot-freq').value;
+            const startDate = $('#rot-start').value;
+
+            if (!name) return showToast("Name required", 'error');
+            if (!startDate) return showToast("Start date required", 'error');
+
+            // Collect checked members in DOM order (order = position)
+            const memberEls = $all('#rot-members input[type="checkbox"]:checked');
+            const members = Array.from(memberEls).map((el, i) => ({
+                kid_id: parseInt(el.value),
+                position: i,
+            }));
+
+            if (members.length < 1) return showToast("Select at least 1 crew member", 'error');
+
+            const payload = { name, description: desc || null, frequency: freq, start_date: startDate, members };
+
+            let res;
+            if (editId) {
+                res = await api(`/rotations/${editId}`, 'PUT', payload);
+            } else {
+                res = await api('/rotations/', 'POST', payload);
+            }
+
+            if (res) {
+                showToast(editId ? "Rotation Updated" : "Rotation Created");
+                closeModal();
+                loadRotations();
+                loadStats();
+            }
+        }
+
+        async function archiveRotation(id, name) {
+            if (!confirm(`Archive rotation "${name}"? It can be restored later.`)) return;
+            const res = await api(`/rotations/${id}`, 'DELETE');
+            if (res) { showToast(`${name} archived`); loadRotations(); loadStats(); }
+        }
+
+        // ===== LEDGER =====
         async function loadLedgerHistory() {
             const id = $('#ledger-kid-select').value;
             const panel = $('#ledger-panel');
-
             if (!id) { panel.classList.add('hidden'); return; }
             panel.classList.remove('hidden');
 
-            const kids = await api('/kids');
-            const k = kids.find(x => x.id == id);
-            if (k) $('#ledger-balance').textContent = formatMoney(k.balance);
+            const kid = cachedKids.find(x => x.id == id);
+            if (kid) $('#ledger-balance').textContent = formatMoney(kid.balance);
 
             const history = await api(`/ledger/${id}/history`);
             const tbody = $('#ledger-table tbody');
             tbody.innerHTML = "";
-            history.forEach(h => {
-                const isPos = h.amount > 0;
-                tbody.innerHTML += `
-                <tr>
-                    <td>${h.timestamp.split('T')[0]}</td>
-                    <td>${h.description}</td>
-                    <td style="color:${isPos ? 'var(--success)' : 'var(--accent)'}">
-                        ${isPos ? '+' : ''}${formatMoney(h.amount)}
-                    </td>
-                    <td><button class="action-btn danger" style="padding:0.2rem 0.5rem" onclick="deleteTx(${h.id})">X</button></td>
-                </tr>
-            `;
-            });
+            if (history) {
+                history.forEach(h => {
+                    const isPos = h.amount > 0;
+                    tbody.innerHTML += `
+                    <tr>
+                        <td>${h.timestamp.split('T')[0]}</td>
+                        <td>${h.description}</td>
+                        <td style="color:${isPos ? 'var(--success)' : 'var(--accent)'}">${isPos ? '+' : ''}${formatMoney(h.amount)}</td>
+                        <td><button class="action-btn danger" style="padding:0.2rem 0.5rem" onclick="deleteTx(${h.id})">X</button></td>
+                    </tr>`;
+                });
+            }
         }
 
         function showAdjustModal() {
             showModal(`
-            <h3>Manual Adjustment</h3>
-            <input id="adj-amt" type="number" placeholder="Amount ($)" step="0.10" />
-            <input id="adj-desc" placeholder="Reason (e.g. Bonus)" />
-            <div class="flex-between">
-                <button class="action-btn danger" onclick="closeModal()">CANCEL</button>
-                <div style="display:flex; gap:0.5rem">
-                    <button class="action-btn danger" onclick="submitAdjust(-1)">SUBTRACT</button>
-                    <button class="action-btn" onclick="submitAdjust(1)">ADD</button>
+                <h3>Manual Adjustment</h3>
+                <input id="adj-amt" type="number" placeholder="Amount ($)" step="0.10" />
+                <input id="adj-desc" placeholder="Reason (e.g. Bonus)" />
+                <div class="flex-between">
+                    <button class="action-btn danger" onclick="closeModal()">CANCEL</button>
+                    <div style="display:flex; gap:0.5rem">
+                        <button class="action-btn danger" onclick="submitAdjust(-1)">SUBTRACT</button>
+                        <button class="action-btn" onclick="submitAdjust(1)">ADD</button>
+                    </div>
                 </div>
-            </div>
-        `);
+            `);
         }
 
         async function submitAdjust(sign) {
@@ -836,17 +1037,11 @@
             const amt = parseFloat($('#adj-amt').value);
             const desc = $('#adj-desc').value || "Manual";
             if (!id || isNaN(amt)) return showToast("Invalid Amount", 'error');
-
-            const type = sign > 0 ? "BONUS" : "SPEND";
             await api('/ledger/transaction', 'POST', {
-                kid_id: parseInt(id),
-                amount: Math.abs(amt) * sign,
-                type: type,
-                description: desc
+                kid_id: parseInt(id), amount: Math.abs(amt) * sign,
+                type: sign > 0 ? "BONUS" : "SPEND", description: desc
             });
-            showToast("Ledger Updated", 'success');
-            closeModal();
-            loadLedgerHistory();
+            showToast("Ledger Updated"); closeModal(); loadLedgerHistory();
         }
 
         async function doPayout() {
@@ -854,28 +1049,21 @@
             if (!id) return;
             if (!confirm("Confirm Payout? This will reset the balance to $0.00.")) return;
             const res = await api(`/ledger/${id}/payout`, 'POST');
-            if (res) {
-                showToast("Payout Successful", 'success');
-                loadLedgerHistory();
-            }
+            if (res) { showToast("Payout Successful"); loadLedgerHistory(); }
         }
 
         async function deleteTx(txId) {
-            if (!confirm("Are you sure you want to delete this transaction?")) return;
+            if (!confirm("Delete this transaction?")) return;
             const res = await api(`/ledger/transaction/${txId}`, 'DELETE');
-            if (res) {
-                showToast("Transaction Deleted", 'success');
-                loadLedgerHistory();
-            }
+            if (res) { showToast("Transaction Deleted"); loadLedgerHistory(); }
         }
 
-        // SETTINGS
+        // ===== SETTINGS =====
         async function showSettingsModal() {
             const config = await api('/system/config') || { payout_mode: 'ALL_OR_NOTHING', payout_threshold: 80 };
 
             showModal(`
                 <h3>Payout Configuration</h3>
-                
                 <label>Payout Mode:</label>
                 <select id="cfg-payout-mode" style="width:100%; padding:0.5rem; margin-bottom:0.5rem; background:#222; color:#fff; border:1px solid #444; border-radius:4px;">
                     <option value="ALL_OR_NOTHING" ${config.payout_mode === 'ALL_OR_NOTHING' ? 'selected' : ''}>All-or-Nothing</option>
@@ -885,7 +1073,6 @@
                     <strong>All-or-Nothing:</strong> Pay full allowance if threshold is met, otherwise $0.<br>
                     <strong>Proportional:</strong> Pay based on percentage of chores completed.
                 </small>
-
                 <div id="threshold-container" style="display:${config.payout_mode === 'ALL_OR_NOTHING' ? 'block' : 'none'}">
                     <label>Payout Threshold (%):</label>
                     <input id="cfg-threshold" type="number" value="${config.payout_threshold}" placeholder="80" min="0" max="100" />
@@ -893,19 +1080,15 @@
                         Percentage of chores required to earn FULL allowance in All-or-Nothing mode.
                     </small>
                 </div>
-
                 <hr style="border:1px solid #333; margin: 1rem 0;" />
-
                 <label>Update Parent PIN (Optional):</label>
                 <input id="cfg-pin" type="password" placeholder="New PIN (4 digits)" />
-
                 <div class="flex-between" style="margin-top:2rem">
                     <button class="action-btn danger" onclick="closeModal()">CANCEL</button>
                     <button class="action-btn" onclick="submitSettings()">SAVE SETTINGS</button>
                 </div>
             `);
 
-            // Add event listener for mode toggle
             const modeSelect = $('#cfg-payout-mode');
             const thresholdContainer = $('#threshold-container');
             modeSelect.addEventListener('change', () => {
@@ -918,33 +1101,15 @@
             const threshold = parseInt($('#cfg-threshold').value);
             const pin = $('#cfg-pin').value;
 
-            // Validate threshold only if in ALL_OR_NOTHING mode
             if (payoutMode === 'ALL_OR_NOTHING') {
                 if (isNaN(threshold) || threshold < 0 || threshold > 100) {
                     return showToast("Invalid Threshold (0-100)", 'error');
                 }
             }
 
-            await api('/system/config', 'PUT', {
-                payout_mode: payoutMode,
-                payout_threshold: threshold || 80
-            });
-
-            if (pin && pin.length >= 4) {
-                await api('/system/pin', 'PUT', { pin: pin });
-            }
-
-            showToast("Settings Saved", 'success');
-            closeModal();
-        }
-
-        function showModal(html) {
-            const c = $('#modal-container');
-            c.innerHTML = `<div class="modal fade-in">${html}</div>`;
-            c.classList.remove('hidden');
-        }
-        function closeModal() {
-            $('#modal-container').classList.add('hidden');
+            await api('/system/config', 'PUT', { payout_mode: payoutMode, payout_threshold: threshold || 80 });
+            if (pin && pin.length >= 4) { await api('/system/pin', 'PUT', { pin }); }
+            showToast("Settings Saved"); closeModal();
         }
 
         // BOOT

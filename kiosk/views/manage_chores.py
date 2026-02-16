@@ -140,9 +140,16 @@ class ManageChoresView(QWidget):
         self.combo_rot_freq = QComboBox()
         self.style_combo(self.combo_rot_freq)
         self.combo_rot_freq.addItems(["ALTERNATING_DAILY", "EVERY_OTHER_DAY", "BIWEEKLY"])
+        self.combo_rot_freq.currentIndexChanged.connect(self._update_freq_description)
         self.form_layout.addRow(self.lbl_rot_freq, self.combo_rot_freq)
         self.lbl_rot_freq.hide()
         self.combo_rot_freq.hide()
+        
+        self.lbl_rot_freq_desc = QLabel("")
+        self.lbl_rot_freq_desc.setWordWrap(True)
+        self.lbl_rot_freq_desc.setStyleSheet("color: #8899AA; font-size: 14px; padding: 4px 0;")
+        self.form_layout.addRow("", self.lbl_rot_freq_desc)
+        self.lbl_rot_freq_desc.hide()
         
         self.lbl_rot_members = self.make_label("CREW MEMBERS:")
         self.rotation_member_checks = []
@@ -400,6 +407,16 @@ class ManageChoresView(QWidget):
         self.btn_save.setText("UPDATE QUEST")
         self.btn_delete.show()
 
+    def _update_freq_description(self):
+        """Update the frequency description label based on current selection."""
+        descs = {
+            "ALTERNATING_DAILY": "Due every day — kids take turns. (A today, B tomorrow, A again…)",
+            "EVERY_OTHER_DAY": "Due every other day — kids rotate on active days only. Off days = no one does it.",
+            "BIWEEKLY": "Due every 2 weeks on the same day of the week as the start date.",
+        }
+        current = self.combo_rot_freq.currentText()
+        self.lbl_rot_freq_desc.setText(descs.get(current, ""))
+
     def _show_rotation_fields(self, show):
         """Toggle visibility of rotation vs regular chore fields."""
         if show:
@@ -418,6 +435,8 @@ class ManageChoresView(QWidget):
             self.combo_day.hide()
             self.lbl_rot_freq.show()
             self.combo_rot_freq.show()
+            self.lbl_rot_freq_desc.show()
+            self._update_freq_description()
             self.lbl_rot_members.show()
             self.rot_members_widget.show()
         else:
@@ -434,6 +453,7 @@ class ManageChoresView(QWidget):
             self.on_freq_changed()
             self.lbl_rot_freq.hide()
             self.combo_rot_freq.hide()
+            self.lbl_rot_freq_desc.hide()
             self.lbl_rot_members.hide()
             self.rot_members_widget.hide()
 
