@@ -7,7 +7,7 @@ set -e
 APP_ROOT="/home/$USER/chores_app"
 RELEASES_DIR="$APP_ROOT/releases"
 TIMESTAMP=$(date +%Y%m%d%H%M%S)
-NEW_release_DIR="$RELEASES_DIR/$TIMESTAMP"
+NEW_RELEASE_DIR="$RELEASES_DIR/$TIMESTAMP"
 REPO_URL="https://github.com/protoshoff/Chores-Tracking-and-Accounting.git"
 # For now, we assume this script is running from the repo checkout location or the repo is separate.
 # Let's assume user is running this from their dev machine via ssh or on the pi from a 'repo' dir.
@@ -15,7 +15,7 @@ REPO_URL="https://github.com/protoshoff/Chores-Tracking-and-Accounting.git"
 
 BRANCH=${1:-main}
 
-echo "Deploying branch $BRANCH to $NEW_release_DIR..."
+echo "Deploying branch $BRANCH to $NEW_RELEASE_DIR..."
 
 # 1. Ensure directories
 mkdir -p "$RELEASES_DIR"
@@ -27,21 +27,25 @@ if [ ! -d "/var/lib/chores_app" ]; then
 fi
 
 # 2. Clone/Copy Code
-git clone -b "$BRANCH" "$REPO_URL" "$NEW_release_DIR"
-# Alternatively if running locally on Pi from updated repo: cp -r . "$NEW_release_DIR"
+git clone -b "$BRANCH" "$REPO_URL" "$NEW_RELEASE_DIR"
+# Alternatively if running locally on Pi from updated repo: cp -r . "$NEW_RELEASE_DIR"
 
 # 3. Setup Venv (Share cache if possible, but for robustness create fresh or copy)
 echo "Setting up venv..."
-python3 -m venv "$NEW_release_DIR/venv"
-source "$NEW_release_DIR/venv/bin/activate"
+python3 -m venv "$NEW_RELEASE_DIR/venv"
+source "$NEW_RELEASE_DIR/venv/bin/activate"
 
 # 4. Install Deps
 echo "Installing dependencies..."
-pip install -r "$NEW_release_DIR/requirements.txt"
+pip install -r "$NEW_RELEASE_DIR/requirements.txt"
 
-# 4b. Install System Fonts (Roboto)
-echo "Installing System Fonts..."
-sudo apt-get update && sudo apt-get install -y fonts-roboto
+# 4b. Install System Fonts (Roboto) — skip if already installed
+if ! fc-list | grep -qi roboto; then
+    echo "Installing System Fonts..."
+    sudo apt-get update && sudo apt-get install -y fonts-roboto
+else
+    echo "Roboto fonts already installed, skipping."
+fi
 
 # 5. Backup DB (Safety)
 DB_PATH="/var/lib/chores_app/chores.db"
@@ -53,7 +57,7 @@ fi
 # 6. Initialize Database (Create Base Tables)
 echo "Initializing Database..."
 export CHORES_DATA_DIR="/var/lib/chores_app"
-cd "$NEW_release_DIR"
+cd "$NEW_RELEASE_DIR"
 # Create base tables using SQLModel (if DB is new, this creates everything)
 venv/bin/python3 -c "from backend.db import create_db_and_tables; create_db_and_tables()"
 
@@ -63,15 +67,15 @@ alembic upgrade head
 
 # 8. Switch Symlink
 echo "Switching Symlink..."
-ln -sfn "$NEW_release_DIR" "$APP_ROOT/current"
+ln -sfn "$NEW_RELEASE_DIR" "$APP_ROOT/current"
 
 # 9. Update Service Definitions (Ensure we use repo version)
 echo "Updating Systemd Services..."
-sudo cp "$NEW_release_DIR/ops/chores-kiosk.service" /etc/systemd/system/
-sudo cp "$NEW_release_DIR/ops/chores-backend.service" /etc/systemd/system/
+sudo cp "$NEW_RELEASE_DIR/ops/chores-kiosk.service" /etc/systemd/system/
+sudo cp "$NEW_RELEASE_DIR/ops/chores-backend.service" /etc/systemd/system/
 
 echo "Installing PolicyKit Rules (Fix 'Not Authorized' Error)..."
-sudo cp "$NEW_release_DIR/ops/50-chores-wifi.rules" /etc/polkit-1/rules.d/
+sudo cp "$NEW_RELEASE_DIR/ops/50-chores-wifi.rules" /etc/polkit-1/rules.d/
 
 
 echo "Patching Service Files with correct User/Path..."
@@ -135,19 +139,17 @@ chmod +x /home/$USER/.xinitrc
 chown $USER:$USER /home/$USER/.xinitrc
 
 
-# 10. Reboot System
-echo "Rebooting system to load new code..."
-# Enable services first
-sudo systemctl enable chores-backend chores-kiosk
-# Reboot immediately - use nohup to detach from this script
-nohup sudo shutdown -r now "Chores app updated - rebooting..." &>/dev/null &
-
-# 11. Cleanup Old Releases
+# 10. Cleanup Old Releases (before reboot, otherwise this never runs)
 echo "Cleaning up old releases..."
-if [ -f "$NEW_release_DIR/scripts/cleanup_old_releases.sh" ]; then
-    bash "$NEW_release_DIR/scripts/cleanup_old_releases.sh"
+if [ -f "$NEW_RELEASE_DIR/scripts/cleanup_old_releases.sh" ]; then
+    bash "$NEW_RELEASE_DIR/scripts/cleanup_old_releases.sh"
 else
     echo "Warning: Cleanup script not found."
 fi
 
 echo "Deployment Complete: $TIMESTAMP"
+
+# 11. Reboot System
+echo "Rebooting system to load new code..."
+sudo systemctl enable chores-backend chores-kiosk
+nohup sudo shutdown -r now "Chores app updated - rebooting..." &>/dev/null &
