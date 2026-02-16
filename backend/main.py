@@ -27,10 +27,17 @@ app = FastAPI(
     lifespan=lifespan
 )
 
-# CORS (Allow all for local LAN/Dev simplicity)
+# CORS — restrict to local kiosk origins (prevents CSRF from external sites)
+# Add more origins here when phone companion apps are built
+ALLOWED_ORIGINS = [
+    "http://localhost:8000",
+    "http://127.0.0.1:8000",
+    "http://localhost:3000",       # dev frontend
+    "http://raspberrypi.local:8000",
+]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=ALLOWED_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

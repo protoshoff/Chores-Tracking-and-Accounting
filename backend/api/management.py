@@ -128,51 +128,22 @@ def delete_chore(chore_id: int, session: Session = Depends(get_session)):
     return {"status": "archived", "id": chore_id}
 
 # --- Approvals Endpoints ---
+# These delegate to the canonical approval logic in api/approvals.py
+# Kept for backward compatibility with the admin web UI
+
+from .approvals import get_pending_approvals as _get_pending, review_chore as _review_chore
 
 @router.get("/approvals")
 def list_pending_approvals(session: Session = Depends(get_session)):
-    # Join with User and Chore to get names
-    stmt = select(ChoreLog, User, Chore).where(
-        ChoreLog.status == ChoreStatus.PENDING,
-        ChoreLog.kid_id == User.id,
-        ChoreLog.chore_id == Chore.id
-    ).order_by(ChoreLog.completed_at)
-    
-    results = session.exec(stmt).all()
-    
-    # Format output
-    output = []
-    for log, kid, chore in results:
-        output.append({
-            "id": log.id,
-            "kid_name": kid.name,
-            "chore_name": chore.name,
-            "date": log.date.isoformat(),
-            "completed_at": log.completed_at,
-            "reward": chore.reward
-        })
-    return output
+    """Thin wrapper — delegates to /api/approvals/pending"""
+    return _get_pending(session=session)
 
 @router.post("/approvals/{log_id}/{action}")
 def process_approval(log_id: int, action: str, session: Session = Depends(get_session)):
-    log = session.get(ChoreLog, log_id)
-    if not log:
-        raise HTTPException(status_code=404, detail="Log not found")
-        
-    if action == "approve":
-        log.status = ChoreStatus.APPROVED
-        log.reviewed_at = datetime.now(timezone.utc)
-        # NOTE: Balance is credited by the weekly PayoutService, not here.
-        # Previously this directly added chore.reward to kid.balance,
-        # causing double-credit when weekly tally also ran.
-        
-    elif action == "reject":
-        log.status = ChoreStatus.REJECTED
-        log.reviewed_at = datetime.now(timezone.utc)
-    else:
+    """Thin wrapper — delegates to /api/approvals/{id}/review"""
+    action_map = {"approve": "APPROVE", "reject": "REJECT"}
+    mapped = action_map.get(action.lower())
+    if not mapped:
         raise HTTPException(status_code=400, detail="Invalid action")
-        
-    session.add(log)
-    session.commit()
-    return {"status": "success", "action": action}
+    return _review_chore(log_id=log_id, action={"action": mapped}, session=session)
 

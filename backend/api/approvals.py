@@ -18,6 +18,7 @@ class PendingChore(BaseModel):
     date: str
     status: str
     completed_at: datetime | None
+    reward: float = 0.0
 
 @router.get("/pending", response_model=List[PendingChore])
 def get_pending_approvals(session: Session = Depends(get_session)):
@@ -43,7 +44,8 @@ def get_pending_approvals(session: Session = Depends(get_session)):
             chore_name=log.chore.name if log.chore else "Unknown",
             date=log.date.isoformat(),
             status=log.status,
-            completed_at=log.completed_at
+            completed_at=log.completed_at,
+            reward=log.chore.reward if log.chore else 0.0
         ))
     return result
 
