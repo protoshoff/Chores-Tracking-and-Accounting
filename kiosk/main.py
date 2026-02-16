@@ -48,6 +48,10 @@ def main():
     print("DEBUG: Init QApplication...")
     qt_app = QApplication(args)
     
+    # Initialize sound effects (generates WAV files on first run)
+    from .services.sound import SoundService
+    SoundService().initialize()
+    
     # Verify detected resolution (scaling already applied above before Qt import)
     screen = qt_app.primaryScreen()
     rect = screen.geometry()

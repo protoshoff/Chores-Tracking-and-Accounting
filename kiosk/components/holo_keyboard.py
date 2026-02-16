@@ -31,43 +31,43 @@ class HoloKeyboard(QDialog):
         grid = QGridLayout()
         grid.setSpacing(5)
         
-        keys = [
+        self.alpha_keys = [
             ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0'],
             ['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P'],
             ['A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L'],
             ['Z', 'X', 'C', 'V', 'B', 'N', 'M']
         ]
         
-        # Row 0 (Numbers)
-        for c, key in enumerate(keys[0]):
-            self.add_key(grid, key, 0, c)
-
-        # Row 1 (QWERTY)
-        for c, key in enumerate(keys[1]):
-            self.add_key(grid, key, 1, c)
-            
-        # Row 2 (ASDF)
-        for c, key in enumerate(keys[2]):
-            self.add_key(grid, key, 2, c)
-            
-        # Row 3 (ZXCV)
-        for c, key in enumerate(keys[3]):
-            self.add_key(grid, key, 3, c)
+        self.symbol_keys = [
+            ['!', '@', '#', '$', '%', '^', '&', '*', '(', ')'],
+            ['-', '_', '=', '+', '[', ']', '{', '}', '|', '\\'],
+            [';', ':', "'", '"', ',', '.', '/', '?'],
+            ['<', '>', '~', '`']
+        ]
+        
+        self.grid = grid
+        self.showing_symbols = False
+        self._render_keys(self.alpha_keys)
             
         layout.addLayout(grid)
         
         # Bottom Row
         bottom = QGridLayout()
         
+        self._btn_sym = HoloButton("!@#", is_primary=False)
+        self._btn_sym.setMinimumWidth(70)
+        self._btn_sym.clicked.connect(self._toggle_symbols)
+        bottom.addWidget(self._btn_sym, 0, 0)
+        
         btn_clear = HoloButton("CLR", is_primary=False)
         btn_clear.setMinimumWidth(70)
         btn_clear.clicked.connect(self.clear)
-        bottom.addWidget(btn_clear, 0, 0)
+        bottom.addWidget(btn_clear, 0, 1)
         
         btn_space = HoloButton("SPACE")
-        btn_space.setMinimumWidth(200)  # Wide for SPACE
+        btn_space.setMinimumWidth(160)
         btn_space.clicked.connect(lambda: self.on_key(" "))
-        bottom.addWidget(btn_space, 0, 1, 1, 4)
+        bottom.addWidget(btn_space, 0, 2, 1, 3)
         
         btn_backspace = HoloButton("⌫")
         btn_backspace.setMinimumWidth(90)
@@ -93,6 +93,27 @@ class HoloKeyboard(QDialog):
                 border: 2px solid #00F0FF;
             }
         """)
+
+    def _render_keys(self, keys):
+        """Render a key layout into the grid, clearing existing keys first."""
+        # Remove existing key buttons from grid
+        for i in reversed(range(self.grid.count())):
+            item = self.grid.itemAt(i)
+            if item and item.widget():
+                item.widget().setParent(None)
+        
+        for r, row in enumerate(keys):
+            for c, key in enumerate(row):
+                self.add_key(self.grid, key, r, c)
+    
+    def _toggle_symbols(self):
+        self.showing_symbols = not self.showing_symbols
+        if self.showing_symbols:
+            self._render_keys(self.symbol_keys)
+            self._btn_sym.setText("ABC")
+        else:
+            self._render_keys(self.alpha_keys)
+            self._btn_sym.setText("!@#")
 
     def add_key(self, grid, char, r, c):
         btn = HoloButton(char)

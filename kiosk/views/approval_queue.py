@@ -158,9 +158,12 @@ class ApprovalQueueView(QWidget):
         return frame
 
     def review_action(self, log_id, action):
+        from ..services.sound import SoundService
         try:
              url = f"http://localhost:8000/api/approvals/{log_id}/review"
              requests.post(url, json={"action": action})
+             if action == "APPROVE":
+                 SoundService.play_approval()
              self.refresh()
         except Exception as e:
             print(f"Error reviewing: {e}")

@@ -239,6 +239,11 @@ class KioskApp(QMainWindow):
 
     def enter_screensaver(self):
         if self.stack.currentIndex() != 9:
+            # Close any open dialogs/popups before entering screensaver
+            from PySide6.QtWidgets import QDialog
+            for widget in QApplication.topLevelWidgets():
+                if isinstance(widget, QDialog) and widget.isVisible():
+                    widget.close()
             self.stack.setCurrentIndex(9)
             
     def wake_up(self):

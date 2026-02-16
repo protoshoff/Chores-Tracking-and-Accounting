@@ -46,9 +46,9 @@ class ApiService:
         return False
 
     @staticmethod
-    def create_kid(name, allowance=0.0):
+    def create_kid(name, allowance=0.0, avatar_path=""):
         try:
-            payload = {"name": name, "allowance": allowance}
+            payload = {"name": name, "allowance": allowance, "avatar_path": avatar_path}
             resp = requests.post(f"{BASE_URL}/management/kids", json=payload, timeout=2)
             if resp.status_code in (200, 201):
                 return resp.json()
@@ -57,12 +57,13 @@ class ApiService:
         return None
 
     @staticmethod
-    def update_kid(kid_id, name=None, allowance=None, is_active=None):
+    def update_kid(kid_id, name=None, allowance=None, is_active=None, avatar_path=None):
         try:
             payload = {}
             if name is not None: payload["name"] = name
             if allowance is not None: payload["allowance"] = allowance
             if is_active is not None: payload["is_active"] = is_active
+            if avatar_path is not None: payload["avatar_path"] = avatar_path
             
             resp = requests.put(f"{BASE_URL}/management/kids/{kid_id}", json=payload, timeout=2)
             if resp.status_code == 200:

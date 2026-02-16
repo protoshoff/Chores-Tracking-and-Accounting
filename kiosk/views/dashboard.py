@@ -207,5 +207,7 @@ class KidDashboardView(QWidget):
         return frame
 
     def mark_done(self, chore_id):
+        from ..services.sound import SoundService
         ApiService.complete_chore(chore_id, self.kid_id)
+        SoundService.play_chore_complete()
         self.load_chores() # Refresh

@@ -1,7 +1,10 @@
 from PySide6.QtWidgets import QWidget, QGridLayout, QLabel, QVBoxLayout, QHBoxLayout, QProgressBar, QScrollArea
-from PySide6.QtCore import Qt, Signal, QTimer
+from PySide6.QtCore import Qt, Signal, QTimer, QByteArray
+from PySide6.QtSvg import QSvgRenderer
+from PySide6.QtGui import QPixmap, QPainter
 from ..components.holo_widgets import HoloFrame, HoloButton
 from ..services.sound import SoundService
+from ..services.avatars import get_avatar_svg, get_initials_svg
 
 class HoloKidCard(HoloFrame):
     clicked = Signal(int) 
@@ -17,6 +20,33 @@ class HoloKidCard(HoloFrame):
         layout.setContentsMargins(30, 30, 30, 30)
         layout.setSpacing(10)
         layout.setAlignment(Qt.AlignmentFlag.AlignTop)
+        
+        # Avatar
+        avatar_lbl = QLabel()
+        avatar_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        avatar_size = min(width, height) // 3
+        
+        avatar_path = data.get("avatar_path", "")
+        kid_index = data.get("id", 0) - 1  # color varies per kid
+        # avatar_path stores preset name (e.g. "robot", "shield") or a file path
+        avatar_name = ""
+        from ..services.avatars import get_avatar_choices
+        if avatar_path in get_avatar_choices():
+            avatar_name = avatar_path
+        if avatar_name:
+            svg_str = get_avatar_svg(avatar_name, kid_index)
+        else:
+            svg_str = get_initials_svg(data["name"], kid_index)
+        
+        # Render SVG to pixmap
+        renderer = QSvgRenderer(QByteArray(svg_str.encode()))
+        pixmap = QPixmap(avatar_size, avatar_size)
+        pixmap.fill(Qt.GlobalColor.transparent)
+        painter = QPainter(pixmap)
+        renderer.render(painter)
+        painter.end()
+        avatar_lbl.setPixmap(pixmap)
+        layout.addWidget(avatar_lbl)
         
         # Name
         self.name_lbl = QLabel(data["name"])
@@ -158,25 +188,33 @@ class HomeView(QWidget):
 
         count = len(kids_data)
         
-        # Responsive Layout Logic
+        # Responsive Layout Logic — supports up to 10 kids
         if count <= 2:
-            # 1 or 2 kids: Big Cards, Wide Spacing
             card_w, card_h = 400, 500
             self.grid.setHorizontalSpacing(150)
             self.grid.setVerticalSpacing(50)
             MAX_COLS = 2
         elif count == 3:
-            # 3 kids: Medium cards, Medium spacing
             card_w, card_h = 350, 450
             self.grid.setHorizontalSpacing(80)
             self.grid.setVerticalSpacing(30)
             MAX_COLS = 3
-        else:
-            # 4+ kids: Standard cards, Tight grid
-            card_w, card_h = 300, 380
-            self.grid.setHorizontalSpacing(30)
-            self.grid.setVerticalSpacing(30)
+        elif count <= 6:
+            card_w, card_h = 280, 360
+            self.grid.setHorizontalSpacing(25)
+            self.grid.setVerticalSpacing(20)
             MAX_COLS = 3
+        elif count <= 8:
+            card_w, card_h = 230, 300
+            self.grid.setHorizontalSpacing(15)
+            self.grid.setVerticalSpacing(15)
+            MAX_COLS = 4
+        else:
+            # 9-10 kids: Compact cards, 5 columns
+            card_w, card_h = 200, 260
+            self.grid.setHorizontalSpacing(10)
+            self.grid.setVerticalSpacing(10)
+            MAX_COLS = 5
 
         row, col = 0, 0
         for k in kids_data:

@@ -112,12 +112,11 @@ class ManageChoresView(QWidget):
         self.combo_day.hide()
         self.lbl_day.hide()
         
-        # Weight
+        # Weight (hidden — payout modes don't use per-chore reward)
         self.spin_weight = QSpinBox()
         self.spin_weight.setRange(1, 10)
-        self.spin_weight.setFixedWidth(100) # Safe width for visibility
-        self.style_spin(self.spin_weight)
-        self.form_layout.addRow(self.make_label("XP WEIGHT (1-10):"), self.spin_weight)
+        self.spin_weight.setValue(1)
+        self.spin_weight.hide()
         
         rl.addLayout(self.form_layout)
         rl.addStretch()
