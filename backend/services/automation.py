@@ -149,6 +149,40 @@ class AutomationService:
                      # Usually means if it wasn't done. If it's pending, it WAS done, just not approved.
                      pass
             
+            # Mark missed rotation chores for yesterday
+            from ..models import RotationGroup, RotationLog
+            from .rotation import RotationService
+            rotation_svc = RotationService(session)
+            
+            rot_groups = session.exec(
+                select(RotationGroup).where(RotationGroup.archived == False)
+            ).all()
+            
+            for group in rot_groups:
+                assigned_kid = rotation_svc.get_assigned_kid(group, yesterday)
+                if assigned_kid is None:
+                    continue  # Not due yesterday
+                
+                # Check if log exists
+                existing = session.exec(
+                    select(RotationLog).where(
+                        RotationLog.group_id == group.id,
+                        RotationLog.kid_id == assigned_kid,
+                        RotationLog.date == yesterday,
+                    )
+                ).first()
+                
+                if not existing:
+                    missed_log = RotationLog(
+                        group_id=group.id,
+                        kid_id=assigned_kid,
+                        week_id=week_id,
+                        date=yesterday,
+                        status=ChoreStatus.INCOMPLETE,
+                        notes="System: Auto-marked missed rotation",
+                    )
+                    session.add(missed_log)
+            
             session.commit()
         logger.info("Daily Maintenance Complete.")
 

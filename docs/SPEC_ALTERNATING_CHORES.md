@@ -207,13 +207,13 @@ This means each kid's expected instance count is different based on their rotati
 
 ---
 
-## Open Questions
+## Decisions (2026-02-16)
 
-1. **Should rotation chores also support a "due window"?** (e.g., dishes must be done by 8 PM)
-2. **What happens when a kid is deactivated mid-rotation?** Skip them and continue with remaining members?
-3. **Can a kid swap days with another kid?** (manual override for "I'll do your day if you do mine tomorrow")
-4. **Should the schedule preview show on the home screen kid cards?** (e.g., "Dishes today" badge)
+1. **Due window:** No — before midnight is fine (same as regular chores)
+2. **Kid deactivated mid-rotation:** Skip them, continue with remaining members
+3. **Day swapping:** Not at this time
+4. **Schedule preview on kid cards:** No — existing chore completion rollup is sufficient
 
 ---
 
-*Spec written 2026-02-16. Ready for implementation on approval.*
+*Spec written 2026-02-16. Approved for implementation.*

@@ -248,3 +248,69 @@ class ApiService:
         except Exception as e:
             print(f"API Error trigger_update: {e}")
         return None
+
+    # --- Rotation Chores ---
+
+    @staticmethod
+    def get_rotation_chores(kid_id):
+        """Get rotation chores assigned to a kid for today."""
+        try:
+            resp = requests.get(f"{BASE_URL}/kids/{kid_id}/rotation-chores", timeout=2)
+            if resp.status_code == 200:
+                return resp.json()
+        except Exception as e:
+            print(f"API Error get_rotation_chores: {e}")
+        return []
+
+    @staticmethod
+    def complete_rotation_chore(group_id, kid_id):
+        """Mark a rotation chore as complete."""
+        try:
+            resp = requests.post(
+                f"{BASE_URL}/rotations/{group_id}/complete",
+                json={"kid_id": kid_id},
+                timeout=2,
+            )
+            if resp.status_code == 200:
+                return resp.json()
+        except Exception as e:
+            print(f"API Error complete_rotation_chore: {e}")
+        return None
+
+    @staticmethod
+    def get_rotation_groups():
+        """Get all rotation groups."""
+        try:
+            resp = requests.get(f"{BASE_URL}/rotations/", timeout=2)
+            if resp.status_code == 200:
+                return resp.json()
+        except Exception as e:
+            print(f"API Error get_rotation_groups: {e}")
+        return []
+
+    @staticmethod
+    def create_rotation_group(name, frequency, start_date, members, description=""):
+        """Create a rotation group."""
+        try:
+            resp = requests.post(f"{BASE_URL}/rotations/", json={
+                "name": name,
+                "description": description,
+                "frequency": frequency,
+                "start_date": start_date,
+                "members": members,
+            }, timeout=2)
+            if resp.status_code == 201:
+                return resp.json()
+        except Exception as e:
+            print(f"API Error create_rotation_group: {e}")
+        return None
+
+    @staticmethod
+    def delete_rotation_group(group_id):
+        """Archive a rotation group."""
+        try:
+            resp = requests.delete(f"{BASE_URL}/rotations/{group_id}", timeout=2)
+            return resp.status_code == 200
+        except Exception as e:
+            print(f"API Error delete_rotation_group: {e}")
+        return False

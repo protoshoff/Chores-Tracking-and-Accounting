@@ -132,8 +132,9 @@ class ApprovalQueueView(QWidget):
                 color: #000;
             }
         """)
-        btn_approve.setFixedSize(155, 50)  # FIX: Was 140, increased to 155 for full "APPROVE" text
-        btn_approve.clicked.connect(lambda: self.review_action(item['id'], "APPROVE"))
+        btn_approve.setFixedSize(155, 50)
+        is_rot = item.get('is_rotation', False)
+        btn_approve.clicked.connect(lambda: self.review_action(item['id'], "APPROVE", is_rot))
         layout.addWidget(btn_approve)
         
         layout.addSpacing(10)
@@ -152,15 +153,18 @@ class ApprovalQueueView(QWidget):
             }
         """)
         btn_reject.setFixedSize(140, 50)
-        btn_reject.clicked.connect(lambda: self.review_action(item['id'], "REJECT"))
+        btn_reject.clicked.connect(lambda: self.review_action(item['id'], "REJECT", is_rot))
         layout.addWidget(btn_reject)
         
         return frame
 
-    def review_action(self, log_id, action):
+    def review_action(self, log_id, action, is_rotation=False):
         from ..services.sound import SoundService
         try:
-             url = f"http://localhost:8000/api/approvals/{log_id}/review"
+             if is_rotation:
+                 url = f"http://localhost:8000/api/rotations/log/{log_id}/review"
+             else:
+                 url = f"http://localhost:8000/api/approvals/{log_id}/review"
              requests.post(url, json={"action": action})
              if action == "APPROVE":
                  SoundService.play_approval()

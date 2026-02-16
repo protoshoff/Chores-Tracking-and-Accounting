@@ -133,25 +133,37 @@ class KidDashboardView(QWidget):
             for c in weeklies:
                 self.scroll_layout.addWidget(self._create_quest_row(c))
 
+        # Rotation (shared/alternating) chores
+        rotation_chores = ApiService.get_rotation_chores(self.kid_id)
+        if rotation_chores:
+            self.scroll_layout.addWidget(self._make_section_header("🔄 SHARED QUESTS"))
+            for c in rotation_chores:
+                self.scroll_layout.addWidget(self._create_quest_row(c, is_rotation=True))
+
     def _make_section_header(self, text):
         l = QLabel(text)
         l.setStyleSheet("color: #00E5FF; font-weight: bold; margin-top: 10px; border-bottom: 1px solid #007BFF;")
         return l
 
-    def _create_quest_row(self, c):
-        # A row looking like a mini-quest entry
-        # Replacing simple frame with a styled QFrame that looks techy
+    def _create_quest_row(self, c, is_rotation=False):
         frame = QFrame()
-        frame.setStyleSheet("background-color: rgba(0, 123, 255, 0.1); border: 1px solid #007BFF; border-radius: 4px;")
+        border_color = "#FF6B35" if is_rotation else "#007BFF"
+        frame.setStyleSheet(f"background-color: rgba(0, 123, 255, 0.1); border: 1px solid {border_color}; border-radius: 4px;")
         layout = QHBoxLayout(frame)
         
         # Info
         v = QVBoxLayout()
-        name = QLabel(c['name'])
+        name_text = c['name']
+        name = QLabel(name_text)
         name.setStyleSheet("font-size: 18px; font-weight: bold; color: white;")
         v.addWidget(name)
         
-        desc = QLabel(c.get('description', ''))
+        # Show "Shared with X" for rotation chores
+        desc_text = c.get('description', '') or ''
+        if is_rotation and c.get('shared_with'):
+            shared = ", ".join(c['shared_with'])
+            desc_text = f"Alternates with {shared}"
+        desc = QLabel(desc_text)
         desc.setStyleSheet("color: #B0BEC5; font-size: 14px;")
         v.addWidget(desc)
         layout.addLayout(v)
@@ -169,8 +181,11 @@ class KidDashboardView(QWidget):
 
         if status == 'INCOMPLETE':
             btn = HoloButton("COMPLETE", is_primary=True)
-            btn.setFixedSize(155, 40)  # FIX: Was 145, increased to 155 for full "COMPLETE" text
-            btn.clicked.connect(lambda _, cid=c['id']: self.mark_done(cid))
+            btn.setFixedSize(155, 40)
+            if is_rotation:
+                btn.clicked.connect(lambda _, gid=c['id']: self.mark_rotation_done(gid))
+            else:
+                btn.clicked.connect(lambda _, cid=c['id']: self.mark_done(cid))
             layout.addWidget(btn)
         elif status == 'REJECTED':
             # RETRY Flow
@@ -187,7 +202,10 @@ class KidDashboardView(QWidget):
                 }
             """)
             btn.setFixedSize(140, 40)
-            btn.clicked.connect(lambda _, cid=c['id']: self.mark_done(cid)) # Resubmit
+            if is_rotation:
+                btn.clicked.connect(lambda _, gid=c['id']: self.mark_rotation_done(gid))
+            else:
+                btn.clicked.connect(lambda _, cid=c['id']: self.mark_done(cid))  # Resubmit
             layout.addWidget(btn)
         else:
             lbl_text = status
@@ -210,4 +228,10 @@ class KidDashboardView(QWidget):
         from ..services.sound import SoundService
         ApiService.complete_chore(chore_id, self.kid_id)
         SoundService.play_chore_complete()
-        self.load_chores() # Refresh
+        self.load_chores()
+
+    def mark_rotation_done(self, group_id):
+        from ..services.sound import SoundService
+        ApiService.complete_rotation_chore(group_id, self.kid_id)
+        SoundService.play_chore_complete()
+        self.load_chores()

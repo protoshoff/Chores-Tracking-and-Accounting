@@ -17,7 +17,8 @@ def create_db_and_tables():
     # Import models so they're registered in SQLModel.metadata
     from backend.models import (
         User, Chore, ChoreLog, LedgerEntry, 
-        WeeklyRollup, Streak, Settings
+        WeeklyRollup, Streak, Settings,
+        RotationGroup, RotationMember, RotationLog
     )
     SQLModel.metadata.create_all(engine)
     seed_default_settings()

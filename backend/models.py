@@ -28,6 +28,11 @@ class PayoutMode(str, Enum):
     PRORATED = "PRORATED"
     ALL_OR_NOTHING = "ALL_OR_NOTHING"
 
+class RotationFrequency(str, Enum):
+    ALTERNATING_DAILY = "ALTERNATING_DAILY"   # Kids take turns each day
+    EVERY_OTHER_DAY = "EVERY_OTHER_DAY"       # Due every 2nd day
+    BIWEEKLY = "BIWEEKLY"                     # Due every 2 weeks
+
 # --- Tables ---
 
 class User(SQLModel, table=True):
@@ -108,3 +113,42 @@ class Settings(SQLModel, table=True):
     __tablename__ = "settings"
     key: str = Field(primary_key=True)
     value: str # JSON encoded
+
+# --- Rotation Chores ---
+
+class RotationGroup(SQLModel, table=True):
+    __tablename__ = "rotation_groups"
+    id: Optional[int] = Field(default=None, primary_key=True)
+    name: str
+    description: Optional[str] = None
+    frequency: RotationFrequency
+    start_date: dt_date  # Anchor date for rotation calculation
+    archived: bool = Field(default=False)
+    
+    members: List["RotationMember"] = Relationship(back_populates="group")
+
+class RotationMember(SQLModel, table=True):
+    __tablename__ = "rotation_members"
+    id: Optional[int] = Field(default=None, primary_key=True)
+    group_id: int = Field(foreign_key="rotation_groups.id", index=True)
+    kid_id: int = Field(foreign_key="users.id", index=True)
+    position: int = Field(default=0)  # Order in rotation (0, 1, 2...)
+    
+    group: RotationGroup = Relationship(back_populates="members")
+    kid: User = Relationship()
+
+class RotationLog(SQLModel, table=True):
+    """Tracks completion of rotation chores (parallel to ChoreLog)."""
+    __tablename__ = "rotation_logs"
+    id: Optional[int] = Field(default=None, primary_key=True)
+    group_id: int = Field(foreign_key="rotation_groups.id", index=True)
+    kid_id: int = Field(foreign_key="users.id", index=True)
+    week_id: str = Field(index=True)
+    date: dt_date = Field(index=True)
+    status: ChoreStatus = Field(default=ChoreStatus.INCOMPLETE, index=True)
+    completed_at: Optional[datetime] = None
+    reviewed_at: Optional[datetime] = None
+    notes: Optional[str] = None
+    
+    group: RotationGroup = Relationship()
+    kid: User = Relationship()

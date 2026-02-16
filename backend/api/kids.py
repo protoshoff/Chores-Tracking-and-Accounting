@@ -54,6 +54,13 @@ def get_kid(kid_id: int, session: Session = Depends(get_session)):
         chores_summary=summary
     )
 
+@router.get("/{kid_id}/rotation-chores")
+def get_kid_rotation_chores(kid_id: int, session: Session = Depends(get_session)):
+    """Get rotation chores assigned to this kid for today."""
+    from ..services.rotation import RotationService
+    svc = RotationService(session)
+    return svc.get_todays_rotation_chores(kid_id)
+
 @router.get("/{kid_id}/chores")
 def get_kid_chores(
     kid_id: int, 

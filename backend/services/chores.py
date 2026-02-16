@@ -136,12 +136,38 @@ class ChoreService:
             # Prorated: Show actual percentage
             week_pct = raw_week_pct
         
+        # Include rotation chores in today stats
+        from .rotation import RotationService
+        rotation_svc = RotationService(self.session)
+        rotation_today = rotation_svc.get_todays_rotation_chores(kid_id, today)
+        rotation_today_total = len(rotation_today)
+        rotation_today_done = sum(1 for r in rotation_today if r["status"] != ChoreStatus.INCOMPLETE)
+        
+        # Include rotation in week percentage
+        rotation_expected_week = rotation_svc.calculate_expected_instances(kid_id, week_id)
+        rotation_completed_week = rotation_svc.count_completed_instances(kid_id, week_id)
+        
+        # Recalculate week_pct including rotations
+        total_week_expected = sum(
+            7 if c.frequency == "DAILY" else 1 for c in chores
+        ) + rotation_expected_week
+        total_week_completed = sum(
+            1 for l in logs if l.status == ChoreStatus.APPROVED
+        ) + rotation_completed_week
+        
+        if total_week_expected > 0:
+            raw_week_pct = int((total_week_completed / total_week_expected) * 100)
+            if payout_mode == PayoutMode.ALL_OR_NOTHING:
+                week_pct = 100 if raw_week_pct >= threshold_pct else raw_week_pct
+            else:
+                week_pct = raw_week_pct
+        
         return {
             "total_reward": round(total_possible, 2),
             "completed_reward": round(completed_reward, 2),
             "approved_reward": round(approved_reward, 2),
             "pending_count": pending_count,
-            "today_done": today_done,
-            "today_total": daily_chores_count,
+            "today_done": today_done + rotation_today_done,
+            "today_total": daily_chores_count + rotation_today_total,
             "week_pct": week_pct
         }

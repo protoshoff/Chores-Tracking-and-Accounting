@@ -19,6 +19,7 @@ class PendingChore(BaseModel):
     status: str
     completed_at: datetime | None
     reward: float = 0.0
+    is_rotation: bool = False
 
 @router.get("/pending", response_model=List[PendingChore])
 def get_pending_approvals(session: Session = Depends(get_session)):
@@ -32,7 +33,7 @@ def get_pending_approvals(session: Session = Depends(get_session)):
     )
     results = session.exec(stmt).all()
 
-    return [
+    pending = [
         PendingChore(
             id=log.id,
             kid_id=log.kid_id,
@@ -47,6 +48,25 @@ def get_pending_approvals(session: Session = Depends(get_session)):
         for log, kid, chore in results
     ]
 
+    # Also include pending rotation chores
+    from ..services.rotation import RotationService
+    rotation_svc = RotationService(session)
+    for r in rotation_svc.get_pending_approvals():
+        pending.append(PendingChore(
+            id=r["id"],
+            kid_id=r["kid_id"],
+            kid_name=r["kid_name"],
+            chore_id=r["group_id"],  # Using group_id in chore_id field
+            chore_name=r["chore_name"],
+            date=r["date"],
+            status=r["status"],
+            completed_at=r["completed_at"],
+            reward=r["reward"],
+            is_rotation=True,
+        ))
+
+    return pending
+
 class ReviewRequest(BaseModel):
     action: str  # "APPROVE" or "REJECT"
 
@@ -56,8 +76,14 @@ from ..services.stats import StreakService
 def review_chore(
     log_id: int, 
     action: ReviewRequest,
+    is_rotation: bool = False,
     session: Session = Depends(get_session)
 ):
+    # Route rotation reviews to the rotation endpoint
+    if is_rotation:
+        from .rotations import review_rotation_log, ReviewRequest as RotReview
+        return review_rotation_log(log_id, RotReview(action=action.action), session)
+
     log = session.get(ChoreLog, log_id)
     if not log:
         raise HTTPException(status_code=404, detail="Log not found")

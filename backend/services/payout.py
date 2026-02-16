@@ -45,6 +45,12 @@ class PayoutService:
             if log.status == ChoreStatus.APPROVED:
                 completed_instances += 1
 
+        # Include rotation chore instances
+        from ..services.rotation import RotationService
+        rotation_svc = RotationService(self.session)
+        total_expected_instances += rotation_svc.calculate_expected_instances(kid_id, week_id)
+        completed_instances += rotation_svc.count_completed_instances(kid_id, week_id)
+
         # Calculate legacy reward values for rollup record
         total_possible = 0.0
         total_completed = 0.0

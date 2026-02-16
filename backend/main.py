@@ -4,7 +4,7 @@ from fastapi.staticfiles import StaticFiles
 import os
 from contextlib import asynccontextmanager
 from .db import create_db_and_tables
-from .api import debug, kids, chores, approvals, ledger, finances, system, management
+from .api import debug, kids, chores, approvals, ledger, finances, system, management, rotations
 from .services.automation import AutomationService
 
 @asynccontextmanager
@@ -61,6 +61,7 @@ app.include_router(ledger.router)
 app.include_router(finances.router)
 app.include_router(system.router)
 app.include_router(management.router)
+app.include_router(rotations.router)
 
 # Old health check moved to system.router /api/system/status
 

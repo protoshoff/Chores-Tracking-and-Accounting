@@ -1,7 +1,8 @@
 from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, 
                                QListWidget, QListWidgetItem, QLineEdit, QFormLayout,
-                               QComboBox, QSpinBox)
+                               QComboBox, QSpinBox, QCheckBox)
 from PySide6.QtCore import Signal, Qt
+from datetime import date
 from ..components.holo_widgets import HoloButton, HoloFrame
 from ..components.holo_keyboard import HoloLineEdit
 from ..services.api import ApiService
@@ -13,7 +14,9 @@ class ManageChoresView(QWidget):
         super().__init__(parent)
         self.chores = []
         self.kids = []
-        self.selected_chore = None 
+        self.selected_chore = None
+        self.is_rotation_mode = False
+        self.selected_rotation = None
 
         main = QVBoxLayout(self)
         
@@ -68,6 +71,20 @@ class ManageChoresView(QWidget):
         btn_add.clicked.connect(self.on_add_clicked)
         ll.addWidget(btn_add)
         
+        btn_add_rotation = HoloButton("NEW ROTATION")
+        btn_add_rotation.setStyleSheet("""
+            QPushButton {
+                background-color: rgba(255, 107, 53, 0.2);
+                border: 1px solid #FF6B35;
+                color: #FF6B35;
+            }
+            QPushButton:hover {
+                background-color: rgba(255, 107, 53, 0.4);
+            }
+        """)
+        btn_add_rotation.clicked.connect(self.on_add_rotation_clicked)
+        ll.addWidget(btn_add_rotation)
+        
         content.addWidget(left_panel)
         
         # --- RIGHT: Form ---
@@ -117,6 +134,25 @@ class ManageChoresView(QWidget):
         self.spin_weight.setRange(1, 10)
         self.spin_weight.setValue(1)
         self.spin_weight.hide()
+        
+        # --- Rotation-specific fields (hidden by default) ---
+        self.lbl_rot_freq = self.make_label("ROTATION TYPE:")
+        self.combo_rot_freq = QComboBox()
+        self.style_combo(self.combo_rot_freq)
+        self.combo_rot_freq.addItems(["ALTERNATING_DAILY", "EVERY_OTHER_DAY", "BIWEEKLY"])
+        self.form_layout.addRow(self.lbl_rot_freq, self.combo_rot_freq)
+        self.lbl_rot_freq.hide()
+        self.combo_rot_freq.hide()
+        
+        self.lbl_rot_members = self.make_label("CREW MEMBERS:")
+        self.rotation_member_checks = []
+        self.rot_members_widget = QWidget()
+        self.rot_members_layout = QVBoxLayout(self.rot_members_widget)
+        self.rot_members_layout.setContentsMargins(0, 0, 0, 0)
+        self.rot_members_layout.setSpacing(5)
+        self.form_layout.addRow(self.lbl_rot_members, self.rot_members_widget)
+        self.lbl_rot_members.hide()
+        self.rot_members_widget.hide()
         
         rl.addLayout(self.form_layout)
         rl.addStretch()
@@ -264,6 +300,9 @@ class ManageChoresView(QWidget):
         self.combo_kid.clear()
         for k in self.kids:
             self.combo_kid.addItem(k.get("name", "Unknown"), k.get("id"))
+        
+        # Update rotation member checkboxes
+        self._rebuild_member_checks()
             
         # 2. Fetch All Chores
         self.list_widget.clear()
@@ -272,34 +311,85 @@ class ManageChoresView(QWidget):
         for k in self.kids:
             kid_chores = ApiService.get_kid_chores(k["id"])
             for c in kid_chores:
-                c["kid_name"] = k["name"] # Attach name for display
+                c["kid_name"] = k["name"]
                 self.chores.append(c)
-                
-                # Add to List
                 label = f"[{k['name']}] {c['name']}"
                 item = QListWidgetItem(label)
                 item.setData(Qt.ItemDataRole.UserRole, c)
                 self.list_widget.addItem(item)
+        
+        # 3. Fetch Rotation Groups
+        rotations = ApiService.get_rotation_groups()
+        for r in rotations:
+            member_names = ", ".join(m["kid_name"] for m in r.get("members", []))
+            label = f"🔄 {r['name']} ({member_names})"
+            item = QListWidgetItem(label)
+            item.setData(Qt.ItemDataRole.UserRole, {"_rotation": True, **r})
+            self.list_widget.addItem(item)
+    
+    def _rebuild_member_checks(self):
+        """Rebuild the rotation member checkboxes."""
+        # Clear existing
+        while self.rot_members_layout.count():
+            w = self.rot_members_layout.takeAt(0).widget()
+            if w: w.setParent(None)
+        self.rotation_member_checks = []
+        
+        for k in self.kids:
+            cb = QCheckBox(k.get("name", "Unknown"))
+            cb.setStyleSheet("color: white; font-size: 16px;")
+            cb.setProperty("kid_id", k.get("id"))
+            self.rotation_member_checks.append(cb)
+            self.rot_members_layout.addWidget(cb)
     
     def on_chore_selected(self, item):
         data = item.data(Qt.ItemDataRole.UserRole)
+        
+        if data.get("_rotation"):
+            # Rotation group selected
+            self.selected_rotation = data
+            self.selected_chore = None
+            self.is_rotation_mode = True
+            self._show_rotation_fields(True)
+            
+            self.inp_name.setText(data.get("name", ""))
+            self.inp_desc.setText(data.get("description", "") or "")
+            
+            # Set frequency
+            freq = data.get("frequency", "ALTERNATING_DAILY")
+            idx = self.combo_rot_freq.findText(freq)
+            if idx >= 0: self.combo_rot_freq.setCurrentIndex(idx)
+            
+            # Check member boxes
+            member_ids = [m["kid_id"] for m in data.get("members", [])]
+            for cb in self.rotation_member_checks:
+                cb.setChecked(cb.property("kid_id") in member_ids)
+            
+            self.btn_save.setText("UPDATE ROTATION")
+            self.btn_delete.show()
+            return
+        
+        # Regular chore selected
         self.selected_chore = data
+        self.selected_rotation = None
+        self.is_rotation_mode = False
+        self._show_rotation_fields(False)
         
         self.inp_name.setText(data.get("name", ""))
-        self.inp_desc.setText(data.get("description", ""))
+        self.inp_desc.setText(data.get("description", "") or "")
         self.spin_weight.setValue(data.get("weight", 1))
         
+        freq = data.get("frequency", "DAILY")
         idx = self.combo_freq.findText(freq)
         if idx >= 0: self.combo_freq.setCurrentIndex(idx)
         
-        # Set Due Day
         due_day = data.get("due_day")
         if due_day is not None:
             self.combo_day.setCurrentIndex(due_day)
         else:
             self.combo_day.setCurrentIndex(0)
             
-        self.on_freq_changed() # Update visibility
+        self.on_freq_changed()
         
         target_kid_name = data.get("kid_name")
         for i in range(self.combo_kid.count()):
@@ -310,9 +400,49 @@ class ManageChoresView(QWidget):
         self.btn_save.setText("UPDATE QUEST")
         self.btn_delete.show()
 
+    def _show_rotation_fields(self, show):
+        """Toggle visibility of rotation vs regular chore fields."""
+        if show:
+            self.combo_kid.hide()
+            # Find the label for ASSIGN TO
+            for i in range(self.form_layout.rowCount()):
+                item = self.form_layout.itemAt(i, QFormLayout.ItemRole.LabelRole)
+                if item and item.widget() and "ASSIGN" in item.widget().text():
+                    item.widget().hide()
+            self.combo_freq.hide()
+            for i in range(self.form_layout.rowCount()):
+                item = self.form_layout.itemAt(i, QFormLayout.ItemRole.LabelRole)
+                if item and item.widget() and "FREQUENCY" in item.widget().text():
+                    item.widget().hide()
+            self.lbl_day.hide()
+            self.combo_day.hide()
+            self.lbl_rot_freq.show()
+            self.combo_rot_freq.show()
+            self.lbl_rot_members.show()
+            self.rot_members_widget.show()
+        else:
+            self.combo_kid.show()
+            for i in range(self.form_layout.rowCount()):
+                item = self.form_layout.itemAt(i, QFormLayout.ItemRole.LabelRole)
+                if item and item.widget() and "ASSIGN" in item.widget().text():
+                    item.widget().show()
+            self.combo_freq.show()
+            for i in range(self.form_layout.rowCount()):
+                item = self.form_layout.itemAt(i, QFormLayout.ItemRole.LabelRole)
+                if item and item.widget() and "FREQUENCY" in item.widget().text():
+                    item.widget().show()
+            self.on_freq_changed()
+            self.lbl_rot_freq.hide()
+            self.combo_rot_freq.hide()
+            self.lbl_rot_members.hide()
+            self.rot_members_widget.hide()
+
     def on_add_clicked(self):
         self.list_widget.clearSelection()
         self.selected_chore = None
+        self.selected_rotation = None
+        self.is_rotation_mode = False
+        self._show_rotation_fields(False)
         self.inp_name.clear()
         self.inp_desc.clear()
         self.spin_weight.setValue(1)
@@ -324,9 +454,29 @@ class ManageChoresView(QWidget):
         self.btn_delete.hide()
         self.inp_name.setFocus()
 
+    def on_add_rotation_clicked(self):
+        self.list_widget.clearSelection()
+        self.selected_chore = None
+        self.selected_rotation = None
+        self.is_rotation_mode = True
+        self._show_rotation_fields(True)
+        self.inp_name.clear()
+        self.inp_desc.clear()
+        self.combo_rot_freq.setCurrentIndex(0)
+        for cb in self.rotation_member_checks:
+            cb.setChecked(False)
+        
+        self.btn_save.setText("CREATE ROTATION")
+        self.btn_delete.hide()
+        self.inp_name.setFocus()
+
     def save_chore(self):
         name = self.inp_name.text().strip()
-        if not name: return 
+        if not name: return
+        
+        if self.is_rotation_mode:
+            self._save_rotation(name)
+            return
         
         desc = self.inp_desc.text().strip()
         weight = self.spin_weight.value()
@@ -338,14 +488,45 @@ class ManageChoresView(QWidget):
             due_day = self.combo_day.currentIndex()
         
         if self.selected_chore:
-            # Update
             cid = self.selected_chore["id"]
             ApiService.update_chore(cid, name=name, description=desc, weight=weight, frequency=freq, due_day=due_day)
         else:
-            # Create
             if kid_id is not None:
                 ApiService.create_chore(kid_id, name, description=desc, reward=weight, frequency=freq, due_day=due_day)
             
+        self.refresh_data()
+        self.on_add_clicked()
+
+    def _save_rotation(self, name):
+        desc = self.inp_desc.text().strip()
+        freq = self.combo_rot_freq.currentText()
+        
+        # Collect checked members
+        members = []
+        pos = 0
+        for cb in self.rotation_member_checks:
+            if cb.isChecked():
+                members.append({"kid_id": cb.property("kid_id"), "position": pos})
+                pos += 1
+        
+        if len(members) < 1:
+            from ..components.holo_alert import HoloAlert
+            HoloAlert("VALIDATION ERROR", "Select at least 1 crew member.", self.window(), is_error=True).exec()
+            return
+        
+        if self.selected_rotation:
+            # Update — use API directly
+            import requests
+            requests.put(
+                f"http://localhost:8000/api/rotations/{self.selected_rotation['id']}",
+                json={"name": name, "description": desc, "frequency": freq, "members": members},
+                timeout=2,
+            )
+        else:
+            # Create
+            start = date.today().isoformat()
+            ApiService.create_rotation_group(name, freq, start, members, description=desc)
+        
         self.refresh_data()
         self.on_add_clicked()
 
@@ -359,7 +540,11 @@ class ManageChoresView(QWidget):
             self.combo_day.hide() 
 
     def archive_chore(self):
-        if self.selected_chore:
+        if self.selected_rotation:
+            ApiService.delete_rotation_group(self.selected_rotation["id"])
+            self.refresh_data()
+            self.on_add_clicked()
+        elif self.selected_chore:
             cid = self.selected_chore["id"]
             ApiService.delete_chore(cid)
             self.refresh_data()
