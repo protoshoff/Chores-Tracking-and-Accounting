@@ -7,7 +7,6 @@ requests
 jinja2
 python-multipart
 APScheduler
-bcrypt
 # Dev dependencies
 pytest
 httpx

@@ -215,10 +215,12 @@ async def trigger_system_update():
         script_path = f"{home_dir}/chores_repo/scripts/deploy_release.sh"
         
         # Run deploy script in background (detached from parent process)
+        log_path = os.path.join(home_dir, "chores_app", "deploy.log")
+        log_file = open(log_path, "a")
         subprocess.Popen(
             [script_path],
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
+            stdout=log_file,
+            stderr=log_file,
             start_new_session=True
         )
         return {"status": "update_started", "message": "System update initiated. Kiosk will restart in ~60 seconds."}
