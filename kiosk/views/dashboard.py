@@ -6,7 +6,7 @@ from ..services.api import ApiService
 from ..services.avatars import get_avatar_choices, get_avatar_svg, get_initials_svg
 from ..components.holo_widgets import HoloFrame, HoloButton
 
-AVATAR_SIZE = 72
+AVATAR_SIZE = 100
 
 def _render_avatar_pixmap(avatar_path, kid_name, kid_index, size=AVATAR_SIZE):
     choices = get_avatar_choices()
@@ -140,8 +140,10 @@ class KidDashboardView(QWidget):
         sl.setAlignment(Qt.AlignmentFlag.AlignTop)
 
         # Avatar container with pencil badge overlay
+        BADGE = 24
+        CONTAINER = AVATAR_SIZE + BADGE // 2  # badge hangs half-off bottom-right
         avatar_container = QWidget()
-        avatar_container.setFixedSize(AVATAR_SIZE + 16, AVATAR_SIZE + 16)
+        avatar_container.setFixedSize(CONTAINER, CONTAINER)
         avatar_container.setCursor(Qt.CursorShape.PointingHandCursor)
         avatar_container.setToolTip("Tap to change avatar")
         avatar_container.mousePressEvent = self._toggle_picker
@@ -149,17 +151,17 @@ class KidDashboardView(QWidget):
         self.avatar_lbl = QLabel(avatar_container)
         self.avatar_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.avatar_lbl.setFixedSize(AVATAR_SIZE, AVATAR_SIZE)
-        self.avatar_lbl.move(8, 0)
+        self.avatar_lbl.move(0, 0)
 
-        # Pencil badge — bottom-right corner of the container
+        # Pencil badge — bottom-right corner, fully inside the container
         self.pencil_lbl = QLabel("✏", avatar_container)
-        self.pencil_lbl.setFixedSize(22, 22)
+        self.pencil_lbl.setFixedSize(BADGE, BADGE)
         self.pencil_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.pencil_lbl.setStyleSheet(
-            "background: #00E5FF; color: #050510; border-radius: 11px;"
-            " font-size: 11px; font-weight: bold;"
+            "background: #00E5FF; color: #050510; border-radius: 12px;"
+            " font-size: 13px; font-weight: bold;"
         )
-        self.pencil_lbl.move(AVATAR_SIZE - 4, AVATAR_SIZE - 10)
+        self.pencil_lbl.move(AVATAR_SIZE - BADGE // 2, AVATAR_SIZE - BADGE // 2)
 
         sl.addWidget(avatar_container, alignment=Qt.AlignmentFlag.AlignCenter)
 
