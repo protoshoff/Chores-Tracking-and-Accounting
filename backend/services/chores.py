@@ -60,17 +60,6 @@ class ChoreService:
                 total_possible += chore.reward * 7
             else:
                 total_possible += chore.reward
-                
-        if total_possible == 0:
-            return {
-                "total_reward": 0.0,
-                "completed_reward": 0.0,
-                "approved_reward": 0.0,
-                "pending_count": 0,
-                "today_done": 0,
-                "today_total": 0,
-                "week_pct": 0
-            }
 
         # 2. Get Week's Logs
         today = date.today()
@@ -124,28 +113,35 @@ class ChoreService:
         payout_mode = mode_setting.value if mode_setting else PayoutMode.ALL_OR_NOTHING
         
         # Calculate raw completion percentage
-        raw_week_pct = int((approved_reward / total_possible) * 100)
+        raw_week_pct = int((approved_reward / total_possible) * 100) if total_possible > 0 else 0
+        
+        # Get threshold setting (used by ALL_OR_NOTHING mode)
+        threshold_setting = self.session.get(Settings, "payout_threshold")
+        threshold_pct = int(threshold_setting.value) if threshold_setting else 80
         
         # Apply payout mode logic
         if payout_mode == PayoutMode.ALL_OR_NOTHING:
-            # All-or-Nothing: Show 100% if >= threshold, else show actual % (but pay 0% at week end)
-            threshold_setting = self.session.get(Settings, "payout_threshold")
-            threshold_pct = int(threshold_setting.value) if threshold_setting else 80
             week_pct = 100 if raw_week_pct >= threshold_pct else raw_week_pct
         else:
-            # Prorated: Show actual percentage
             week_pct = raw_week_pct
         
         # Include rotation chores in today stats
-        from .rotation import RotationService
-        rotation_svc = RotationService(self.session)
-        rotation_today = rotation_svc.get_todays_rotation_chores(kid_id, today)
-        rotation_today_total = len(rotation_today)
-        rotation_today_done = sum(1 for r in rotation_today if r["status"] != ChoreStatus.INCOMPLETE)
-        
-        # Include rotation in week percentage
-        rotation_expected_week = rotation_svc.calculate_expected_instances(kid_id, week_id)
-        rotation_completed_week = rotation_svc.count_completed_instances(kid_id, week_id)
+        rotation_today_total = 0
+        rotation_today_done = 0
+        rotation_expected_week = 0
+        rotation_completed_week = 0
+        try:
+            from .rotation import RotationService
+            rotation_svc = RotationService(self.session)
+            rotation_today = rotation_svc.get_todays_rotation_chores(kid_id, today)
+            rotation_today_total = len(rotation_today)
+            rotation_today_done = sum(1 for r in rotation_today if r["status"] != ChoreStatus.INCOMPLETE)
+            
+            # Include rotation in week percentage
+            rotation_expected_week = rotation_svc.calculate_expected_instances(kid_id, week_id)
+            rotation_completed_week = rotation_svc.count_completed_instances(kid_id, week_id)
+        except Exception as e:
+            print(f"Warning: rotation stats failed for kid {kid_id}: {e}")
         
         # Recalculate week_pct including rotations
         total_week_expected = sum(
