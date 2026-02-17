@@ -463,6 +463,21 @@
             BIWEEKLY: "Due every 2 weeks on the same day of the week as the start date.",
         };
 
+        // ===== AVATAR PATH ENCODING (mirrors kiosk/services/avatars.py) =====
+        function parseAvatarPath(avatarPath) {
+            if (!avatarPath || avatarPath === '/static/default_avatar.png') return { name: '', colorIndex: 0 };
+            if (avatarPath.includes(':')) {
+                const [name, ci] = avatarPath.split(':', 2);
+                return { name: PRESET_AVATARS[name] ? name : '', colorIndex: parseInt(ci) || 0 };
+            }
+            return { name: PRESET_AVATARS[avatarPath] ? avatarPath : '', colorIndex: 0 };
+        }
+
+        function encodeAvatarPath(name, colorIndex) {
+            if (!name) return '';
+            return `${name}:${colorIndex}`;
+        }
+
         function renderAvatarSvg(name, colorIndex) {
             const color = AVATAR_COLORS[(colorIndex || 0) % AVATAR_COLORS.length];
             const template = PRESET_AVATARS[name];
@@ -482,30 +497,63 @@
             </svg>`;
         }
 
-        function buildAvatarPicker(selectedAvatar, kidName) {
+        function buildAvatarPicker(selectedAvatarPath, kidName) {
+            const { name: selName, colorIndex: selColor } = parseAvatarPath(selectedAvatarPath);
+            const colorSwatches = AVATAR_COLORS.map((hex, ci) => {
+                const border = ci === selColor ? '2px solid white' : '2px solid transparent';
+                return `<div class="color-swatch" data-ci="${ci}"
+                    onclick="selectColor(this, ${ci})"
+                    style="width:22px;height:22px;border-radius:50%;background:${hex};
+                           border:${border};cursor:pointer;display:inline-block;margin:2px;">
+                </div>`;
+            }).join('');
+
             let html = '<div class="avatar-picker">';
             // Initials option
-            const initialsSelected = !selectedAvatar || selectedAvatar === '/static/default_avatar.png' ? 'selected' : '';
+            const initialsSelected = !selName ? 'selected' : '';
             html += `<div class="avatar-opt ${initialsSelected}" onclick="selectAvatar(this, '')" data-avatar="">
                 <span class="initials-label">ABC</span>
             </div>`;
-            // Preset avatars
+            // Preset avatars — each previewed in its own distinct color
             Object.keys(PRESET_AVATARS).forEach((name, i) => {
-                const sel = selectedAvatar === name ? 'selected' : '';
+                const sel = selName === name ? 'selected' : '';
                 html += `<div class="avatar-opt ${sel}" onclick="selectAvatar(this, '${name}')" data-avatar="${name}">
                     ${renderAvatarSvg(name, i)}
                 </div>`;
             });
             html += '</div>';
+            html += `<div id="color-row" style="margin-top:6px;display:flex;flex-wrap:wrap;align-items:center;gap:4px;">
+                <span style="font-size:11px;color:var(--text-dim);margin-right:4px;">COLOR:</span>
+                ${colorSwatches}
+            </div>`;
             return html;
         }
 
         function selectAvatar(el, name) {
             el.closest('.avatar-picker').querySelectorAll('.avatar-opt').forEach(o => o.classList.remove('selected'));
             el.classList.add('selected');
-            // Store selected value
+            // Re-encode with current color
             const hiddenInput = el.closest('.modal').querySelector('#avatar-value');
-            if (hiddenInput) hiddenInput.value = name;
+            if (hiddenInput) {
+                const currentColor = parseInt(hiddenInput.dataset.colorIndex || '0');
+                hiddenInput.value = encodeAvatarPath(name, currentColor);
+                hiddenInput.dataset.colorIndex = currentColor;
+            }
+        }
+
+        function selectColor(el, colorIndex) {
+            const modal = el.closest('.modal');
+            // Highlight selected swatch
+            modal.querySelectorAll('.color-swatch').forEach((sw, ci) => {
+                sw.style.border = ci === colorIndex ? '2px solid white' : '2px solid transparent';
+            });
+            // Re-encode with current avatar name
+            const hiddenInput = modal.querySelector('#avatar-value');
+            if (hiddenInput) {
+                const { name } = parseAvatarPath(hiddenInput.value);
+                hiddenInput.value = encodeAvatarPath(name, colorIndex);
+                hiddenInput.dataset.colorIndex = colorIndex;
+            }
         }
 
         // ===== UTILS =====
@@ -614,9 +662,10 @@
             if (grid) {
                 grid.innerHTML = "";
                 kids.forEach((k, idx) => {
-                    const avatarHtml = k.avatar_path && k.avatar_path !== '/static/default_avatar.png' && PRESET_AVATARS[k.avatar_path]
-                        ? `<div style="width:60px;height:60px;margin:0 auto 0.5rem">${renderAvatarSvg(k.avatar_path, idx)}</div>`
-                        : `<div style="width:60px;height:60px;margin:0 auto 0.5rem">${renderInitialsSvg(k.name, idx)}</div>`;
+                    const { name: avName, colorIndex: avColor } = parseAvatarPath(k.avatar_path);
+                    const avatarHtml = avName
+                        ? `<div style="width:60px;height:60px;margin:0 auto 0.5rem">${renderAvatarSvg(avName, avColor)}</div>`
+                        : `<div style="width:60px;height:60px;margin:0 auto 0.5rem">${renderInitialsSvg(k.name, avColor)}</div>`;
 
                     grid.innerHTML += `
                     <div class="card">
@@ -645,7 +694,7 @@
         function showAddKidModal() {
             showModal(`
                 <h3>Recruit Crew Member</h3>
-                <input type="hidden" id="avatar-value" value="" />
+                <input type="hidden" id="avatar-value" value="" data-color-index="0" />
                 <label>Name:</label>
                 <input id="kid-name" placeholder="Enter Name" autofocus />
                 <label>Weekly Allowance ($):</label>
@@ -671,9 +720,10 @@
 
         function editKid(k) {
             const currentAvatar = k.avatar_path || '';
+            const { colorIndex: initColor } = parseAvatarPath(currentAvatar);
             showModal(`
                 <h3>Edit Profile: ${k.name}</h3>
-                <input type="hidden" id="avatar-value" value="${currentAvatar}" />
+                <input type="hidden" id="avatar-value" value="${currentAvatar}" data-color-index="${initColor}" />
                 <label>Name:</label>
                 <input id="edit-kid-name" value="${k.name}" placeholder="Name" />
                 <label>Weekly Allowance ($):</label>

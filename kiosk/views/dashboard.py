@@ -3,17 +3,19 @@ from PySide6.QtCore import Qt, Signal, QByteArray, QSize
 from PySide6.QtSvg import QSvgRenderer
 from PySide6.QtGui import QPixmap, QPainter, QIcon
 from ..services.api import ApiService
-from ..services.avatars import get_avatar_choices, get_avatar_svg, get_initials_svg
+from ..services.avatars import (get_avatar_choices, get_avatar_svg, get_initials_svg,
+                                parse_avatar_path, encode_avatar_path, AVATAR_COLORS)
 from ..components.holo_widgets import HoloFrame, HoloButton
 
 AVATAR_SIZE = 130
 
-def _render_avatar_pixmap(avatar_path, kid_name, kid_index, size=AVATAR_SIZE):
-    choices = get_avatar_choices()
-    if avatar_path in choices:
-        svg_str = get_avatar_svg(avatar_path, kid_index)
+def _render_avatar_pixmap(avatar_path, kid_name, size=AVATAR_SIZE):
+    """Render an avatar_path (e.g. 'robot:3' or '') into a QPixmap."""
+    avatar_name, color_index = parse_avatar_path(avatar_path)
+    if avatar_name:
+        svg_str = get_avatar_svg(avatar_name, color_index)
     else:
-        svg_str = get_initials_svg(kid_name, kid_index)
+        svg_str = get_initials_svg(kid_name, color_index)
     renderer = QSvgRenderer(QByteArray(svg_str.encode()))
     pixmap = QPixmap(size, size)
     pixmap.fill(Qt.GlobalColor.transparent)
@@ -35,8 +37,15 @@ def _make_svg_icon(svg_str, size=38):
 
 
 class AvatarPickerWidget(QWidget):
-    """2-row grid of avatar buttons, hidden until the avatar is tapped."""
+    """Two-stage picker: icon grid → color swatches.
+
+    Emits avatar_selected(encoded_path) where encoded_path is "name:color_index"
+    or "" for initials.  Initials emit immediately (no color stage).
+    """
     avatar_selected = Signal(str)
+
+    _BTN = 54
+    _SWATCH = 30
 
     _STYLE_BASE = (
         "QPushButton { border: 1px solid #334455; border-radius: 6px;"
@@ -57,49 +66,116 @@ class AvatarPickerWidget(QWidget):
         " border: 2px solid #00E5FF; border-radius: 6px; background: rgba(0,229,255,0.25); }"
     )
 
-    def __init__(self, current_avatar, kid_index, parent=None):
+    def __init__(self, current_avatar_path, parent=None):
         super().__init__(parent)
-        self._buttons = []
+        self._current_name, self._current_color = parse_avatar_path(current_avatar_path)
+        self._pending_name = None  # name chosen, awaiting color pick
+        self._icon_buttons = []
+        self._swatch_buttons = []
 
-        # 5 columns × 2 rows fits all 9 options (1 initials + 8 presets) neatly
-        grid = QGridLayout(self)
-        grid.setContentsMargins(0, 6, 0, 6)
+        outer = QVBoxLayout(self)
+        outer.setContentsMargins(0, 6, 0, 6)
+        outer.setSpacing(8)
+
+        # --- Stage 1: icon grid ---
+        self._icon_widget = QWidget()
+        grid = QGridLayout(self._icon_widget)
+        grid.setContentsMargins(0, 0, 0, 0)
         grid.setSpacing(6)
 
-        BTN = 54  # button size px
-
-        # "ABC" initials / reset option
+        # "ABC" initials option
         initials_btn = HoloButton("ABC")
-        initials_btn.setFixedSize(BTN, BTN)
-        initials_btn.clicked.connect(lambda: self.avatar_selected.emit(""))
-        self._buttons.append(("", initials_btn))
+        initials_btn.setFixedSize(self._BTN, self._BTN)
+        initials_btn.clicked.connect(self._on_initials)
+        self._icon_buttons.append(("", initials_btn))
         grid.addWidget(initials_btn, 0, 0)
 
         choices = get_avatar_choices()
         for i, name in enumerate(choices):
             btn = HoloButton("")
-            btn.setFixedSize(BTN, BTN)
-            icon = _make_svg_icon(get_avatar_svg(name, i), size=BTN - 8)
+            btn.setFixedSize(self._BTN, self._BTN)
+            # Preview each icon in its own distinct color so all look different
+            icon = _make_svg_icon(get_avatar_svg(name, i), size=self._BTN - 8)
             btn.setIcon(icon)
-            btn.setIconSize(QSize(BTN - 8, BTN - 8))
-            btn.clicked.connect(lambda checked=False, n=name: self.avatar_selected.emit(n))
-            self._buttons.append((name, btn))
+            btn.setIconSize(QSize(self._BTN - 8, self._BTN - 8))
+            btn.clicked.connect(lambda checked=False, n=name: self._on_icon_chosen(n))
+            self._icon_buttons.append((name, btn))
             col = (i + 1) % 5
             row = (i + 1) // 5
             grid.addWidget(btn, row, col)
 
-        self._highlight(current_avatar)
+        outer.addWidget(self._icon_widget)
 
-    def _highlight(self, selected):
-        for av_name, btn in self._buttons:
+        # --- Stage 2: color swatch row (hidden until icon chosen) ---
+        self._swatch_widget = QWidget()
+        swatch_layout = QVBoxLayout(self._swatch_widget)
+        swatch_layout.setContentsMargins(0, 0, 0, 0)
+        swatch_layout.setSpacing(4)
+
+        self._color_label = QLabel("PICK A COLOR:")
+        self._color_label.setStyleSheet("color: #00E5FF; font-size: 11px; font-weight: bold;")
+        swatch_layout.addWidget(self._color_label)
+
+        swatch_row = QHBoxLayout()
+        swatch_row.setSpacing(5)
+        for ci, hex_color in enumerate(AVATAR_COLORS):
+            sw = HoloButton("")
+            sw.setFixedSize(self._SWATCH, self._SWATCH)
+            sw.setStyleSheet(
+                f"QPushButton {{ background: {hex_color}; border: 2px solid transparent;"
+                f" border-radius: {self._SWATCH // 2}px; }}"
+                f" QPushButton:hover {{ border-color: white; }}"
+            )
+            sw.clicked.connect(lambda checked=False, c=ci: self._on_color_chosen(c))
+            self._swatch_buttons.append(sw)
+            swatch_row.addWidget(sw)
+        swatch_row.addStretch()
+        swatch_layout.addLayout(swatch_row)
+
+        self._swatch_widget.hide()
+        outer.addWidget(self._swatch_widget)
+
+        self._highlight_icon(self._current_name)
+
+    def _on_initials(self):
+        """Initials need no color — emit immediately."""
+        self.avatar_selected.emit("")
+
+    def _on_icon_chosen(self, name):
+        """User tapped an icon — show color swatches."""
+        self._pending_name = name
+        self._highlight_icon(name)
+        # Pre-highlight the currently stored color
+        self._highlight_swatch(self._current_color)
+        self._swatch_widget.show()
+
+    def _on_color_chosen(self, color_index):
+        """User tapped a swatch — encode and emit."""
+        self._current_color = color_index
+        self._highlight_swatch(color_index)
+        encoded = encode_avatar_path(self._pending_name, color_index)
+        self.avatar_selected.emit(encoded)
+
+    def _highlight_icon(self, selected_name):
+        for av_name, btn in self._icon_buttons:
             if av_name == "":
                 btn.setStyleSheet(
-                    self._STYLE_INITIALS_ACTIVE if selected == "" else self._STYLE_INITIALS_BASE
+                    self._STYLE_INITIALS_ACTIVE if selected_name == "" else self._STYLE_INITIALS_BASE
                 )
             else:
                 btn.setStyleSheet(
-                    self._STYLE_ACTIVE if av_name == selected else self._STYLE_BASE
+                    self._STYLE_ACTIVE if av_name == selected_name else self._STYLE_BASE
                 )
+
+    def _highlight_swatch(self, selected_index):
+        for ci, sw in enumerate(self._swatch_buttons):
+            hex_color = AVATAR_COLORS[ci % len(AVATAR_COLORS)]
+            border = "white" if ci == selected_index else "transparent"
+            sw.setStyleSheet(
+                f"QPushButton {{ background: {hex_color}; border: 2px solid {border};"
+                f" border-radius: {self._SWATCH // 2}px; }}"
+                f" QPushButton:hover {{ border-color: white; }}"
+            )
 
 
 class KidDashboardView(QWidget):
@@ -221,7 +297,7 @@ class KidDashboardView(QWidget):
             self.avatar_picker.setParent(None)
             self.avatar_picker = None
 
-        self.avatar_picker = AvatarPickerWidget(self._current_avatar, self._kid_index)
+        self.avatar_picker = AvatarPickerWidget(self._current_avatar)
         self.avatar_picker.avatar_selected.connect(self._on_avatar_selected)
         # Insert right after avatar_lbl (index 1), then immediately hide
         sl.insertWidget(1, self.avatar_picker)
@@ -233,15 +309,12 @@ class KidDashboardView(QWidget):
         self._picker_visible = not self._picker_visible
         self.avatar_picker.setVisible(self._picker_visible)
 
-    def _on_avatar_selected(self, avatar_name):
-        self._current_avatar = avatar_name
-        ApiService.update_kid(self.kid_id, avatar_path=avatar_name)
+    def _on_avatar_selected(self, encoded_path):
+        self._current_avatar = encoded_path
+        ApiService.update_kid(self.kid_id, avatar_path=encoded_path)
         # Refresh avatar display
-        px = _render_avatar_pixmap(avatar_name, self._kid_name, self._kid_index)
+        px = _render_avatar_pixmap(encoded_path, self._kid_name)
         self.avatar_lbl.setPixmap(px)
-        # Update picker highlight
-        if self.avatar_picker:
-            self.avatar_picker._highlight(avatar_name)
         # Close picker
         self._picker_visible = False
         self.avatar_picker.setVisible(False)
@@ -259,10 +332,10 @@ class KidDashboardView(QWidget):
             self.lbl_title.setText(f"{kid['name'].upper()} // DASHBOARD")
 
             # Avatar
-            px = _render_avatar_pixmap(self._current_avatar, self._kid_name, self._kid_index)
+            px = _render_avatar_pixmap(self._current_avatar, self._kid_name)
             self.avatar_lbl.setPixmap(px)
 
-            # Build picker (knows kid_index for color preview)
+            # Build picker
             self._build_picker()
             self._picker_visible = False
 

@@ -7,7 +7,7 @@ from ..components.holo_widgets import HoloButton, HoloFrame
 from ..components.holo_keyboard import HoloLineEdit
 from ..components.holo_alert import HoloAlert
 from ..services.api import ApiService
-from ..services.avatars import get_avatar_choices, get_avatar_svg, AVATAR_COLORS
+from ..services.avatars import get_avatar_choices, get_avatar_svg, AVATAR_COLORS, parse_avatar_path
 
 class ManageUsersView(QWidget):
     back_clicked = Signal()
@@ -219,11 +219,12 @@ class ManageUsersView(QWidget):
             item.setData(Qt.ItemDataRole.UserRole, u)
             self.list_widget.addItem(item)
             
-    def _select_avatar(self, name):
-        self.selected_avatar = name
-        # Highlight selected
+    def _select_avatar(self, avatar_path):
+        self.selected_avatar = avatar_path
+        # Parse to get just the name for button highlighting
+        avatar_name, _ = parse_avatar_path(avatar_path)
         for av_name, btn in self.avatar_buttons:
-            if av_name == name:
+            if av_name == avatar_name:
                 btn.setStyleSheet(btn.styleSheet() + "border: 2px solid #00E5FF;")
             else:
                 btn.setStyleSheet(btn.styleSheet().replace("border: 2px solid #00E5FF;", ""))

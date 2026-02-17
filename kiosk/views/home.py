@@ -4,7 +4,7 @@ from PySide6.QtSvg import QSvgRenderer
 from PySide6.QtGui import QPixmap, QPainter
 from ..components.holo_widgets import HoloFrame, HoloButton
 from ..services.sound import SoundService
-from ..services.avatars import get_avatar_svg, get_initials_svg
+from ..services.avatars import get_avatar_svg, get_initials_svg, parse_avatar_path
 
 class HoloKidCard(HoloFrame):
     clicked = Signal(int) 
@@ -27,16 +27,11 @@ class HoloKidCard(HoloFrame):
         avatar_size = min(width, height) // 3
         
         avatar_path = data.get("avatar_path", "")
-        kid_index = data.get("id", 0) - 1  # color varies per kid
-        # avatar_path stores preset name (e.g. "robot", "shield") or a file path
-        avatar_name = ""
-        from ..services.avatars import get_avatar_choices
-        if avatar_path in get_avatar_choices():
-            avatar_name = avatar_path
+        avatar_name, color_index = parse_avatar_path(avatar_path)
         if avatar_name:
-            svg_str = get_avatar_svg(avatar_name, kid_index)
+            svg_str = get_avatar_svg(avatar_name, color_index)
         else:
-            svg_str = get_initials_svg(data["name"], kid_index)
+            svg_str = get_initials_svg(data["name"], color_index)
         
         # Render SVG to pixmap
         renderer = QSvgRenderer(QByteArray(svg_str.encode()))

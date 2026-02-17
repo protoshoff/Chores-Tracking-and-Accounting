@@ -79,6 +79,40 @@ def get_avatar_choices():
     return list(PRESET_AVATARS.keys())
 
 
+def parse_avatar_path(avatar_path: str):
+    """Parse an avatar_path string into (avatar_name, color_index).
+
+    Supports both legacy bare names ("robot") and the new encoded format
+    ("robot:3").  Unknown or empty paths return ("", 0).
+    """
+    if not avatar_path or avatar_path == "/static/default_avatar.png":
+        return ("", 0)
+    if ":" in avatar_path:
+        parts = avatar_path.split(":", 1)
+        name = parts[0]
+        try:
+            color_index = int(parts[1])
+        except ValueError:
+            color_index = 0
+    else:
+        name = avatar_path
+        color_index = 0
+    # Validate name is a known avatar; fall back to initials if not
+    if name not in PRESET_AVATARS:
+        name = ""
+    return (name, color_index)
+
+
+def encode_avatar_path(avatar_name: str, color_index: int) -> str:
+    """Encode avatar name + color index into a storable string.
+
+    Empty avatar_name means "use initials" and is stored as "".
+    """
+    if not avatar_name:
+        return ""
+    return f"{avatar_name}:{color_index}"
+
+
 def get_avatar_svg(avatar_name: str, color_index: int = 0) -> str:
     """Get SVG string for an avatar with a specific color."""
     color = AVATAR_COLORS[color_index % len(AVATAR_COLORS)]
