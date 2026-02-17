@@ -1,7 +1,7 @@
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QScrollArea, QFrame, QProgressBar
-from PySide6.QtCore import Qt, Signal, QByteArray
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QScrollArea, QFrame, QProgressBar, QGridLayout
+from PySide6.QtCore import Qt, Signal, QByteArray, QSize
 from PySide6.QtSvg import QSvgRenderer
-from PySide6.QtGui import QPixmap, QPainter
+from PySide6.QtGui import QPixmap, QPainter, QIcon
 from ..services.api import ApiService
 from ..services.avatars import get_avatar_choices, get_avatar_svg, get_initials_svg
 from ..components.holo_widgets import HoloFrame, HoloButton
@@ -23,83 +23,83 @@ def _render_avatar_pixmap(avatar_path, kid_name, kid_index, size=AVATAR_SIZE):
     return pixmap
 
 
+def _make_svg_icon(svg_str, size=38):
+    """Render an SVG string into a QIcon."""
+    renderer = QSvgRenderer(QByteArray(svg_str.encode()))
+    px = QPixmap(size, size)
+    px.fill(Qt.GlobalColor.transparent)
+    p = QPainter(px)
+    renderer.render(p)
+    p.end()
+    return QIcon(px)
+
+
 class AvatarPickerWidget(QWidget):
-    """Inline row of avatar buttons, hidden by default."""
+    """2-row grid of avatar buttons, hidden until the avatar is tapped."""
     avatar_selected = Signal(str)
+
+    _STYLE_BASE = (
+        "QPushButton { border: 1px solid #334455; border-radius: 6px;"
+        " background: rgba(0,0,0,0.4); }"
+        " QPushButton:hover { border-color: #00E5FF; background: rgba(0,229,255,0.15); }"
+    )
+    _STYLE_ACTIVE = (
+        "QPushButton { border: 2px solid #00E5FF; border-radius: 6px;"
+        " background: rgba(0,229,255,0.2); }"
+    )
+    _STYLE_INITIALS_BASE = (
+        "QPushButton { font-size: 11px; font-weight: bold; color: #00E5FF;"
+        " border: 1px solid #334455; border-radius: 6px; background: rgba(0,229,255,0.08); }"
+        " QPushButton:hover { border-color: #00E5FF; background: rgba(0,229,255,0.2); }"
+    )
+    _STYLE_INITIALS_ACTIVE = (
+        "QPushButton { font-size: 11px; font-weight: bold; color: #00E5FF;"
+        " border: 2px solid #00E5FF; border-radius: 6px; background: rgba(0,229,255,0.25); }"
+    )
 
     def __init__(self, current_avatar, kid_index, parent=None):
         super().__init__(parent)
-        self._kid_index = kid_index
-        self._current = current_avatar
         self._buttons = []
 
-        layout = QHBoxLayout(self)
-        layout.setContentsMargins(0, 4, 0, 4)
-        layout.setSpacing(6)
+        # 5 columns × 2 rows fits all 9 options (1 initials + 8 presets) neatly
+        grid = QGridLayout(self)
+        grid.setContentsMargins(0, 6, 0, 6)
+        grid.setSpacing(6)
 
-        # "ABC" initials option
+        BTN = 44  # button size px — fits comfortably in 290px panel width
+
+        # "ABC" initials / reset option
         initials_btn = HoloButton("ABC")
-        initials_btn.setFixedSize(52, 52)
-        initials_btn.setStyleSheet("""
-            QPushButton {
-                font-size: 13px; font-weight: bold;
-                color: #00E5FF; background: rgba(0, 229, 255, 0.1);
-                border: 1px solid #445566; border-radius: 4px;
-            }
-            QPushButton:hover { border-color: #00E5FF; background: rgba(0, 229, 255, 0.2); }
-        """)
+        initials_btn.setFixedSize(BTN, BTN)
         initials_btn.clicked.connect(lambda: self.avatar_selected.emit(""))
         self._buttons.append(("", initials_btn))
-        layout.addWidget(initials_btn)
+        grid.addWidget(initials_btn, 0, 0)
 
-        for i, name in enumerate(get_avatar_choices()):
+        choices = get_avatar_choices()
+        for i, name in enumerate(choices):
             btn = HoloButton("")
-            btn.setFixedSize(52, 52)
-            svg_str = get_avatar_svg(name, i)
-            renderer = QSvgRenderer(QByteArray(svg_str.encode()))
-            px = QPixmap(36, 36)
-            px.fill(Qt.GlobalColor.transparent)
-            p = QPainter(px)
-            renderer.render(p)
-            p.end()
-            icon_lbl = QLabel()
-            icon_lbl.setPixmap(px)
-            icon_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
-            inner = QVBoxLayout(btn)
-            inner.setContentsMargins(0, 0, 0, 0)
-            inner.addWidget(icon_lbl)
+            btn.setFixedSize(BTN, BTN)
+            icon = _make_svg_icon(get_avatar_svg(name, i), size=BTN - 8)
+            btn.setIcon(icon)
+            btn.setIconSize(QSize(BTN - 8, BTN - 8))
             btn.clicked.connect(lambda checked=False, n=name: self.avatar_selected.emit(n))
             self._buttons.append((name, btn))
-            layout.addWidget(btn)
+            col = (i + 1) % 5
+            row = (i + 1) // 5
+            grid.addWidget(btn, row, col)
 
-        layout.addStretch()
         self._highlight(current_avatar)
 
     def _highlight(self, selected):
-        base = "QPushButton { border: 1px solid #445566; border-radius: 4px; background: rgba(0,0,0,0.3); } QPushButton:hover { border-color: #00E5FF; }"
-        active = "QPushButton { border: 2px solid #00E5FF; border-radius: 4px; background: rgba(0,229,255,0.15); box-shadow: 0 0 8px #00E5FF; }"
         for av_name, btn in self._buttons:
-            if av_name == "" and selected == "":
-                btn.setStyleSheet("""
-                    QPushButton {
-                        font-size: 13px; font-weight: bold;
-                        color: #00E5FF; background: rgba(0, 229, 255, 0.25);
-                        border: 2px solid #00E5FF; border-radius: 4px;
-                    }
-                """)
-            elif av_name == "":
-                btn.setStyleSheet("""
-                    QPushButton {
-                        font-size: 13px; font-weight: bold;
-                        color: #00E5FF; background: rgba(0, 229, 255, 0.1);
-                        border: 1px solid #445566; border-radius: 4px;
-                    }
-                    QPushButton:hover { border-color: #00E5FF; background: rgba(0, 229, 255, 0.2); }
-                """)
-            elif av_name == selected:
-                btn.setStyleSheet(active)
+            if av_name == "":
+                btn.setStyleSheet(
+                    self._STYLE_INITIALS_ACTIVE if selected == "" else self._STYLE_INITIALS_BASE
+                )
             else:
-                btn.setStyleSheet(base)
+                btn.setStyleSheet(
+                    self._STYLE_ACTIVE if av_name == selected else self._STYLE_BASE
+                )
 
 
 class KidDashboardView(QWidget):
@@ -206,9 +206,9 @@ class KidDashboardView(QWidget):
 
         self.avatar_picker = AvatarPickerWidget(self._current_avatar, self._kid_index)
         self.avatar_picker.avatar_selected.connect(self._on_avatar_selected)
-        self.avatar_picker.setVisible(False)
-        # Insert right after avatar_lbl (index 1, after the avatar label at 0)
+        # Insert right after avatar_lbl (index 1), then immediately hide
         sl.insertWidget(1, self.avatar_picker)
+        self.avatar_picker.hide()
 
     def _toggle_picker(self, event=None):
         if self.avatar_picker is None:
