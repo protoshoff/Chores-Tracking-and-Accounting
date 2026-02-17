@@ -6,7 +6,7 @@ from ..services.api import ApiService
 from ..services.avatars import get_avatar_choices, get_avatar_svg, get_initials_svg
 from ..components.holo_widgets import HoloFrame, HoloButton
 
-AVATAR_SIZE = 100
+AVATAR_SIZE = 130
 
 def _render_avatar_pixmap(avatar_path, kid_name, kid_index, size=AVATAR_SIZE):
     choices = get_avatar_choices()
