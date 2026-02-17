@@ -66,7 +66,7 @@ class AvatarPickerWidget(QWidget):
         grid.setContentsMargins(0, 6, 0, 6)
         grid.setSpacing(6)
 
-        BTN = 44  # button size px — fits comfortably in 290px panel width
+        BTN = 54  # button size px
 
         # "ABC" initials / reset option
         initials_btn = HoloButton("ABC")
@@ -139,14 +139,29 @@ class KidDashboardView(QWidget):
         sl.setSpacing(12)
         sl.setAlignment(Qt.AlignmentFlag.AlignTop)
 
-        # Avatar (clickable)
-        self.avatar_lbl = QLabel()
+        # Avatar container with pencil badge overlay
+        avatar_container = QWidget()
+        avatar_container.setFixedSize(AVATAR_SIZE + 16, AVATAR_SIZE + 16)
+        avatar_container.setCursor(Qt.CursorShape.PointingHandCursor)
+        avatar_container.setToolTip("Tap to change avatar")
+        avatar_container.mousePressEvent = self._toggle_picker
+
+        self.avatar_lbl = QLabel(avatar_container)
         self.avatar_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.avatar_lbl.setFixedSize(AVATAR_SIZE, AVATAR_SIZE)
-        self.avatar_lbl.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.avatar_lbl.setToolTip("Tap to change avatar")
-        self.avatar_lbl.mousePressEvent = self._toggle_picker
-        sl.addWidget(self.avatar_lbl, alignment=Qt.AlignmentFlag.AlignCenter)
+        self.avatar_lbl.move(8, 0)
+
+        # Pencil badge — bottom-right corner of the container
+        self.pencil_lbl = QLabel("✏", avatar_container)
+        self.pencil_lbl.setFixedSize(22, 22)
+        self.pencil_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.pencil_lbl.setStyleSheet(
+            "background: #00E5FF; color: #050510; border-radius: 11px;"
+            " font-size: 11px; font-weight: bold;"
+        )
+        self.pencil_lbl.move(AVATAR_SIZE - 4, AVATAR_SIZE - 10)
+
+        sl.addWidget(avatar_container, alignment=Qt.AlignmentFlag.AlignCenter)
 
         # Avatar picker (hidden until avatar tapped; inserted at index 1 by _build_picker)
         self.avatar_picker = None  # built on load_kid when we know kid_index
