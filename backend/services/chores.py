@@ -61,15 +61,19 @@ class ChoreService:
             else:
                 total_possible += chore.reward
 
-        # 2. Get Week's Logs
+        # 2. Get Week's Logs — query by date range to avoid week_id format mismatches
+        from datetime import timedelta
         today = date.today()
         week_id = today.strftime("%G-W%V")
+        monday = today - timedelta(days=today.weekday())  # Monday of current week
+        sunday = monday + timedelta(days=6)
         
         # Eager load chore to prevent N+1 and potential locks
         from sqlalchemy.orm import selectinload
         stmt = select(ChoreLog).where(
             ChoreLog.kid_id == kid_id,
-            ChoreLog.week_id == week_id
+            ChoreLog.date >= monday,
+            ChoreLog.date <= sunday,
         ).options(selectinload(ChoreLog.chore))
         
         logs = self.session.exec(stmt).all()

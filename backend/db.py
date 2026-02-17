@@ -1,4 +1,4 @@
-from sqlmodel import SQLModel, create_engine, Session
+from sqlmodel import SQLModel, create_engine, Session, select
 import os
 
 # Ensure the data directory exists
@@ -22,6 +22,27 @@ def create_db_and_tables():
     )
     SQLModel.metadata.create_all(engine)
     seed_default_settings()
+    fix_week_id_format()
+
+def fix_week_id_format():
+    """One-time migration: convert old %Y-W%W week_ids to ISO %G-W%V format."""
+    from backend.models import ChoreLog
+    with Session(engine) as session:
+        # Find logs with potentially old-format week_ids and recalculate
+        logs = session.exec(select(ChoreLog).where(ChoreLog.date != None)).all()
+        fixed = 0
+        for log in logs:
+            if log.date is None:
+                continue
+            correct_week_id = log.date.strftime("%G-W%V")
+            if log.week_id != correct_week_id:
+                log.week_id = correct_week_id
+                session.add(log)
+                fixed += 1
+        if fixed > 0:
+            session.commit()
+            print(f"Fixed {fixed} ChoreLog week_id values to ISO format")
+
 
 def seed_default_settings():
     """Initialize default settings if they don't exist"""
