@@ -1,13 +1,10 @@
 from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, 
                                QListWidget, QListWidgetItem, QLineEdit, QFormLayout)
-from PySide6.QtCore import Signal, Qt, QByteArray
-from PySide6.QtSvg import QSvgRenderer
-from PySide6.QtGui import QPixmap, QPainter
+from PySide6.QtCore import Signal, Qt
 from ..components.holo_widgets import HoloButton, HoloFrame
 from ..components.holo_keyboard import HoloLineEdit
 from ..components.holo_alert import HoloAlert
 from ..services.api import ApiService
-from ..services.avatars import get_avatar_choices, get_avatar_svg, AVATAR_COLORS, parse_avatar_path
 
 class ManageUsersView(QWidget):
     back_clicked = Signal()
@@ -97,51 +94,8 @@ class ManageUsersView(QWidget):
         # self.style_input(self.inp_allowance)
         self.form_layout.addRow(self.make_label("ALLOWANCE ($):"), self.inp_allowance)
         
-        # Avatar Picker
-        avatar_label = self.make_label("AVATAR:")
-        self.avatar_layout = QHBoxLayout()
-        self.avatar_layout.setSpacing(8)
+        # Avatar is managed from the kid dashboard, not here
         self.selected_avatar = ""
-        self.avatar_buttons = []
-        
-        # "Initials" button to deselect avatar
-        initials_btn = HoloButton("ABC")
-        initials_btn.setFixedSize(56, 56)
-        initials_btn.setStyleSheet("""
-            QPushButton {
-                font-size: 14px; font-weight: bold;
-                color: #00E5FF; background: rgba(0, 229, 255, 0.1);
-                border: 1px solid #445566; border-radius: 4px;
-            }
-        """)
-        initials_btn.clicked.connect(lambda: self._select_avatar(""))
-        self.avatar_buttons.append(("", initials_btn))
-        self.avatar_layout.addWidget(initials_btn)
-
-        for i, name in enumerate(get_avatar_choices()):
-            btn = HoloButton("")
-            btn.setFixedSize(56, 56)
-            # Render preview
-            svg_str = get_avatar_svg(name, i)
-            renderer = QSvgRenderer(QByteArray(svg_str.encode()))
-            pixmap = QPixmap(40, 40)
-            pixmap.fill(Qt.GlobalColor.transparent)
-            painter = QPainter(pixmap)
-            renderer.render(painter)
-            painter.end()
-            icon_lbl = QLabel()
-            icon_lbl.setPixmap(pixmap)
-            icon_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
-            # Overlay label on button
-            btn_layout = QVBoxLayout(btn)
-            btn_layout.setContentsMargins(0, 0, 0, 0)
-            btn_layout.addWidget(icon_lbl)
-            btn.clicked.connect(lambda checked=False, n=name: self._select_avatar(n))
-            self.avatar_buttons.append((name, btn))
-            self.avatar_layout.addWidget(btn)
-        
-        self.avatar_layout.addStretch()
-        self.form_layout.addRow(avatar_label, self.avatar_layout)
         
         rl.addLayout(self.form_layout)
         rl.addStretch()
@@ -219,23 +173,12 @@ class ManageUsersView(QWidget):
             item.setData(Qt.ItemDataRole.UserRole, u)
             self.list_widget.addItem(item)
             
-    def _select_avatar(self, avatar_path):
-        self.selected_avatar = avatar_path
-        # Parse to get just the name for button highlighting
-        avatar_name, _ = parse_avatar_path(avatar_path)
-        for av_name, btn in self.avatar_buttons:
-            if av_name == avatar_name:
-                btn.setStyleSheet(btn.styleSheet() + "border: 2px solid #00E5FF;")
-            else:
-                btn.setStyleSheet(btn.styleSheet().replace("border: 2px solid #00E5FF;", ""))
-
     def on_user_selected(self, item):
         data = item.data(Qt.ItemDataRole.UserRole)
         self.selected_user = data
         self.inp_name.setText(data.get("name", ""))
         self.inp_allowance.setText(str(data.get("allowance", 0.0)))
         self.selected_avatar = data.get("avatar_path", "")
-        self._select_avatar(self.selected_avatar)
         self.btn_save.setText("UPDATE RECORD")
         self.btn_delete.show()
 
