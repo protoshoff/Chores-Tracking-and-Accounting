@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+
+  @page { size: letter; margin: 0; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Inter', 'Segoe UI', sans-serif;
+    color: #1a1a2e;
+    line-height: 1.5;
+    font-size: 11pt;
+  }
+
+  /* Cover page */
+  .cover {
+    height: 100vh;
+    background: linear-gradient(135deg, #0a0a2e 0%, #16213e 50%, #0f3460 100%);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    text-align: center;
+    padding: 2in;
+    page-break-after: always;
+  }
+  .cover h1 {
+    font-size: 36pt;
+    font-weight: 700;
+    letter-spacing: 2px;
+    margin-bottom: 0.3em;
+    color: #00E5FF;
+    text-shadow: 0 0 30px rgba(0, 229, 255, 0.4);
+  }
+  .cover .subtitle {
+    font-size: 16pt;
+    font-weight: 300;
+    color: #8899AA;
+    margin-bottom: 2em;
+  }
+  .cover .version {
+    font-size: 10pt;
+    color: #556677;
+    margin-top: 3em;
+  }
+  .cover .emoji-row {
+    font-size: 42pt;
+    margin-bottom: 1em;
+    letter-spacing: 12px;
+  }
+
+  /* Content pages */
+  .page {
+    padding: 0.75in 0.9in;
+    page-break-after: always;
+    min-height: 100vh;
+  }
+  .page:last-child { page-break-after: avoid; }
+
+  h2 {
+    font-size: 20pt;
+    color: #0f3460;
+    border-bottom: 3px solid #00E5FF;
+    padding-bottom: 6px;
+    margin-bottom: 18px;
+    margin-top: 8px;
+  }
+
+  h3 {
+    font-size: 13pt;
+    color: #16213e;
+    margin-top: 20px;
+    margin-bottom: 8px;
+  }
+
+  p, li { margin-bottom: 6px; }
+  ul, ol { padding-left: 1.4em; margin-bottom: 12px; }
+
+  .step-box {
+    background: #f0f8ff;
+    border-left: 4px solid #00E5FF;
+    padding: 12px 16px;
+    margin: 12px 0;
+    border-radius: 0 6px 6px 0;
+  }
+  .step-box .step-num {
+    font-weight: 700;
+    color: #0f3460;
+    font-size: 12pt;
+    margin-bottom: 4px;
+  }
+
+  .warning-box {
+    background: #fff8e1;
+    border-left: 4px solid #FFD600;
+    padding: 12px 16px;
+    margin: 12px 0;
+    border-radius: 0 6px 6px 0;
+  }
+
+  .tip-box {
+    background: #e8f5e9;
+    border-left: 4px solid #00C853;
+    padding: 12px 16px;
+    margin: 12px 0;
+    border-radius: 0 6px 6px 0;
+  }
+
+  .section-icon {
+    font-size: 18pt;
+    margin-right: 8px;
+    vertical-align: middle;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 12px 0;
+    font-size: 10pt;
+  }
+  th {
+    background: #0f3460;
+    color: white;
+    padding: 8px 12px;
+    text-align: left;
+  }
+  td {
+    padding: 8px 12px;
+    border-bottom: 1px solid #dde;
+  }
+  tr:nth-child(even) td { background: #f5f7fa; }
+
+  .two-col {
+    display: flex;
+    gap: 24px;
+    margin: 12px 0;
+  }
+  .two-col > div { flex: 1; }
+
+  .footer {
+    text-align: center;
+    color: #999;
+    font-size: 8pt;
+    margin-top: 40px;
+    padding-top: 12px;
+    border-top: 1px solid #ddd;
+  }
+
+  .screen-label {
+    display: inline-block;
+    background: #0f3460;
+    color: #00E5FF;
+    padding: 2px 10px;
+    border-radius: 4px;
+    font-size: 9pt;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+  }
+
+  .button-ref {
+    display: inline-block;
+    background: rgba(0, 229, 255, 0.15);
+    border: 1px solid #00E5FF;
+    color: #0f3460;
+    padding: 1px 8px;
+    border-radius: 3px;
+    font-size: 9.5pt;
+    font-weight: 600;
+  }
+</style>
+</head>
+<body>
+
+<!-- COVER -->
+<div class="cover">
+  <div class="emoji-row">🚀 ⭐ 🛡️</div>
+  <h1>QUEST TRACKER</h1>
+  <div class="subtitle">Quick Start Guide</div>
+  <p style="color:#aabbcc; font-size:11pt; max-width:400px; line-height:1.6">
+    A chore tracking &amp; allowance system for families.<br>
+    Set up quests, track progress, and pay allowances — all from your kiosk.
+  </p>
+  <div class="version">Version 1.0 &nbsp;•&nbsp; February 2026</div>
+</div>
+
+<!-- PAGE 1: WHAT'S IN THE BOX -->
+<div class="page">
+  <h2><span class="section-icon">📦</span> What You Need</h2>
+
+  <p>Quest Tracker runs on a Raspberry Pi with a touchscreen. Before you start, make sure you have:</p>
+
+  <ul>
+    <li><strong>Raspberry Pi</strong> (3B or 4B) with power supply</li>
+    <li><strong>Touchscreen LCD</strong> (7" or similar, connected to Pi)</li>
+    <li><strong>MicroSD card</strong> with the Quest Tracker image pre-installed</li>
+    <li><strong>Wi-Fi network</strong> (the Pi connects over your home Wi-Fi)</li>
+  </ul>
+
+  <h2><span class="section-icon">⚡</span> First Boot</h2>
+
+  <div class="step-box">
+    <div class="step-num">Step 1 — Power On</div>
+    Plug in the power supply. The Pi will boot and the Quest Tracker kiosk will appear automatically after about 30–60 seconds.
+  </div>
+
+  <div class="step-box">
+    <div class="step-num">Step 2 — Connect to Wi-Fi (if needed)</div>
+    If the kiosk shows "CONNECTING..." and doesn't load, you may need to configure Wi-Fi:
+    <ol style="margin-top:6px">
+      <li>Tap <span class="button-ref">SYSTEM CONFIG</span> (bottom-right of home screen)</li>
+      <li>Enter the parent PIN (default: <strong>1234</strong>)</li>
+      <li>Tap <span class="button-ref">WI-FI</span></li>
+      <li>Select your network and enter the password</li>
+      <li>Wait for the connection to establish, then go back to the home screen</li>
+    </ol>
+  </div>
+
+  <div class="warning-box">
+    <strong>⚠️ Change Your PIN!</strong> The default parent PIN is <strong>1234</strong>. Change it right away under System Config → Configure System → Update Parent PIN.
+  </div>
+
+  <h2><span class="section-icon">👨‍👩‍👧‍👦</span> Adding Your Kids (Crew Members)</h2>
+
+  <div class="step-box">
+    <div class="step-num">Step 3 — Open Crew Management</div>
+    <ol>
+      <li>Tap <span class="button-ref">SYSTEM CONFIG</span> → enter your PIN</li>
+      <li>Tap <span class="button-ref">MANAGE CREW</span></li>
+      <li>Tap <span class="button-ref">+ NEW RECORD</span></li>
+    </ol>
+  </div>
+
+  <div class="step-box">
+    <div class="step-num">Step 4 — Create Each Kid's Profile</div>
+    <ol>
+      <li>Enter their <strong>name</strong></li>
+      <li>Enter their <strong>weekly allowance</strong> amount (e.g., 10.00 for $10/week)</li>
+      <li>Tap <span class="button-ref">CREATE RECORD</span></li>
+      <li>Repeat for each child (supports up to 10)</li>
+    </ol>
+  </div>
+
+  <div class="tip-box">
+    <strong>💡 Avatars:</strong> After creating a kid, tap their card on the home screen to open their dashboard. From there you can pick a fun sci-fi avatar (robot, rocket, shield, and more).
+  </div>
+</div>
+
+<!-- PAGE 2: CREATING QUESTS -->
+<div class="page">
+  <h2><span class="section-icon">⚔️</span> Creating Quests (Chores)</h2>
+
+  <p>Quests are the chores your kids need to complete to earn their allowance.</p>
+
+  <div class="step-box">
+    <div class="step-num">Step 5 — Open Quest Manager</div>
+    <ol>
+      <li>Tap <span class="button-ref">SYSTEM CONFIG</span> → enter your PIN</li>
+      <li>Tap <span class="button-ref">MANAGE QUESTS</span></li>
+      <li>Tap <span class="button-ref">+ NEW QUEST</span></li>
+    </ol>
+  </div>
+
+  <div class="step-box">
+    <div class="step-num">Step 6 — Set Up a Quest</div>
+    <ol>
+      <li><strong>Assign to:</strong> Pick which kid this quest is for</li>
+      <li><strong>Name:</strong> Give it a clear name (e.g., "Dishes", "Clean Room")</li>
+      <li><strong>Description:</strong> Optional details about what's expected</li>
+      <li><strong>Frequency:</strong>
+        <ul>
+          <li><strong>Daily</strong> — must be done every day</li>
+          <li><strong>Weekly</strong> — must be done once a week on a specific day</li>
+        </ul>
+      </li>
+      <li>Tap <span class="button-ref">SAVE QUEST</span></li>
+    </ol>
+  </div>
+
+  <h3>🔄 Rotation Quests (Shared Chores)</h3>
+  <p>For chores that kids take turns doing (like taking out the trash):</p>
+
+  <div class="step-box">
+    <div class="step-num">Step 7 — Create a Rotation</div>
+    <ol>
+      <li>In Quest Manager, tap <span class="button-ref">NEW ROTATION</span></li>
+      <li>Enter the quest name and description</li>
+      <li>Choose a <strong>rotation type:</strong></li>
+    </ol>
+
+    <table>
+      <tr><th>Type</th><th>How It Works</th></tr>
+      <tr><td><strong>Alternating Daily</strong></td><td>Due every day — kids take turns (Kid A today, Kid B tomorrow…)</td></tr>
+      <tr><td><strong>Every Other Day</strong></td><td>Due every other day — kids rotate on active days. Off days, nobody does it.</td></tr>
+      <tr><td><strong>Biweekly</strong></td><td>Due every 2 weeks on the same day of the week.</td></tr>
+    </table>
+
+    <ol start="4">
+      <li>Select which kids participate (check their names)</li>
+      <li>The order you check them sets the rotation order</li>
+      <li>Tap <span class="button-ref">SAVE QUEST</span></li>
+    </ol>
+  </div>
+</div>
+
+<!-- PAGE 3: DAILY USE -->
+<div class="page">
+  <h2><span class="section-icon">📱</span> Daily Use — How It Works</h2>
+
+  <h3>For Kids</h3>
+  <div class="two-col">
+    <div>
+      <p><strong>1. Tap your card</strong> on the home screen to open your dashboard.</p>
+      <p><strong>2. Complete a quest</strong> — tap <span class="button-ref">COMPLETE</span> next to the chore you finished.</p>
+      <p><strong>3. Wait for approval</strong> — the quest shows as "PENDING" until a parent reviews it.</p>
+    </div>
+    <div>
+      <p style="font-size:10pt; color:#666; padding:12px; background:#f5f7fa; border-radius:8px;">
+        <strong>Home Screen Cards show:</strong><br>
+        • Kid's name and avatar<br>
+        • Current balance<br>
+        • Today's progress (e.g., 2/3)<br>
+        • Weekly progress bar
+      </p>
+    </div>
+  </div>
+
+  <h3>For Parents</h3>
+
+  <div class="step-box">
+    <div class="step-num">Approving Quests</div>
+    <ol>
+      <li>Tap <span class="button-ref">PARENT ZONE</span> (bottom-left of home screen)</li>
+      <li>Enter your PIN</li>
+      <li>You'll see all pending quests waiting for review</li>
+      <li>Tap <span class="button-ref">APPROVE</span> or <span class="button-ref">REJECT</span> for each one</li>
+    </ol>
+  </div>
+
+  <div class="tip-box">
+    <strong>💡 Tip:</strong> Only <strong>approved</strong> quests count toward the weekly allowance. Rejected quests don't count but can be re-submitted.
+  </div>
+
+  <h2><span class="section-icon">💰</span> Allowance &amp; Payouts</h2>
+
+  <p>Quest Tracker automatically calculates allowances each week based on quest completion. There are two payout modes:</p>
+
+  <table>
+    <tr><th>Mode</th><th>How It Works</th><th>Best For</th></tr>
+    <tr>
+      <td><strong>All-or-Nothing</strong></td>
+      <td>Kids must complete a minimum percentage of quests (default: 80%) to earn their full allowance. Below the threshold = $0.</td>
+      <td>Families who want strong motivation</td>
+    </tr>
+    <tr>
+      <td><strong>Proportional</strong></td>
+      <td>Kids earn a percentage of their allowance equal to the percentage of quests completed. 60% done = 60% of allowance.</td>
+      <td>Families who want gradual rewards</td>
+    </tr>
+  </table>
+
+  <div class="step-box">
+    <div class="step-num">Configure Payout Mode</div>
+    <span class="button-ref">SYSTEM CONFIG</span> → PIN → <span class="button-ref">CONFIGURE SYSTEM</span> → choose your mode and threshold.
+  </div>
+
+  <p>Payouts happen automatically every <strong>Sunday at midnight</strong>. The earned amount is added to each kid's balance, visible on their home screen card.</p>
+
+  <h3>Managing Balances</h3>
+  <p>To pay out cash or make adjustments:</p>
+  <ol>
+    <li>Go to <span class="button-ref">SYSTEM CONFIG</span> → <span class="button-ref">LEDGER</span></li>
+    <li>Select a crew member</li>
+    <li><span class="button-ref">PAYOUT ALL</span> — resets their balance to $0 (when you hand them cash)</li>
+    <li><span class="button-ref">ADJUST (+/-)</span> — add a bonus or subtract a penalty</li>
+  </ol>
+</div>
+
+<!-- PAGE 4: WEB ADMIN + TIPS -->
+<div class="page">
+  <h2><span class="section-icon">🌐</span> Web Admin Portal (Remote Access)</h2>
+
+  <p>You can manage everything from your phone or computer — no need to walk to the kiosk!</p>
+
+  <div class="step-box">
+    <div class="step-num">Accessing the Web Portal</div>
+    <ol>
+      <li>Make sure your phone/computer is on the <strong>same Wi-Fi network</strong> as the kiosk</li>
+      <li>Open a web browser and go to: <strong>http://&lt;kiosk-ip-address&gt;:8000/admin</strong></li>
+      <li>To find the kiosk's IP address: <span class="button-ref">SYSTEM CONFIG</span> → the IP is shown on the settings screen</li>
+    </ol>
+  </div>
+
+  <p>The web portal has full feature parity with the kiosk — you can:</p>
+  <ul>
+    <li>Add and edit crew members (with avatars)</li>
+    <li>Create and manage quests and rotation quests</li>
+    <li>Approve or reject pending quests</li>
+    <li>View and manage the ledger</li>
+    <li>Configure payout settings</li>
+  </ul>
+
+  <div class="tip-box">
+    <strong>💡 Bookmark it!</strong> Save the admin URL on your phone's home screen for quick access.
+  </div>
+
+  <h2><span class="section-icon">🔄</span> Updating the Kiosk</h2>
+
+  <div class="step-box">
+    <div class="step-num">Check for Updates</div>
+    <ol>
+      <li>Tap <span class="button-ref">SYSTEM CONFIG</span> → enter your PIN</li>
+      <li>Tap <span class="button-ref">CHECK FOR UPDATES</span></li>
+      <li>If an update is available, it will download and install automatically</li>
+      <li>The kiosk will reboot when the update is complete</li>
+    </ol>
+  </div>
+
+  <p>Updates preserve all your data (kids, quests, balances, history).</p>
+
+  <h2><span class="section-icon">❓</span> Troubleshooting</h2>
+
+  <table>
+    <tr><th>Problem</th><th>Solution</th></tr>
+    <tr><td>Screen shows "CONNECTING..."</td><td>The backend service may still be starting. Wait 30 seconds. If it persists, check Wi-Fi or reboot the Pi.</td></tr>
+    <tr><td>Progress shows 0 after completing quests</td><td>Quests must be <strong>approved</strong> by a parent to count toward weekly progress.</td></tr>
+    <tr><td>Forgot parent PIN</td><td>You'll need to access the Pi via SSH or keyboard to reset. Contact your system administrator.</td></tr>
+    <tr><td>Touchscreen not responding</td><td>Try rebooting the Pi by unplugging and re-plugging the power.</td></tr>
+    <tr><td>Update button doesn't work</td><td>Ensure the kiosk has an active internet connection (check Wi-Fi settings).</td></tr>
+    <tr><td>Kid card not showing on home screen</td><td>Make sure the kid was created under Manage Crew and the profile is active.</td></tr>
+  </table>
+
+  <div class="footer">
+    Quest Tracker — Chores Tracking &amp; Accounting System<br>
+    For support, visit the project repository or contact your system administrator.
+  </div>
+</div>
+
+</body>
+</html>
