@@ -1,0 +1,70 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 120">
+  <defs>
+    <!-- Gold gradient for main text -->
+    <linearGradient id="gold" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#FFD700"/>
+      <stop offset="40%" stop-color="#FFC300"/>
+      <stop offset="60%" stop-color="#DAA520"/>
+      <stop offset="100%" stop-color="#B8860B"/>
+    </linearGradient>
+    <!-- Subtle shine overlay -->
+    <linearGradient id="shine" x1="0" y1="0" x2="1" y2="0.3">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0"/>
+      <stop offset="45%" stop-color="#FFFFFF" stop-opacity="0.25"/>
+      <stop offset="55%" stop-color="#FFFFFF" stop-opacity="0.25"/>
+      <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0"/>
+    </linearGradient>
+    <!-- Cyan glow for "2" -->
+    <linearGradient id="cyan-glow" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#00E5FF"/>
+      <stop offset="50%" stop-color="#00BCD4"/>
+      <stop offset="100%" stop-color="#0097A7"/>
+    </linearGradient>
+    <!-- Drop shadow -->
+    <filter id="shadow" x="-5%" y="-5%" width="110%" height="120%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#000000" flood-opacity="0.5"/>
+    </filter>
+    <!-- Outer glow for the "2" -->
+    <filter id="glow2">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="4" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Dark banner background with rounded corners -->
+  <rect x="10" y="18" width="580" height="84" rx="12" fill="#0B1628" opacity="0.9"/>
+  <rect x="10" y="18" width="580" height="84" rx="12" fill="none" stroke="#DAA520" stroke-width="2" opacity="0.6"/>
+  <!-- Inner border -->
+  <rect x="14" y="22" width="572" height="76" rx="10" fill="none" stroke="#B8860B" stroke-width="0.5" opacity="0.3"/>
+
+  <!-- Decorative corner gems -->
+  <circle cx="24" cy="32" r="4" fill="#00BCD4" opacity="0.8"/>
+  <circle cx="576" cy="32" r="4" fill="#00BCD4" opacity="0.8"/>
+  <circle cx="24" cy="88" r="4" fill="#00BCD4" opacity="0.8"/>
+  <circle cx="576" cy="88" r="4" fill="#00BCD4" opacity="0.8"/>
+
+  <!-- Main text group -->
+  <g filter="url(#shadow)">
+    <!-- "QUEST" -->
+    <text x="148" y="82" font-family="Georgia, 'Times New Roman', serif" font-size="58" font-weight="bold"
+          fill="url(#gold)" letter-spacing="4" text-anchor="end">QUEST</text>
+    <!-- "2" with cyan glow -->
+    <text x="148" y="82" font-family="Georgia, 'Times New Roman', serif" font-size="64" font-weight="bold"
+          fill="url(#cyan-glow)" letter-spacing="2" filter="url(#glow2)" dx="8">2</text>
+    <!-- "EARN" -->
+    <text x="210" y="82" font-family="Georgia, 'Times New Roman', serif" font-size="58" font-weight="bold"
+          fill="url(#gold)" letter-spacing="4">EARN</text>
+  </g>
+
+  <!-- Shine overlay on text -->
+  <text x="148" y="82" font-family="Georgia, 'Times New Roman', serif" font-size="58" font-weight="bold"
+        fill="url(#shine)" letter-spacing="4" text-anchor="end" opacity="0.6">QUEST</text>
+  <text x="210" y="82" font-family="Georgia, 'Times New Roman', serif" font-size="58" font-weight="bold"
+        fill="url(#shine)" letter-spacing="4" opacity="0.6">EARN</text>
+
+  <!-- Thin decorative line under text -->
+  <line x1="60" y1="92" x2="540" y2="92" stroke="url(#gold)" stroke-width="1" opacity="0.4"/>
+</svg>
