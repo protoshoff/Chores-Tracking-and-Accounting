@@ -230,7 +230,11 @@ def review_rotation_log(log_id: int, action: ReviewRequest, session: Session = D
 
     # Handle retroactive payout (same logic as regular chores)
     if log.status == ChoreStatus.APPROVED:
-        _handle_retroactive_rotation_payout(log, session)
+        try:
+            _handle_retroactive_rotation_payout(log, session)
+        except Exception as e:
+            import logging
+            logging.getLogger("chores.rotations").error(f"Retroactive rotation payout failed: {e}")
 
     return {"status": "success", "action": action.action}
 

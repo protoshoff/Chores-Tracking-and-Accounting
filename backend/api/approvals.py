@@ -107,7 +107,11 @@ def review_chore(
         
         # Check if this approval is for a past week that already has a rollup.
         # If so, re-run the payout to credit the retroactive approval.
-        _handle_retroactive_payout(log, session)
+        try:
+            _handle_retroactive_payout(log, session)
+        except Exception as e:
+            import logging
+            logging.getLogger("chores.approvals").error(f"Retroactive payout failed: {e}")
         
     return log
 

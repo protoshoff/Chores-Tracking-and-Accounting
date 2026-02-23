@@ -45,7 +45,7 @@ class ApprovalQueueView(QWidget):
             if widget: widget.setParent(None)
             
         try:
-            resp = requests.get("http://localhost:8000/api/approvals/pending")
+            resp = requests.get("http://localhost:8000/api/approvals/pending", timeout=5)
             if resp.status_code == 200:
                 pending = resp.json()
             else:
@@ -165,9 +165,10 @@ class ApprovalQueueView(QWidget):
                  url = f"http://localhost:8000/api/rotations/log/{log_id}/review"
              else:
                  url = f"http://localhost:8000/api/approvals/{log_id}/review"
-             requests.post(url, json={"action": action})
+             requests.post(url, json={"action": action}, timeout=5)
              if action == "APPROVE":
                  SoundService.play_approval()
              self.refresh()
         except Exception as e:
             print(f"Error reviewing: {e}")
+            self.refresh()

@@ -15,7 +15,7 @@ class ConnectThread(QThread):
         
     def run(self):
         try:
-            resp = requests.post("http://localhost:8000/api/system/wifi/connect", 
+            resp = requests.post("http://localhost:8000/api/system/wifi/connect", timeout=5, 
                                  json={"ssid": self.ssid, "password": self.pwd})
             if resp.status_code == 200:
                 self.finished.emit(True, self.ssid)
@@ -229,7 +229,7 @@ class AdminWifiView(QWidget):
 
     def refresh_status(self):
         try:
-            resp = requests.get("http://localhost:8000/api/system/status")
+            resp = requests.get("http://localhost:8000/api/system/status", timeout=3)
             if resp.status_code == 200:
                 data = resp.json()
                 wifi = data.get("wifi", {})
@@ -251,7 +251,7 @@ class AdminWifiView(QWidget):
         self.list_layout.addWidget(QLabel("SCANNING..."))
         
         try:
-            resp = requests.get("http://localhost:8000/api/system/wifi/scan")
+            resp = requests.get("http://localhost:8000/api/system/wifi/scan", timeout=10)
             # Remove "Scanning..."
             if self.list_layout.count() > 0:
                 self.list_layout.takeAt(0).widget().setParent(None)
