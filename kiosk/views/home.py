@@ -148,7 +148,7 @@ class HomeView(QWidget):
         btn_parent.clicked.connect(self.parent_zone_clicked.emit)
         
         btn_admin = HoloButton("SYSTEM", is_primary=False)
-        btn_admin.setFixedSize(180, 60)
+        btn_admin.setFixedSize(230, 60)
         btn_admin.clicked.connect(self.admin_clicked.emit)
         
         foot_layout.addWidget(btn_parent)

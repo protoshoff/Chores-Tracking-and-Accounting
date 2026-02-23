@@ -29,7 +29,7 @@ class LedgerView(QWidget):
         
         # Add Refresh Button
         btn_refresh = HoloButton("↻ REFRESH", is_primary=False)
-        btn_refresh.setFixedSize(120, 50)
+        btn_refresh.setFixedSize(150, 50)
         btn_refresh.clicked.connect(self.refresh)
         top.addWidget(btn_refresh)
         

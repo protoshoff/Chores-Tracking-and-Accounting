@@ -123,7 +123,7 @@ class ManageUsersView(QWidget):
         actions.addStretch()
         
         self.btn_save = HoloButton("SAVE RECORD")
-        self.btn_save.setFixedSize(200, 60)
+        self.btn_save.setFixedSize(230, 60)
         self.btn_save.clicked.connect(self.save_user)
         actions.addWidget(self.btn_save)
         

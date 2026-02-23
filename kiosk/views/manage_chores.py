@@ -178,7 +178,7 @@ class ManageChoresView(QWidget):
                 background-color: rgba(255, 50, 50, 0.4);
             }
         """)
-        self.btn_delete.setFixedSize(120, 60)
+        self.btn_delete.setFixedSize(150, 60)
         self.btn_delete.clicked.connect(self.archive_chore)
         self.btn_delete.hide()
         actions.addWidget(self.btn_delete)
@@ -186,7 +186,7 @@ class ManageChoresView(QWidget):
         actions.addStretch()
         
         self.btn_save = HoloButton("SAVE QUEST")
-        self.btn_save.setFixedSize(220, 60)  # FIX: Was 200, increased to 220 for full text
+        self.btn_save.setFixedSize(250, 60)
         self.btn_save.clicked.connect(self.save_chore)
         actions.addWidget(self.btn_save)
         
