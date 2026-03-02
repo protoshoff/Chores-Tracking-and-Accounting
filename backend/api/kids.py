@@ -82,9 +82,16 @@ def get_kid_chores(
     logs = service.get_today_logs(kid_id, target_date)
     log_map = {log.chore_id: log for log in logs}
     
-    # 3. Merge
+    # 3. Merge — only include chores that are due today
     result = []
+    weekday = target_date.weekday()  # 0=Monday, 6=Sunday
+    
     for chore in chores:
+        # Skip weekly chores that aren't due today
+        if chore.frequency == "WEEKLY":
+            if chore.due_day is not None and chore.due_day != weekday:
+                continue
+        
         log = log_map.get(chore.id)
         status = log.status if log else ChoreStatus.INCOMPLETE
         result.append({
@@ -94,7 +101,8 @@ def get_kid_chores(
             "status": status,
             "description": chore.description,
             "frequency": chore.frequency,
-            "icon": "default" # TODO: Add icon field to model
+            "due_day": chore.due_day,
+            "icon": "default"
         })
         
     return result
