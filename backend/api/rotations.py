@@ -181,7 +181,7 @@ def get_schedule(group_id: int, weeks: int = 2, session: Session = Depends(get_s
 @router.post("/{group_id}/complete")
 def complete_rotation_chore(
     group_id: int,
-    payload: dict = None,
+    payload: dict = None,  # type: ignore[assignment]
     session: Session = Depends(get_session),
 ):
     """Mark today's rotation chore as complete. Payload: {kid_id: int, date?: "YYYY-MM-DD"}"""
