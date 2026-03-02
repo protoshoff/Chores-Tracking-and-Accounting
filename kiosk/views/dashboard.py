@@ -380,7 +380,7 @@ class KidDashboardView(QWidget):
 
         rotation_chores = ApiService.get_rotation_chores(self.kid_id)
         if rotation_chores:
-            self.scroll_layout.addWidget(self._make_section_header("🔄 SHARED QUESTS"))
+            self.scroll_layout.addWidget(self._make_section_header("SHARED QUESTS"))
             for c in rotation_chores:
                 self.scroll_layout.addWidget(self._create_quest_row(c, is_rotation=True))
 

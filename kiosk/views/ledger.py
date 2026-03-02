@@ -131,7 +131,7 @@ class LedgerView(QWidget):
             
             if history is None:
                 # API returned None (error condition)
-                self.lbl_status.setText("⚠ Error loading transactions")
+                self.lbl_status.setText("! Error loading transactions")
                 self.lbl_status.setStyleSheet("color: #FF5555; font-size: 14px; padding: 5px;")
                 return
             
@@ -149,7 +149,7 @@ class LedgerView(QWidget):
                     break
             
             if not kid_found:
-                self.lbl_status.setText("⚠ Kid not found")
+                self.lbl_status.setText("! Kid not found")
                 self.lbl_status.setStyleSheet("color: #FF5555; font-size: 14px; padding: 5px;")
                 return
             
@@ -192,7 +192,7 @@ class LedgerView(QWidget):
             
         except Exception as e:
             print(f"Error in ledger refresh: {e}")
-            self.lbl_status.setText(f"⚠ Error: {str(e)[:50]}")
+            self.lbl_status.setText(f"! Error: {str(e)[:50]}")
             self.lbl_status.setStyleSheet("color: #FF5555; font-size: 14px; padding: 5px;")
             
     def adjust_funds(self, sign):

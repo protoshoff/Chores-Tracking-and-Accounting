@@ -73,7 +73,7 @@ class ApprovalQueueView(QWidget):
             if p_date != current_date_header:
                 current_date_header = p_date
                 # Create Header
-                header = QLabel(f"📅 {p_date}")
+                header = QLabel(f"{p_date}")
                 header.setStyleSheet("color: #00E5FF; font-size: 20px; font-weight: bold; margin-top: 20px; border-bottom: 2px solid #00E5FF;")
                 self.list_layout.addWidget(header)
                 

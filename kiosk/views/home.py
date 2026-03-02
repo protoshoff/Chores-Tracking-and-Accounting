@@ -100,7 +100,7 @@ class HoloKidCard(HoloFrame):
         # Pending Warning
         pending = summary.get("pending_count", 0)
         if pending > 0:
-            lbl_pend = QLabel(f"⚠ {pending} PENDING")
+            lbl_pend = QLabel(f"! {pending} PENDING")
             lbl_pend.setStyleSheet("color: #FFD700; font-weight: bold;") # Keep Gold for warnings
             lbl_pend.setAlignment(Qt.AlignmentFlag.AlignCenter)
             layout.addWidget(lbl_pend)

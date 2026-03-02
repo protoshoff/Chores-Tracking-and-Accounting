@@ -240,7 +240,7 @@ class AdminWifiView(QWidget):
                     self.lbl_status.setText("❌ DISCONNECTED")
                     self.lbl_status.setStyleSheet("color: #FF5555; font-size: 18px; font-weight: bold;")
         except:
-            self.lbl_status.setText("⚠ API Offline")
+            self.lbl_status.setText("! API Offline")
 
     def scan_networks(self):
         # Clear list

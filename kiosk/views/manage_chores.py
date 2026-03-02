@@ -329,7 +329,7 @@ class ManageChoresView(QWidget):
         rotations = ApiService.get_rotation_groups()
         for r in rotations:
             member_names = ", ".join(m["kid_name"] for m in r.get("members", []))
-            label = f"🔄 {r['name']} ({member_names})"
+            label = f"{r['name']} ({member_names})"
             item = QListWidgetItem(label)
             item.setData(Qt.ItemDataRole.UserRole, {"_rotation": True, **r})
             self.list_widget.addItem(item)
