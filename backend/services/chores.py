@@ -57,7 +57,8 @@ class ChoreService:
         total_possible = 0.0
         for chore in chores:
             if chore.frequency == "DAILY":
-                total_possible += chore.reward * 7
+                days = 5 if chore.weekdays_only else 7
+                total_possible += chore.reward * days
             else:
                 total_possible += chore.reward
 
@@ -105,6 +106,9 @@ class ChoreService:
         
         for c in chores:
             if c.frequency == "DAILY":
+                # Skip weekdays-only chores on weekends
+                if c.weekdays_only and weekday >= 5:
+                    continue
                 daily_chores_count += 1
             elif c.frequency == "WEEKLY" and c.due_day is not None:
                 if c.due_day == weekday:
@@ -149,7 +153,7 @@ class ChoreService:
         
         # Recalculate week_pct including rotations
         total_week_expected = sum(
-            7 if c.frequency == "DAILY" else 1 for c in chores
+            (5 if c.weekdays_only else 7) if c.frequency == "DAILY" else 1 for c in chores
         ) + rotation_expected_week
         total_week_completed = sum(
             1 for l in logs if l.status == ChoreStatus.APPROVED

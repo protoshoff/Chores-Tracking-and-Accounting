@@ -129,6 +129,12 @@ class ManageChoresView(QWidget):
         self.combo_day.hide()
         self.lbl_day.hide()
         
+        # Weekdays Only checkbox (visible only for DAILY frequency)
+        self.lbl_weekdays = self.make_label("WEEKDAYS ONLY:")
+        self.chk_weekdays = QCheckBox("Mon–Fri only")
+        self.chk_weekdays.setStyleSheet("color: white; font-size: 16px;")
+        self.form_layout.addRow(self.lbl_weekdays, self.chk_weekdays)
+        
         # Weight (hidden — payout modes don't use per-chore reward)
         self.spin_weight = QSpinBox()
         self.spin_weight.setRange(1, 10)
@@ -395,7 +401,8 @@ class ManageChoresView(QWidget):
             self.combo_day.setCurrentIndex(due_day)
         else:
             self.combo_day.setCurrentIndex(0)
-            
+        
+        self.chk_weekdays.setChecked(data.get("weekdays_only", False))
         self.on_freq_changed()
         
         target_kid_name = data.get("kid_name")
@@ -433,6 +440,8 @@ class ManageChoresView(QWidget):
                     item.widget().hide()
             self.lbl_day.hide()
             self.combo_day.hide()
+            self.lbl_weekdays.hide()
+            self.chk_weekdays.hide()
             self.lbl_rot_freq.show()
             self.combo_rot_freq.show()
             self.lbl_rot_freq_desc.show()
@@ -468,6 +477,7 @@ class ManageChoresView(QWidget):
         self.spin_weight.setValue(1)
         self.combo_freq.setCurrentIndex(0)
         self.combo_day.setCurrentIndex(0)
+        self.chk_weekdays.setChecked(False)
         self.on_freq_changed()
         
         self.btn_save.setText("CREATE QUEST")
@@ -504,15 +514,18 @@ class ManageChoresView(QWidget):
         kid_id = self.combo_kid.currentData()
         
         due_day = None
+        weekdays_only = False
         if freq == "WEEKLY":
             due_day = self.combo_day.currentIndex()
+        else:
+            weekdays_only = self.chk_weekdays.isChecked()
         
         if self.selected_chore:
             cid = self.selected_chore["id"]
-            ApiService.update_chore(cid, name=name, description=desc, weight=weight, frequency=freq, due_day=due_day)
+            ApiService.update_chore(cid, name=name, description=desc, weight=weight, frequency=freq, due_day=due_day, weekdays_only=weekdays_only)
         else:
             if kid_id is not None:
-                ApiService.create_chore(kid_id, name, description=desc, reward=weight, frequency=freq, due_day=due_day)
+                ApiService.create_chore(kid_id, name, description=desc, reward=weight, frequency=freq, due_day=due_day, weekdays_only=weekdays_only)
             
         self.refresh_data()
         self.on_add_clicked()
@@ -555,9 +568,13 @@ class ManageChoresView(QWidget):
         if freq == "WEEKLY":
             self.lbl_day.show()
             self.combo_day.show()
+            self.lbl_weekdays.hide()
+            self.chk_weekdays.hide()
         else:
             self.lbl_day.hide()
-            self.combo_day.hide() 
+            self.combo_day.hide()
+            self.lbl_weekdays.show()
+            self.chk_weekdays.show()
 
     def archive_chore(self):
         if self.selected_rotation:

@@ -23,6 +23,23 @@ def create_db_and_tables():
     SQLModel.metadata.create_all(engine)
     seed_default_settings()
     fix_week_id_format()
+    migrate_weekdays_only()
+
+def migrate_weekdays_only():
+    """Add weekdays_only column to chores table if missing."""
+    import sqlite3
+    db_path = os.path.join(DATA_DIR, DB_NAME)
+    if not os.path.exists(db_path):
+        return
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+    cursor.execute("PRAGMA table_info(chores)")
+    columns = [row[1] for row in cursor.fetchall()]
+    if "weekdays_only" not in columns:
+        cursor.execute("ALTER TABLE chores ADD COLUMN weekdays_only BOOLEAN DEFAULT 0")
+        conn.commit()
+        print("Added weekdays_only column to chores table")
+    conn.close()
 
 def fix_week_id_format():
     """One-time migration: convert old %Y-W%W week_ids to ISO %G-W%V format."""

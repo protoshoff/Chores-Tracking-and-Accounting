@@ -27,6 +27,7 @@ class ChoreCreate(BaseModel):
     reward: float = 1.0
     frequency: Frequency
     due_day: Optional[int] = None # 0-6
+    weekdays_only: bool = False
 
 class ChoreUpdate(BaseModel):
     name: Optional[str] = None
@@ -34,6 +35,7 @@ class ChoreUpdate(BaseModel):
     reward: Optional[float] = None
     frequency: Optional[Frequency] = None
     due_day: Optional[int] = None
+    weekdays_only: Optional[bool] = None
     archived: Optional[bool] = None
 
 # --- Kid Endpoints ---
@@ -90,6 +92,7 @@ def create_chore(chore: ChoreCreate, session: Session = Depends(get_session)):
         reward=chore.reward,
         frequency=chore.frequency,
         due_day=chore.due_day,
+        weekdays_only=chore.weekdays_only,
         archived=False
     )
     session.add(db_chore)

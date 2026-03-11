@@ -812,7 +812,7 @@
                 <tr>
                     <td>${kidName}</td>
                     <td>${c.name}</td>
-                    <td><span style="color:var(--primary)">${c.frequency}</span>${c.due_day !== null && c.due_day !== undefined ? ` (${['Mon','Tue','Wed','Thu','Fri','Sat','Sun'][c.due_day]})` : ''}</td>
+                    <td><span style="color:var(--primary)">${c.frequency}</span>${c.due_day !== null && c.due_day !== undefined ? ` (${['Mon','Tue','Wed','Thu','Fri','Sat','Sun'][c.due_day]})` : ''}${c.weekdays_only ? ' <span style="color:#FFB74D;font-size:0.85em">Mon–Fri</span>' : ''}</td>
                     <td>
                         <button class="action-btn" onclick='editChore(${JSON.stringify(c).replace(/'/g,"&apos;")})'>EDIT</button>
                         <button class="action-btn danger" onclick="deleteChore(${c.id})">DEL</button>
@@ -857,6 +857,12 @@
                         <option value="6">Sunday</option>
                     </select>
                 </div>
+                <div id="weekdays-container" ${freq === 'DAILY' ? '' : 'class="hidden"'} style="margin-top:0.5rem">
+                    <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer;">
+                        <input type="checkbox" id="chore-weekdays" ${chore?.weekdays_only ? 'checked' : ''} />
+                        Weekdays only (Mon–Fri)
+                    </label>
+                </div>
                 <div class="flex-between" style="margin-top:1rem;">
                     <button class="action-btn danger" onclick="closeModal()">CANCEL</button>
                     <button class="action-btn" onclick="submitAddChore()">SAVE</button>
@@ -871,8 +877,14 @@
         function toggleDueDay() {
             const freq = $('#chore-type').value;
             const container = $('#due-day-container');
-            if (freq === 'WEEKLY') container.classList.remove('hidden');
-            else container.classList.add('hidden');
+            const weekdaysContainer = $('#weekdays-container');
+            if (freq === 'WEEKLY') {
+                container.classList.remove('hidden');
+                weekdaysContainer.classList.add('hidden');
+            } else {
+                container.classList.add('hidden');
+                weekdaysContainer.classList.remove('hidden');
+            }
         }
 
         function editChore(chore) { showAddChoreModal(chore); }
@@ -886,7 +898,8 @@
             if (freq === 'WEEKLY') dueDay = parseInt($('#chore-day').value);
             if (!name || !kidId) return showToast("Invalid Data", 'error');
 
-            const payload = { kid_id: parseInt(kidId), name, description: desc, reward: 1, frequency: freq, due_day: dueDay };
+            const weekdaysOnly = freq === 'DAILY' && $('#chore-weekdays').checked;
+            const payload = { kid_id: parseInt(kidId), name, description: desc, reward: 1, frequency: freq, due_day: dueDay, weekdays_only: weekdaysOnly };
             let res;
             if (editingChoreId) {
                 res = await api(`/management/chores/${editingChoreId}`, 'PUT', payload);

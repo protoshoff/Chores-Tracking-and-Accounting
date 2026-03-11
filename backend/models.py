@@ -60,6 +60,7 @@ class Chore(SQLModel, table=True):
     frequency: Frequency
     due_day: Optional[int] = Field(default=None) # 0=Monday, 6=Sunday
     due_time: Optional[time] = Field(default=None)
+    weekdays_only: bool = Field(default=False)
     archived: bool = Field(default=False)
     
     kid: User = Relationship(back_populates="chores")

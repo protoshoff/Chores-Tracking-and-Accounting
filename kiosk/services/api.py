@@ -89,13 +89,14 @@ class ApiService:
 
     # --- Chore Management ---
     @staticmethod
-    def create_chore(kid_id, name, description="", reward=1.0, frequency="DAILY", due_day=None, weight=None):
+    def create_chore(kid_id, name, description="", reward=1.0, frequency="DAILY", due_day=None, weight=None, weekdays_only=False):
         try:
             payload = {
                 "kid_id": kid_id,
                 "name": name,
                 "description": description,
-                "frequency": frequency
+                "frequency": frequency,
+                "weekdays_only": weekdays_only,
             }
             # Use weight if provided, otherwise use reward (backward compat)
             if weight is not None:
@@ -116,7 +117,7 @@ class ApiService:
         return None
 
     @staticmethod
-    def update_chore(chore_id, name=None, description=None, reward=None, frequency=None, due_day=None, archived=None):
+    def update_chore(chore_id, name=None, description=None, reward=None, frequency=None, due_day=None, archived=None, weekdays_only=None):
         try:
             payload = {}
             if name is not None: payload["name"] = name
@@ -125,6 +126,7 @@ class ApiService:
             if frequency is not None: payload["frequency"] = frequency
             if due_day is not None: payload["due_day"] = due_day
             if archived is not None: payload["archived"] = archived
+            if weekdays_only is not None: payload["weekdays_only"] = weekdays_only
             
             resp = requests.put(f"{BASE_URL}/management/chores/{chore_id}", json=payload, timeout=2)
             if resp.status_code == 200:

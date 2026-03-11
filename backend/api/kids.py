@@ -92,6 +92,10 @@ def get_kid_chores(
             if chore.due_day is not None and chore.due_day != weekday:
                 continue
         
+        # Skip weekdays-only chores on weekends (Saturday=5, Sunday=6)
+        if chore.weekdays_only and weekday >= 5:
+            continue
+        
         log = log_map.get(chore.id)
         status = log.status if log else ChoreStatus.INCOMPLETE
         result.append({
@@ -102,6 +106,7 @@ def get_kid_chores(
             "description": chore.description,
             "frequency": chore.frequency,
             "due_day": chore.due_day,
+            "weekdays_only": chore.weekdays_only,
             "icon": "default"
         })
         
