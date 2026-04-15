@@ -38,11 +38,13 @@ class ApprovalQueueView(QWidget):
         main.addWidget(scroll)
         
     def refresh(self):
-        # Clear
+        # Clear — use deleteLater() for safe C++ object cleanup
         while self.list_layout.count():
             item = self.list_layout.takeAt(0)
             widget = item.widget()
-            if widget: widget.setParent(None)
+            if widget:
+                widget.setParent(None)
+                widget.deleteLater()
             
         try:
             resp = requests.get("http://localhost:8000/api/approvals/pending", timeout=5)

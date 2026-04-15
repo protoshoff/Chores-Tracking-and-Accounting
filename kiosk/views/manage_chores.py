@@ -345,7 +345,9 @@ class ManageChoresView(QWidget):
         # Clear existing
         while self.rot_members_layout.count():
             w = self.rot_members_layout.takeAt(0).widget()
-            if w: w.setParent(None)
+            if w:
+                w.setParent(None)
+                w.deleteLater()
         self.rotation_member_checks = []
         
         for k in self.kids:

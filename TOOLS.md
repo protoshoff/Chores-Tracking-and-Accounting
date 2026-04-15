@@ -37,4 +37,12 @@ Skills are shared. Your setup is yours. Keeping them apart means you can update 
 
 ---
 
-Add whatever helps you do your job. This is your cheat sheet.
+## Quest2Earn Deployment
+
+- **Repo:** `https://github.com/protoshoff/Chores-Tracking-and-Accounting.git` (branch: main)
+- **Kiosk "Check for Updates" is fully self-contained** — no SSH needed
+  - Backend endpoint `POST /api/system/update` does: `git pull ~/chores_repo` → runs `deploy_release.sh` → clones fresh from GitHub → reboots
+  - `deploy_release.sh` lives in `~/chores_repo/scripts/` but auto-updates before running
+- **Three Pi prototypes:** Pi 4B (primary), Pi 3B (fresh), Pi 4B w/ higher-res LCD (1.3x scaling)
+- **DB:** SQLite at `/var/lib/chores_app/chores.db`
+- **Startup migrations** run automatically via `create_db_and_tables()` in `backend/db.py`

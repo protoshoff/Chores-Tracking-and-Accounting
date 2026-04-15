@@ -294,7 +294,7 @@ class KidDashboardView(QWidget):
         sl = self.status_panel.layout()
         if self.avatar_picker is not None:
             sl.removeWidget(self.avatar_picker)
-            self.avatar_picker.setParent(None)
+            self.avatar_picker.deleteLater()
             self.avatar_picker = None
 
         self.avatar_picker = AvatarPickerWidget(self._current_avatar)
@@ -357,7 +357,9 @@ class KidDashboardView(QWidget):
     def load_chores(self):
         while self.scroll_layout.count():
             w = self.scroll_layout.takeAt(0).widget()
-            if w: w.setParent(None)
+            if w:
+                w.setParent(None)
+                w.deleteLater()
 
         chores = ApiService.get_kid_chores(self.kid_id)
 

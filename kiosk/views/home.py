@@ -167,7 +167,10 @@ class HomeView(QWidget):
         # Clear Grid
         for i in reversed(range(self.grid.count())): 
             item = self.grid.itemAt(i)
-            if item.widget(): item.widget().setParent(None)
+            w = item.widget()
+            if w:
+                w.setParent(None)
+                w.deleteLater()
 
         from ..services.api import ApiService
         kids_data = ApiService.get_kids()

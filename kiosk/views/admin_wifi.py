@@ -246,7 +246,10 @@ class AdminWifiView(QWidget):
         # Clear list
         while self.list_layout.count():
             item = self.list_layout.takeAt(0)
-            if item.widget(): item.widget().setParent(None)
+            w = item.widget()
+            if w:
+                w.setParent(None)
+                w.deleteLater()
             
         self.list_layout.addWidget(QLabel("SCANNING..."))
         
@@ -254,7 +257,10 @@ class AdminWifiView(QWidget):
             resp = requests.get("http://localhost:8000/api/system/wifi/scan", timeout=10)
             # Remove "Scanning..."
             if self.list_layout.count() > 0:
-                self.list_layout.takeAt(0).widget().setParent(None)
+                w = self.list_layout.takeAt(0).widget()
+                if w:
+                    w.setParent(None)
+                    w.deleteLater()
             
             if resp.status_code == 200:
                 networks = resp.json()
