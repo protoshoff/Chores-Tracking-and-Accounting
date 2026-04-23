@@ -207,6 +207,13 @@ def complete_rotation_chore(
         raise HTTPException(status_code=400, detail="This kid is not assigned to this chore today")
 
     log = svc.mark_complete(group_id, kid_id, target_date)
+
+    import logging
+    _clog = logging.getLogger("chores.completion")
+    _clog.info(
+        f"ROTATION kid={kid_id} group={group_id} date={target_date} "
+        f"log_id={log.id} status={log.status}"
+    )
     return {"status": log.status, "message": "Marked complete", "log_id": log.id}
 
 

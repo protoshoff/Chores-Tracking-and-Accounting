@@ -463,12 +463,20 @@ class KidDashboardView(QWidget):
 
     def mark_done(self, chore_id):
         from ..services.sound import SoundService
-        ApiService.complete_chore(chore_id, self.kid_id)
-        SoundService.play_chore_complete()
+        success = ApiService.complete_chore(chore_id, self.kid_id)
+        if success:
+            SoundService.play_chore_complete()
+        else:
+            from ..components.holo_alert import HoloAlert
+            HoloAlert("ERROR", "Failed to save. Please try again.", self.window(), is_error=True).exec()
         self.load_chores()
 
     def mark_rotation_done(self, group_id):
         from ..services.sound import SoundService
-        ApiService.complete_rotation_chore(group_id, self.kid_id)
-        SoundService.play_chore_complete()
+        success = ApiService.complete_rotation_chore(group_id, self.kid_id)
+        if success:
+            SoundService.play_chore_complete()
+        else:
+            from ..components.holo_alert import HoloAlert
+            HoloAlert("ERROR", "Failed to save. Please try again.", self.window(), is_error=True).exec()
         self.load_chores()
