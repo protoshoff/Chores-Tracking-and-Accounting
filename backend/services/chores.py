@@ -84,7 +84,6 @@ class ChoreService:
         pending_count = 0
         
         for log in logs:
-            # Safe access
             reward = log.chore.reward if log.chore else 0.0
             
             if log.status in (ChoreStatus.APPROVED, ChoreStatus.PENDING, "COMPLETED"):
@@ -100,13 +99,11 @@ class ChoreService:
         today_logs = [l for l in logs if l.date == today]
         today_done = len([l for l in today_logs if l.status != ChoreStatus.INCOMPLETE])
         
-        # Today Total is active daily chores + any weekly chores due today
         daily_chores_count = 0
         weekday = today.weekday()
         
         for c in chores:
             if c.frequency == "DAILY":
-                # Skip weekdays-only chores on weekends
                 if c.weekdays_only and weekday >= 5:
                     continue
                 daily_chores_count += 1
@@ -114,26 +111,7 @@ class ChoreService:
                 if c.due_day == weekday:
                     daily_chores_count += 1
         
-        # Calculate week_pct based on payout mode
-        from ..models import Settings, PayoutMode
-        
-        mode_setting = self.session.get(Settings, "payout_mode")
-        payout_mode = mode_setting.value if mode_setting else PayoutMode.ALL_OR_NOTHING
-        
-        # Calculate raw completion percentage
-        raw_week_pct = int((approved_reward / total_possible) * 100) if total_possible > 0 else 0
-        
-        # Get threshold setting (used by ALL_OR_NOTHING mode)
-        threshold_setting = self.session.get(Settings, "payout_threshold")
-        threshold_pct = int(threshold_setting.value) if threshold_setting else 80
-        
-        # Apply payout mode logic
-        if payout_mode == PayoutMode.ALL_OR_NOTHING:
-            week_pct = 100 if raw_week_pct >= threshold_pct else raw_week_pct
-        else:
-            week_pct = raw_week_pct
-        
-        # Include rotation chores in today stats
+        # 4. Rotation chores
         rotation_today_total = 0
         rotation_today_done = 0
         rotation_expected_week = 0
@@ -145,13 +123,13 @@ class ChoreService:
             rotation_today_total = len(rotation_today)
             rotation_today_done = sum(1 for r in rotation_today if r["status"] != ChoreStatus.INCOMPLETE)
             
-            # Include rotation in week percentage
             rotation_expected_week = rotation_svc.calculate_expected_instances(kid_id, week_id)
             rotation_completed_week = rotation_svc.count_completed_instances(kid_id, week_id)
         except Exception as e:
             print(f"Warning: rotation stats failed for kid {kid_id}: {e}")
         
-        # Recalculate week_pct including rotations
+        # 5. Calculate week_pct — single instance-count calculation
+        #    (regular chore instances + rotation instances)
         total_week_expected = sum(
             (5 if c.weekdays_only else 7) if c.frequency == "DAILY" else 1 for c in chores
         ) + rotation_expected_week
@@ -159,12 +137,20 @@ class ChoreService:
             1 for l in logs if l.status == ChoreStatus.APPROVED
         ) + rotation_completed_week
         
+        from ..models import Settings, PayoutMode
+        mode_setting = self.session.get(Settings, "payout_mode")
+        payout_mode = mode_setting.value if mode_setting else PayoutMode.ALL_OR_NOTHING
+        threshold_setting = self.session.get(Settings, "payout_threshold")
+        threshold_pct = int(threshold_setting.value) if threshold_setting else 80
+        
         if total_week_expected > 0:
             raw_week_pct = int((total_week_completed / total_week_expected) * 100)
             if payout_mode == PayoutMode.ALL_OR_NOTHING:
                 week_pct = 100 if raw_week_pct >= threshold_pct else raw_week_pct
             else:
                 week_pct = raw_week_pct
+        else:
+            week_pct = 0
         
         return {
             "total_reward": round(total_possible, 2),

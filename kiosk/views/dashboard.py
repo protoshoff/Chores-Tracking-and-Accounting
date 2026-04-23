@@ -341,14 +341,15 @@ class KidDashboardView(QWidget):
 
             # Progress
             summary = kid.get("chores_summary", {})
-            total = summary.get("total_weight", 1)
-            if total == 0: total = 1
 
             off_pct = summary.get("week_pct", 0)
             self.prog_official.setValue(off_pct)
 
-            done_weight = summary.get("completed_weight", 0)
-            kid_pct = int((done_weight / total) * 100)
+            # Kid's own progress: completed+pending reward vs total possible
+            total_reward = summary.get("total_reward", 1)
+            if total_reward == 0: total_reward = 1
+            completed_reward = summary.get("completed_reward", 0)
+            kid_pct = int((completed_reward / total_reward) * 100)
             if kid_pct > 100: kid_pct = 100
             self.prog_kid.setValue(kid_pct)
 
